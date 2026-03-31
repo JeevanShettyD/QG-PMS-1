@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title><%= Customer %> - Edit Project</title>
+
+<%- include('../partials/dependencies') %>
+
+<style>
+
+body{
+background:#f4f6f9;
+font-family:Segoe UI;
+font-size:13px;
+}
+
+/* cards */
+
+.card-box{
+background:white;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+margin:12px;
+overflow:hidden;
+}
+
+.card-header-custom{
+background:linear-gradient(90deg,#1a56db,#1344b5);
+color:white;
+padding:10px 15px;
+font-weight:600;
+}
+
+.card-body-custom{
+padding:15px;
+}
+
+/* labels */
+
+.form-label{
+font-weight:500;
+}
+
+/* inputs */
+
+.form-control,
+.form-select{
+font-size:13px;
+border-radius:6px;
+}
+
+/* small spacing */
+
+.form-group{
+margin-bottom:10px;
+}
+
+/* submit buttons */
+
+.btn-primary{
+background:#2f6bdc;
+border:none;
+}
+
+.btn-primary:hover{
+background:#1f4fa3;
+}
+
+/* Page background */
+body{
+background:#eef1f7;
+font-family:Segoe UI;
+font-size:13px;
+}
+
+/* Section box */
+.row.shadow{
+background:white;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+padding:10px;
+}
+
+/* Section headers */
+.bg-primary{
+background:linear-gradient(90deg,#4f86e3,#5b9df4) !important;
+font-weight:600;
+}
+
+/* Labels (key names) */
+.col-form-label{
+font-weight:600 !important;
+color:#333;
+background:#e9edf3 !important;
+border-radius:6px;
+padding:6px 10px !important;
+}
+
+/* Input boxes always visible */
+input,
+select{
+background:#ffffff !important;
+border:1px solid #cfd6e4 !important;
+border-radius:6px !important;
+padding:6px 10px !important;
+box-shadow:none !important;
+}
+
+/* Focus style */
+input:focus,
+select:focus{
+border:1px solid #4f86e3 !important;
+box-shadow:0 0 0 2px rgba(79,134,227,0.15) !important;
+outline:none;
+}
+
+/* Input group (ft box) */
+.input-group-text{
+background:#eef1f7;
+border:1px solid #cfd6e4;
+}
+
+/* Buttons */
+.btn-primary{
+background:#2f6bdc;
+border:none;
+}
+
+.btn-primary:hover{
+background:#1f4fa3;
+}
+</style>
+
+</head>
+
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+<body>
+
+<main>
+
+<form action="/PMO/editProject/<%= Customer %>" method="post" id="createProjectForm"
+onsubmit="this.querySelector('button[type=submit]').disabled = true;">
+
+<% function formatDateString(dateString){
+const dateParts=dateString.split('/');
+return dateParts.map(p=>p.length===1?'0'+p:p).join('-');
+} %>
+
+<input type="hidden" name="idProjects" value="<%= Data.idProjects %>">
+
+<!-- ================= PROJECT INFO ================= -->
+
+<div class="card-box">
+
+<div class="card-header-custom">
+Project Information <i class="bi bi-info-circle-fill"></i>
+</div>
+
+<div class="card-body-custom">
+
+<div class="row g-3">
+
+<!-- JOB ID -->
+
+<div class="col-md-6 form-group">
+
+<label class="form-label required">JOB ID</label>
+
+<input type="text"
+class="form-control"
+name="JOB_ID"
+id="JOB_ID"
+value="<%= Data.JOB_ID %>"
+readonly>
+
+</div>
+
+
+<!-- JOB NAME -->
+
+<div class="col-md-6 form-group">
+
+<label class="form-label required">Job Name</label>
+
+<input type="text"
+class="form-control"
+name="Job_Name"
+id="Job_Name"
+value="<%= Data.Job_Name %>"
+required>
+
+</div>
+
+
+<!-- SOW -->
+
+<div class="col-md-6 form-group">
+
+<label class="form-label required">SOW</label>
+
+<select class="form-select" name="SOW" id="SOW" required>
+
+<option value="">Select SOW</option>
+
+<% SOW.forEach(sow=>{ %>
+
+<option value="<%- sow %>" <% if(sow==Data.SOW){ %>selected<% } %> >
+
+<%- sow %>
+
+</option>
+
+<% }) %>
+
+</select>
+
+</div>
+
+
+<!-- REGION -->
+
+<div class="col-md-6 form-group">
+
+<label class="form-label required">Region</label>
+
+<input type="text"
+class="form-control"
+name="Region"
+id="Region"
+value="<%= Data.Region %>">
+
+</div>
+
+
+<!-- DIVISION -->
+
+<div class="col-md-6 form-group">
+
+<label class="form-label">Division</label>
+
+<input type="text"
+class="form-control"
+name="Division"
+id="Division"
+value="<%= Data.Division %>">
+
+</div>
+
+
+<!-- TOTAL FOOTAGE -->
+
+<div class="col-md-6 form-group">
+
+<label class="form-label">Total Footage (Est)</label>
+
+<div class="input-group">
+
+<input type="text"
+class="form-control"
+name="Total_Est"
+id="Total_Est"
+value="<%= Data.Total_Est %>">
+
+<span class="input-group-text">ft</span>
+
+</div>
+
+</div>
+
+
+<!-- RECEIVED DATE -->
+
+<div class="col-md-4 form-group">
+
+<label class="form-label required">Received Date</label>
+
+<input type="date"
+class="form-control"
+name="ReceivedDate"
+value="<%= formatDateString(Data.n_ReceivedDate) %>">
+
+</div>
+
+
+<!-- DUE DATE -->
+
+<div class="col-md-4 form-group">
+
+<label class="form-label required">Due Date</label>
+
+<input type="date"
+class="form-control"
+name="DueDate"
+value="<%= formatDateString(Data.n_DueDate) %>">
+
+</div>
+
+
+<!-- STATUS -->
+
+<div class="col-md-4 form-group">
+
+<label class="form-label">Status</label>
+
+<select class="form-select" name="Status">
+
+<option value="YTS" <%= Data.Status=='YTS'?'selected':'' %>>YTS</option>
+<option value="YTA" <%= Data.Status=='YTA'?'selected':'' %>>YTA</option>
+<option value="WIP" <%= Data.Status=='WIP'?'selected':'' %>>WIP</option>
+<option value="Completed" <%= Data.Status=='Completed'?'selected':'' %>>Completed</option>
+<option value="Approved" <%= Data.Status=='Approved'?'selected':'' %>>Approved</option>
+
+</select>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ================= FOOTAGE SECTION ================= -->
+
+<div class="card-box">
+
+<div class="card-header-custom">
+
+Footages & Passing
+
+<img width="20" class="ms-2"
+src="https://img.icons8.com/external-others-pike-picture/50/FFFFFF/external-Wire-rebar-others-pike-picture-2.png">
+
+</div>
+
+<div class="card-body-custom">
+
+<div class="row g-3">
+
+<div class="col-md-3">
+
+<label class="form-label">Buried Footage</label>
+
+<input type="number"
+class="form-control"
+name="Buried"
+id="Buried"
+value="<%= Data.Buried%>">
+
+</div>
+
+
+<div class="col-md-3">
+
+<label class="form-label">RE Footage</label>
+
+<input type="number"
+class="form-control"
+name="Real_End"
+id="Real_End"
+value="<%= Data.Real_End%>">
+
+</div>
+
+
+<div class="col-md-3">
+
+<label class="form-label">Total Footage</label>
+
+<div class="input-group">
+
+<input type="text"
+class="form-control"
+name="Total_Footage"
+id="Total_Footage"
+value="<%= Data.Total_Footage %>"
+readonly>
+
+<span class="input-group-text">ft</span>
+
+</div>
+
+</div>
+
+
+<div class="col-md-3">
+
+<label class="form-label">Home Passing</label>
+
+<input type="number"
+class="form-control"
+name="Total_Home_Passing"
+value="<%= Data.Total_Home_Passing%>">
+
+</div>
+
+
+<div class="col-md-3">
+
+<label class="form-label">No of ROLT's</label>
+
+<input type="number"
+class="form-control"
+name="No_ROLTs"
+id="No_Rolts"
+value="<%= Data.No_ROLTs %>">
+
+</div>
+
+
+<div class="col-md-3">
+
+<label class="form-label">No of Actives</label>
+
+<input type="text"
+class="form-control"
+name="Total_Actives"
+id="Total_Actives"
+value="<%= Data.Total_Actives %>">
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ================= BUTTONS ================= -->
+
+<div class="text-center my-3">
+
+<button type="submit" class="btn btn-primary">
+
+Submit <i class="bi bi-arrow-right-circle"></i>
+
+</button>
+
+<a href="/Project/<%= Customer %>/<%=Data.CFAS_ID?Data.CFAS_ID:Data.JOB_ID%>/<%=Data.idProjects%>">
+
+<button type="button" class="btn btn-secondary">
+
+Cancel <i class="bi bi-x-circle"></i>
+
+</button>
+
+</a>
+
+</div>
+
+</form>
+
+</main>
+
+</body>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+
+<script src="/static/js/CreateProject.js"></script>
+
+</html>
+```

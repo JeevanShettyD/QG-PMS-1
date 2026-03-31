@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+    <%- include('../partials/dependencies') %>
+    <style>
+        :root { --navy-900:#0f1e36;--navy-800:#152844;--navy-700:#1b3258;--blue-500:#2d7dd2;--blue-400:#4a96e8;--page-bg:#f0f4fa;--card-bg:#ffffff;--border:#e2e8f4;--text:#1e2d45;--muted:#7a8aaa;--radius:12px;--shadow:0 2px 10px rgba(15,30,80,0.07),0 6px 22px rgba(15,30,80,0.06);--tr:all 0.18s cubic-bezier(0.4,0,0.2,1); }
+        html,body{background:var(--page-bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);}
+
+        /* Toolbar */
+        .users-toolbar{display:flex;justify-content:center;align-items:center;gap:10px;padding:14px 20px 10px;}
+        .search-wrap{display:flex;align-items:center;gap:0;background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);transition:var(--tr);}
+        .search-wrap:focus-within{border-color:var(--blue-500);box-shadow:0 0 0 3px rgba(45,125,210,0.12);}
+        .search-wrap .search-icon{padding:8px 12px;color:var(--muted);font-size:14px;background:var(--page-bg);border-right:1px solid var(--border);}
+        .search-wrap input{border:none;outline:none;padding:8px 14px;font-size:13px;color:var(--text);background:transparent;min-width:260px;}
+        .search-wrap input::placeholder{color:var(--muted);}
+        .btn-add-user{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,var(--blue-400),var(--blue-500));color:#fff;border:none;border-radius:var(--radius);font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(45,125,210,0.3);transition:var(--tr);}
+        .btn-add-user:hover{background:linear-gradient(135deg,#3a8ae0,#2266cc);box-shadow:0 4px 14px rgba(45,125,210,0.4);transform:translateY(-1px);}
+
+        /* Layout */
+        .users-layout{display:flex;gap:12px;padding:0 20px 40px;height:calc(100vh - 110px);}
+        .users-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+        .users-aside{width:380px;flex-shrink:0;}
+
+        /* Table card */
+        .pmo-table-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 1px 4px rgba(15,30,80,0.06),0 6px 20px rgba(15,30,80,0.07);overflow:hidden;height:100%;display:flex;flex-direction:column;}
+        .pmo-table-scroll{overflow:auto;flex:1;}
+        .pmo-table-scroll::-webkit-scrollbar{width:5px;height:5px;}
+        .pmo-table-scroll::-webkit-scrollbar-thumb{background:#c0cce0;border-radius:3px;}
+        .pmo-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:0;}
+        .pmo-table thead tr th{background:linear-gradient(135deg,#1a3060,#1e3a5f);color:rgba(255,255,255,0.88);font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;padding:10px 14px;white-space:nowrap;border-bottom:2px solid rgba(45,125,210,0.35);border-right:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:2;}
+        .pmo-table thead tr th:last-child{border-right:none;}
+        .pmo-table tbody tr{border-bottom:1px solid #edf1fa;transition:background 0.12s,box-shadow 0.12s;cursor:pointer;}
+        .pmo-table tbody tr:nth-child(even){background:#fafcff;}
+        .pmo-table tbody tr:hover{background:#f0f6ff !important;box-shadow:inset 3px 0 0 var(--blue-500);}
+        .pmo-table tbody tr:last-child{border-bottom:none;}
+        .pmo-table tbody td{padding:9px 14px;color:var(--text);vertical-align:middle;border-right:1px solid #f0f4fc;}
+        .pmo-table tbody td:last-child{border-right:none;}
+
+        /* Profile aside */
+        .profile-aside-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);height:100%;overflow:auto;display:flex;flex-direction:column;}
+        .profile-aside-header{background:linear-gradient(135deg,var(--navy-900),var(--navy-700));padding:12px 16px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:0.3px;flex-shrink:0;}
+        .profile-aside-body{flex:1;padding:16px;overflow-y:auto;}
+        .profile-aside-body::-webkit-scrollbar{width:4px;}
+        .profile-aside-body::-webkit-scrollbar-thumb{background:#c0cce0;border-radius:2px;}
+        .empty-profile{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;gap:10px;}
+        .empty-profile i{font-size:36px;color:rgba(45,125,210,0.2);}
+    </style>
+</head>
+
+<%- include('../partials/Admin-header',{userData:userData}) %>
+
+<body>
+    <form action="/Admin/Users" method="get">
+        <div class="users-toolbar">
+            <div class="search-wrap">
+                <span class="search-icon"><i class="bi bi-search"></i></span>
+                <input type="search" name="Employee_ID" id="Employee_ID" required placeholder="Search by Name or Employee ID…">
+            </div>
+            <button type="button" class="btn-add-user" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="bi bi-person-fill-add"></i> Add User
+            </button>
+        </div>
+    </form>
+
+    <div class="users-layout">
+        <div class="users-main">
+            <div class="pmo-table-card">
+                <div class="pmo-table-scroll">
+                    <table class="pmo-table" id="User-List">
+                        <thead>
+                            <tr>
+                                <th>Sl.No</th>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Email ID</th>
+                                <th>Mobile No</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="content-area">
+                            <% if(Object.values(Data).length>0){ %>
+                                <% for(let i=0;i<Object.values(Data).length;i++){ %>
+                                <tr class="User-Record" data-userID="<%= Data[i].Employee_ID %>">
+                                    <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= i+1 %></td>
+                                    <td style="font-family:'DM Mono',monospace;font-size:11.5px;font-weight:600;"><%= Data[i].Employee_ID %></td>
+                                    <td>
+                                        <span style="font-weight:600;"><%= Data[i].Full_Name %></span>
+                                        <span style="display:block;font-size:11px;color:var(--muted);">(<%= Data[i].Designation %>)</span>
+                                    </td>
+                                    <td><%= Data[i].Email_ID %></td>
+                                    <td><%= Data[i].Mobile_No||'—' %></td>
+                                    <td>
+                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:600;background:rgba(45,125,210,0.08);color:var(--blue-500);"><%= Data[i].Role %></span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <% if(Data[i].Status=="Active"){ %>
+                                            <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:#0d9f6a;"><i class="bi bi-circle-fill" style="font-size:8px;"></i> Active</span>
+                                        <% }else{ %>
+                                            <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:#c02038;"><i class="bi bi-circle-fill" style="font-size:8px;"></i> Inactive</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="users-aside">
+            <div class="profile-aside-card">
+                <div class="profile-aside-header"><i class="bi bi-person-badge me-2"></i>User Profile</div>
+                <div class="profile-aside-body">
+                    <div id="profileCard">
+                        <div class="empty-profile">
+                            <i class="bi bi-person-circle"></i>
+                            <p>Select a user to view profile</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal (UNCHANGED) -->
+    <div class="modal fade" id="addUserModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog">
+            <form action="/Admin/CreateUser" method="post">
+            <div class="modal-content">
+                <div class="modal-header"><h1 class="modal-title fs-5">Add User</h1><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="input-group mb-3"><label class="input-group-text w-25">Employee ID</label><input type="text" class="form-control border" name="Employee_ID" placeholder="QGI****/CMS***" pattern="^(QGI|CMS|INT).*" title="The Employee ID should start with QGI/CMS" required></div>
+                    <div class="input-group mb-3"><label class="input-group-text w-25">Full Name</label><input type="text" class="form-control border" name="Full_Name" placeholder="Full Name" required></div>
+                    <div class="input-group mb-3"><label class="input-group-text w-25">E-Mail ID</label><input type="email" class="form-control border" name="Email_ID" pattern=".*@quadgenwireless.com$" placeholder="***@quadgenwireless.com" required></div>
+                    <div class="input-group mb-3"><label class="input-group-text w-25">Mobile No</label><input type="text" class="form-control border" name="Mobile_No" placeholder="Mobile No" pattern="[5-9]{1}[0-9]{9}" required></div>
+                    <div class="input-group mb-3"><label class="input-group-text w-25">Designation</label><input type="text" class="form-control border" name="Designation" placeholder="Designation" required></div>
+                    <div class="d-flex gap-1">
+                        <div class="input-group mb-3"><label class="input-group-text">Location</label><select class="form-select" name="Location" required><option value="">Choose...</option><option value="VJW">VJW</option><option value="HYD">HYD</option><option value="BLR">BLR</option><option value="BBSR">BBSR</option></select></div>
+                        <div class="input-group mb-3"><label class="input-group-text">Role</label><select class="form-select" name="Role" required><option value="">Choose...</option><option value="Employee">Employee</option><option value="Manger">Manager</option><option value="PMO">PMO</option><option value="Admin">Admin</option></select></div>
+                    </div>
+                    <div class="input-group mb-3"><label class="input-group-text">Reporting To</label><select class="form-select" name="Reporting_Manager_Name" required><option value="">Choose...</option><% for(let i=0;i<Object.keys(ReportingManagers).length;i++){%><option value="<%= ReportingManagers[i].Employee_ID %>"><%= ReportingManagers[i].Full_Name %></option><%}%></select></div>
+                </div>
+                <div class="modal-footer"><button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Submit</button></div>
+            </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script>
+    /* UNCHANGED JS */
+    document.addEventListener('DOMContentLoaded', function () {
+        const allRecords = document.querySelectorAll(".User-Record");
+        allRecords.forEach(record => {
+            record.addEventListener("click", () => {
+                const id = record.getAttribute("data-userID");
+                if (id) {
+                    axios.get('/api/getUserData', { params: { UserID: id } }).then(res => { generateProfileCard(res.data) }).catch(error => { console.log(error); })
+                }
+            })
+        });
+    });
+
+    function generateProfileCard(user) {
+        const profileCard = document.getElementById('profileCard');
+        const cardTemplate = `<form action="/admin/UpdateUser" method="post" id="UpdateUserForm">
+            <div class="container">
+                <div class="text-center mb-3">
+                    <img src="../../public/uploads/Profile/${user.Profile ? user.Profile : "user.png"}" class="rounded-circle shadow" style="width:64px;height:64px;object-fit:cover;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,0.15);" alt="DP">
+                </div>
+                <div class="d-flex mb-2"><label class="form-label fs-5 me-2"><i class="bi bi-person-badge"></i></label><input type="text" class="form-control form-control-sm border" name="Employee_ID" value="${user.Employee_ID}" disabled required readonly></div>
+                <div class="d-flex mb-2"><label class="form-label fs-5 me-2"><i class="bi bi-person"></i></label><input type="text" class="form-control form-control-sm border" name="Full_Name" value="${user.Full_Name}" disabled required></div>
+                <div class="d-flex mb-2"><label class="form-label fs-5 me-2"><i class="bi bi-envelope-at"></i></label><input type="email" class="form-control form-control-sm" name="Email_ID" value="${user.Email_ID}" disabled required></div>
+                <div class="d-flex mb-2"><label class="form-label fs-5 me-2"><i class="bi bi-person-gear"></i></label><select class="form-select form-select-sm" name="Role" disabled required><option value="">User Role</option><option ${user.Role=="Employee"?"selected":""} value="Employee">Employee</option><option ${user.Role=="Manager"?"selected":""} value="Manager">Manager</option><option ${user.Role=="PMO"?"selected":""} value="PMO">PMO</option><option ${user.Role=="Admin"?"selected":""} value="Admin">Admin</option></select></div>
+                <div class="d-flex mb-2"><label class="form-label fs-5 me-2"><i class="bi bi-phone"></i></label><div class="input-group"><span class="input-group-text">+91</span><input type="number" class="form-control form-control-sm border" name="Mobile_No" value="${user.Mobile_No}" disabled></div></div>
+                <div class="d-flex mb-2"><label class="form-label fs-5 me-2"><i class="bi bi-award"></i></label><input type="text" class="form-control form-control-sm border" name="Designation" value="${user.Designation}" disabled required></div>
+                <div class="form-check form-switch mb-3"><label class="form-check-label">Status</label><input class="form-check-input" type="checkbox" role="switch" name="Status" disabled ${user.Status=="Active"?"checked":""}></div>
+                <div class="text-center"><button type="button" id="editBtn" class="btn btn-info shadow btn-sm">Edit</button><button type="submit" id="submitBtn" class="btn btn-primary visually-hidden shadow btn-sm">Update <i class="bi bi-arrow-right ms-1"></i></button></div>
+            </div></form>`;
+        profileCard.innerHTML = cardTemplate;
+        $("#editBtn").on("click", function () { $("#UpdateUserForm input, #UpdateUserForm select").prop("disabled", false); $("#editBtn").fadeOut(50); $("#submitBtn").removeClass("visually-hidden"); });
+        $("#UpdateUserForm").submit(function (e) { if (!validateForm()) { e.preventDefault(); } });
+    }
+
+    $(document).ready(function () {
+        let Table = new DataTable('#User-List', { paging: false, searching: false, info: false, order: [] });
+    });
+
+    function validateForm() {
+        const email = document.getElementById("Email");
+        if (!(email && email.value.toString().endsWith("@quadgenwireless.com"))) {
+            toasts.push({ title: "Error", content: "Please provide valid QuadgenWireless domain Email-ID", style: "error", dismissAfter: '5s' });
+            return false;
+        }
+        return true;
+    }
+
+    const params = getUrlParams();
+    const search = document.querySelectorAll('input[type="search"]');
+    search.forEach(input => {
+        for (const paramName in params) {
+            if (params.hasOwnProperty(paramName) && paramName === input.name) { input.value = params[paramName]; }
+        }
+    });
+</script>
+</html>

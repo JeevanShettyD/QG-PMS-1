@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+  <body>
+    <main>
+      <div class="scrollbar-style-3 mt-1 rounded-3">
+        <table class="table table-hover overflow-hidden rounded-3" aria-label="Project List" id="Project-List" style="font-size: 14px;">
+          <thead class="bg-primary bg-opacity-75 fg-white bg-gradient">
+            <tr class="text-center">
+              <th class="text-light" scope="col" data-dt-order="disable">
+                <input type="checkbox" name="selectAll" id="selectAll" class="form-check-input">
+                <span>Sl.No</span>
+              </th>
+              <th class="text-light" scope="col">JOB ID</th>
+              <th class="text-light" scope="col">SOW</th>
+              <th class="text-light" scope="col">Work Type</th>
+              <th class="text-light" scope="col">Division</th>
+              <th class="text-light" scope="col">Received Date</th>
+              <th class="text-light" scope="col">Due Date</th>
+              <!-- <th class="text-light" scope="col">Approved Date</th> -->
+              <th class="text-light" scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="content-area">
+            <% if (Object.values(Data).length>0) { %>
+              <% for( let index=0; index < Object.values(Data).length; index++ ) { %>
+                <tr>
+                  <td>
+                    <input type="checkbox" class="record-checkbox form-check-input" value="<%= Data[index].JOB_ID %>">
+                    <%= index+1%>
+                  </td>
+                  <!-- <td onclick="viewProject('<%= Data[index].JOB_ID %>')" class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+                    <a href="#">
+                      <%= Data[index].JOB_ID %>
+                  </a>
+                  </td> -->
+                  <td
+                    class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+                    <a href="/Project/SkyTec/<%= Data[index].JOB_ID  %>">
+                      <%= Data[index].JOB_ID %>
+                    </a>
+                  </td>
+                  <td><span>
+                      <%= Data[index].SOW %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].Worktype %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].Division %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].n_ReceivedDate %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].n_DueDate %>
+                    </span>
+                  </td>
+                  <!-- <td>
+                    <span>
+                      <%= Data[index].n_ApprovedDate %>
+                    </span>
+                  </td> -->
+                  <td>
+                    <p>
+                      <%= Data[index].Status %>
+                    </p>
+                  </td>
+
+                </tr>
+                <% } } %>
+
+          </tbody>
+        </table>
+        <div style="transition: all .3s ease;"
+          class="position-fixed translate-middle-x bottom-0 start-50  mb-2 visually-hidden bulk-milestone-creation-btn">
+          <button type="button" data-bs-toggle="modal" data-bs-target="#createMilestoneModal"
+            class="btn btn-success bg-gradient rounded-pill ">Create <span id="ActiveCount"></span>
+            Milestone</button>
+          <button type="button" data-bs-toggle="modal" data-bs-target="#UpdateStatusModal"
+            class="btn btn-success bg-gradient rounded-pill">Update Status</button>
+        </div>
+        <button type="button" class="floating-btn btn btn-secondary bg-gradient rounded-pill">Filter <i
+            class="bi bi-funnel"></i></button>
+        <form action="/<%= userData.Role  %>/Projects/SkyTec" method="get">
+          <div class="floating-container bg-light shadow rounded-3 p-1">
+            <label for="JOB_ID" class="from-label">JOB ID</label>
+            <input type="search" name="JOB_ID" id="JOB_ID" value="" placeholder="Enter the JOB ID"
+              class="form-control bg-white border">
+
+            <label for="SOW" class="from-label">SOW</label>
+            <select name="SOW" id="SOW" class="form-select">
+              <option value="" selected>All</option>
+              <% const SOW=FilterData.SOW %>
+                <% for( let index=0; index < SOW.length; index++ ) { %>
+                  <option value="<%=SOW[index]%>">
+                    <%=SOW[index]%>
+                  </option>
+                  <% } %>
+            </select>
+            <label for="Worktype" class="from-label">Work Type</label>
+            <select name="Worktype" id="Worktype" class="form-select">
+              <option value="" selected>All</option>
+              <% const Worktype=FilterData.WorkType %>
+                <% for( let index=0; index < Worktype.length; index++ ) { %>
+                  <option value="<%=Worktype[index]%>">
+                    <%=Worktype[index]%>
+                  </option>
+                  <% } %>
+            </select>
+            <label for="Division" class="from-label">Division</label>
+            <select name="Division" id="Division" class="form-select">
+              <option value="" selected>All</option>
+              <% const Division=FilterData.Division %>
+                <% for( let index=0; index < Division.length; index++ ) { %>
+                  <option value="<%=Division[index]%>">
+                    <%=Division[index]%>
+                  </option>
+                  <% } %>
+            </select>
+            <label for="Status" class="from-label">Status</label>
+            <select name="Status" id="Status" class="form-select">
+              <option value="" selected>All</option>
+              <% const Status=FilterData.Status %>
+                <% for( let index=0; index < Status.length; index++ ) { %>
+                  <option value="<%=Status[index]%>">
+                    <%=Status[index]%>
+                  </option>
+                  <% } %>
+            </select>
+            <button type="submit" class="btn btn-primary bg-gradient btn-sm m-1" id="filter-btn">Show</button>
+        </form>
+      </div>
+      </div>
+    </main>
+  </body>
+  <!-- Project Modal -->
+  <div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog  modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <!-- <h1 class="modal-title fs-5 p-1" id="CFAS_ID"></h1>-->
+          <h5 class="d-block p-1 w-100" id="">Project</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <p class="p-0 m-0">JOB ID: <span id="JOB_ID"></span></p>
+            <p class="m-0 p-0">Current Status: <span id="Status"></span></p>
+          </div>
+          <ul class="nav nav-tabs" id="projectTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="Project-Info-tab" data-bs-toggle="tab"
+                data-bs-target="#projectInfo-tab-pane" type="button" role="tab" aria-controls="projectInfo-tab-pane"
+                aria-selected="true">Project Info</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link " id="Milestine-tab" data-bs-toggle="tab" data-bs-target="#milestone-tab-pane"
+                type="button" role="tab" aria-controls="milestone-tab-pane" aria-selected="false">Milestone</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="QC-tab" data-bs-toggle="tab" data-bs-target="#qc-tab-pane" type="button"
+                role="tab" aria-controls="qc-tab-pane" aria-selected="false">QC</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="Task-tab" data-bs-toggle="tab" data-bs-target="#task-tab-pane" type="button"
+                role="tab" aria-controls="task-tab-pane" aria-selected="false">Task</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="Sub-Task-tab" data-bs-toggle="tab" data-bs-target="#subtask-tab-pane"
+                type="button" role="tab" aria-controls="subtask-tab-pane" aria-selected="false">Sub Task</button>
+            </li>
+          </ul>
+          <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="projectInfo-tab-pane" role="tabpanel"
+              aria-labelledby="Project-Info-tab" tabindex="0">
+              <a href="/editProject/" class="btn text-decoration-none position-absolute top-0 end-0 z-3"
+                id="editButton"><i class="bi bi-pencil-square"></i></a>
+              <div class="row rounded-3 p-1 shadow">
+                <div class="col">
+                  <div class="row">
+                    <p class="col "> <b>JOB ID:</b> <span id="JOB_ID"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>SOW:</b> <span id="SOW"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Region:</b> <span id="Region"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Division:</b> <span id="Division"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Total Footage:</b> <span id="Total_Footage"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>No of Nodes:</b> <span id="No_Nodes"></span></p>
+                  </div>
+                </div>
+                <div class="col">
+
+                  <div class="row">
+                    <p class="col "> <b>Work Type:</b> <span id="Worktype"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Total No of Actives:</b> <span id="Total_Actives"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Total Home Passing:</b> <span id="Total_Home_Passing"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Received Date:</b> <span id="n_ReceivedDate"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Due Date:</b> <span id="n_DueDate"></span></p>
+                  </div>
+                  <div class="row">
+                    <p class="col "> <b>Approved Date:</b><span id="n_ApprovedDate"></span></p>
+                  </div>
+                </div>
+                <hr>
+                <div class="row ms-0 rounded-3" id="Note">
+
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade show " id="milestone-tab-pane" role="tabpanel" aria-labelledby="Milestone-tab"
+              tabindex="0">
+              <div class="rounded-3 p-1 shadow">
+                <div class="d-flex justify-content-end">
+                  <button class="btn"><i class="bi bi-arrow-clockwise"></i></button>
+                  <button class="btn" data-bs-toggle="modal" data-bs-target="#createMilestoneModal"><i
+                      class="bi bi-plus"></i></button>
+                </div>
+                <div>
+                  <table class="table table-hover overflow-hidden rounded-3" aria-label="">
+                    <thead class="bg-primary  bg-opacity-50 ">
+                      <th scope="col" class="text-light">S.No</th>
+                      <th scope="col" class="text-light">Milestone Name</th>
+                      <th scope="col" class="text-light">Prod TGT Start Date</th>
+                      <th scope="col" class="text-light">Prod ACT Start Date</th>
+                      <th scope="col" class="text-light">Prod TGT End Date</th>
+                      <th scope="col" class="text-light">Prod ACT End Date</th>
+                      <th scope="col" class="text-light">QC TGT Start Date</th>
+                      <th scope="col" class="text-light">QC ACT Start Date</th>
+                      <th scope="col" class="text-light">QC TGT End Date</th>
+                      <th scope="col" class="text-light">QC ACT End Date</th>
+                    </thead>
+                    <tbody id="milestoneBody">
+                      <% for( let index=0; index < Object.values(Data).length; index++ ) { %>
+
+                        <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade show " id="qc-tab-pane" role="tabpanel" aria-labelledby="QC-tab" tabindex="0">
+              <div class="rounded-3 p-1 shadow">
+                <p>QC</p>
+              </div>
+            </div>
+            <div class="tab-pane fade show " id="task-tab-pane" role="tabpanel" aria-labelledby="Task-tab" tabindex="0">
+              <div class="rounded-3 p-1 shadow">
+                <p>Task</p>
+              </div>
+            </div>
+            <div class="tab-pane fade show" id="subtask-tab-pane" role="tabpanel" aria-labelledby="Sub-Task-tab"
+              tabindex="0">
+              <div class="rounded-3 p-1 shadow">
+                <p>Sub Task</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- <div class="modal-footer"> 
+          <a href="/Milestone/" class="btn btn-primary text-decoration-none" id="milestoneButton">Go to Milestone's</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <!--Create Milestone Modal -->
+  <div class="modal fade" id="createMilestoneModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Create Milestone</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/<%= userData.Role  %>/CreateMilestone/SkyTec" method="post" id="createMilestoneForm">
+          <div class="modal-body">
+            <div class="row g-2">
+              <div class="col-md">
+                <label for="Project_ID">Selected Job (Total: <span id="ActiveCount"></span>)</label>
+                <div class="form-floating job-id-container overflow-y-auto "
+                  style="height: fit-content; max-height: 25dvh;">
+                </div>
+              </div>
+              <div class="col-md">
+                <div class="row">
+                  <div class="col form-floating">
+                    <input type="date" class="form-control" id="Prod_TGT_Start_Date" name="Prod_TGT_Start_Date"
+                      placeholder="" required>
+                    <label for="Prod_TGT_Start_Date">Prod TGT Start Date</label>
+                  </div>
+                  <div class="col form-floating">
+                    <input type="date" class="form-control" id="Prod_TGT_End_Date" name="Prod_TGT_End_Date"
+                      placeholder="" required>
+                    <label for="Prod_TGT_End_Date">Prod TGT End Date</label>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col form-floating">
+                    <input type="date" class="form-control" id="QC_TGT_Start_Date" name="QC_TGT_Start_Date"
+                      placeholder="" required>
+                    <label for="QC_TGT_Start_Date">QC TGT Start Date</label>
+                  </div>
+                  <div class="col form-floating">
+                    <input type="date" class="form-control" id="QC_TGT_End_Date" name="QC_TGT_End_Date" placeholder=""
+                      required>
+                    <label for="QC_TGT_End_Date">QC TGT End Date</label>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="form-floating">
+                    <select name="Owner" id="milestone_owner" class="form-select" required>
+                      <option value="" selected>Choose Owner</option>
+                      <% for( let index=0; index < Object.values(Owners).length; index++ ) { %>
+                        <option value="<%= Owners[index].Employee_ID %>">
+                          <%= Owners[index].Full_Name %>
+                        </option>
+                        <% } %>
+
+                    </select>
+                    <label for="milestone_owner">Owner</label>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="modal"
+              data-bs-target="#createMilestoneModal">Close</button>
+            <button type="submit" class="btn btn-success">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!--Update Status Modal -->
+  <div class="modal fade" id="UpdateStatusModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Status</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/PMO/UpdateProjectStatus" method="post" id="UpdateProjectStatus">
+          <div class="modal-body">
+            <div class="row g-2">
+              <div class="col-md">
+                <label for="Project_ID">Selected Job (Total: <span id="ActiveCount"></span>)</label>
+                <div class="form-floating job-id-container overflow-y-auto "
+                  style="height: fit-content; max-height: 25dvh;">
+                </div>
+              </div>
+              <div class="col-md">
+                <label for="ststus">Status</label>
+                <select name="Status" id="ststus" required>
+                  <option value="" selected>Choose Current Status</option>
+                  <option value="Submitted - Awaiting Approval">Submitted - Awaiting Approval</option>
+                  <option value="CQC - Corr1">CQC - Corr1</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Reassigned by SkyTec">Reassigned by SkyTec</option>
+                  <option value="Rejected by SkyTec">Rejected by SkyTec</option>
+                  <option value="Re-Submitted - Awaiting Approval">Re-Submitted - Awaiting Approval</option>
+                  <option value="CQC - Corr2">CQC - Corr2</option>
+                  <option value="Cancel">Cancel</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="modal"
+              data-bs-target="#UpdateStatusModal">Close</button>
+            <button type="submit" class="btn btn-success">Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+    <script>
+      function viewProject(id) {
+        axios.get('/api/projectInfo/SkyTec', {
+          params: {
+            ID: id
+          }
+        }).then(res => {
+          const object = res.data.project[0];
+          for (const key in object) {
+            if (Object.hasOwnProperty.call(object, key)) {
+              var element = object[key];
+              try {
+                if (key == 'Note') {
+                  var area = document.getElementById('Note');
+                  area.innerHTML = `<p><b>Comment's</b></p>`;
+                  element = JSON.parse(element);
+                  if (Object.keys(element).length) {
+                    for (const group in element) {
+                      const note = element[group];
+                      let values = Object.values(note);
+                      let attachmentName = values[4];
+                      area.innerHTML += `
+                                <div class="row  m-1">
+                                      <div class="col-sm-12">
+                                        <p><small><span><i class="bi bi-person-fill"></i>&nbsp;${values[3]}</span> <b>|</b> <span><i class="bi bi-calendar3"></i>&nbsp;${values[0]}</span>${(attachmentName !== null && attachmentName != undefined && attachmentName != "") ? `<b> | </b> <span> <a href="../public/uploads/ReferenceDoc/${attachmentName}" class="text-decoration-none btn btn-outline-secondary border-0 btn-sm" download>
+                                          <span id="type" class="text-uppercase"> </span><i class="bi bi-paperclip"></i></a></span> `: ``} </small></p>
+                                          <p class='border comment-section p-2 m-0'>${values[1]}</p>
+                                          </div>
+                                          
+                                          </div>`;
+                    }
+                  } else {
+                    area.innerHTML += `
+                                <div class="row  m-1">
+                                     
+                                          <p class='mx-auto'>No Comments</p>
+                                     
+                                        </div>`;
+                  }
+                } else if (key == 'idProjects') {
+                  document.getElementById("editButton").setAttribute('href', `/PMO/editProject/SkyTec/${object[key]}`)
+                  //document.getElementById("milestoneButton").setAttribute('href', `/PMO/milestone/SkyTec/${object[key]}`)
+                } else if (key == 'ReceivedDate' || key == 'DueDate' || key == 'ApprovedDate' || key == 'Owner') {
+                } else {
+                  if (key == 'JOB_ID') {
+                    const list = document.querySelectorAll('#JOB_ID')
+                    list.forEach(item => {
+                      item.innerText = element;
+                    });
+                    document.getElementById("Project_ID").value = element;
+                  }
+                  document.getElementById(`${key}`).innerText = element;
+                }
+              } catch (error) {
+                console.log(error)
+              }
+            }
+          }
+          const milestones = res.data.milestone;
+          const body = document.getElementById('milestoneBody');
+          body.innerHTML = null;
+          milestones.forEach((roeData, index) => {
+            const row = body.insertRow(-1);
+            // Add Serial Number in the first column
+            row.insertCell(0).textContent = index + 1;
+            row.insertCell(1).innerHTML = `<a href="/ViewMilestone/SkyTec/${roeData.Milestone_Name}">${roeData.Milestone_Name}</a>`;
+            row.insertCell(2).textContent = roeData.Prod_TGT_Start_Date;
+            row.insertCell(3).textContent = roeData.Prod_ACT_Start_Date;
+            row.insertCell(4).textContent = roeData.Prod_TGT_End_Date;
+            row.insertCell(5).textContent = roeData.Prod_ACT_End_Date;
+            row.insertCell(6).textContent = roeData.QC_TGT_Start_Date;
+            row.insertCell(7).textContent = roeData.QC_ACT_Start_Date;
+            row.insertCell(8).textContent = roeData.QC_TGT_End_Date;
+            row.insertCell(9).textContent = roeData.QC_ACT_End_Date;
+          });
+        }).catch(error => {
+          console.log(error);
+        })
+        $("#projectModal").modal('show')
+      }
+
+      // $("#createMilestoneForm").submit(function (e) {
+      //   //e.preventDefault();
+      //   let inputs = {};
+      //   input_serialized = $(this).serializeArray();
+      //   input_serialized.forEach(field => {
+      //     inputs[field.name] = field.value;
+      //   });
+      //   // axios.post(e.target.getAttribute('action'), inputs).then(res => {
+      //   //   toasts.push(res.data)
+      //   // }).catch(e => {
+      //   //   console.log(e);
+      //   //   toasts.push(e.response.data)
+      //   // })
+      //   $('#createMilestoneModal').modal('hide');
+      // });
+
+      $(".floating-btn").click(function () {
+        $(".floating-container").toggleClass("slide-in");
+      });
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const recordCheckboxes = document.querySelectorAll('.record-checkbox');
+        const selectedRecords = [];
+
+        // Function to update selected records
+        function updateSelectedRecords() {
+          selectedRecords.length = 0; // Clear the array
+          recordCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+              selectedRecords.push(checkbox.value);
+            }
+          });
+          console.log('Selected records:', selectedRecords);
+          console.log('Selected record count:', selectedRecords.length);
+          const ActiveCountLabels = document.querySelectorAll("#ActiveCount");
+          ActiveCountLabels.forEach(label => {
+            label.innerText = selectedRecords.length ? selectedRecords.length : '';
+          })
+          if (selectedRecords.length > 0) {
+            document.querySelectorAll(".bulk-milestone-creation-btn").forEach(item => {
+              item.classList.remove("visually-hidden");
+            })
+            const containers = document.querySelectorAll("div .job-id-container");
+            containers.forEach(container => {
+              container.innerHTML = null;
+              selectedRecords.forEach((job, index) => {
+                container.innerHTML += `<div class='d-flex align-items-center'><span>${index + 1}-</span><input type="text" class="border-bottom bg-body-tertiary m-1" id="Project_ID" name="Project_ID" placeholder="Enter Job ID"
+                  value="${job}" readonly required> </div>`
+              });
+            });
+          } else {
+            document.querySelectorAll(".bulk-milestone-creation-btn").forEach(item => {
+              item.classList.add("visually-hidden");
+            })
+          }
+        }
+
+        // Event listener for the "Select All" checkbox
+        selectAllCheckbox.addEventListener('change', function () {
+          const isChecked = this.checked;
+          recordCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+          });
+          updateSelectedRecords();
+        });
+
+        // Event listener for individual record checkboxes
+        recordCheckboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', function () {
+            if (!this.checked) {
+              selectAllCheckbox.checked = false;
+            } else {
+              // Check if all record checkboxes are checked
+              let allChecked = true
+              recordCheckboxes.forEach(checkbox => { if (!checkbox.checked) { allChecked = false } });
+              if (allChecked) {
+                selectAllCheckbox.checked = true;
+              }
+            }
+            updateSelectedRecords();
+          });
+        });
+
+        const params = getUrlParams();
+        const selects = document.querySelectorAll('select');
+        const search = document.querySelectorAll('input[type="search"]');
+        selects.forEach(select => {
+          for (const paramName in params) {
+            if (params.hasOwnProperty(paramName) && paramName === select.name) {
+              const selectValue = params[paramName];
+              const option = select.querySelector(`option[value="${selectValue}"]`);
+              if (option) {
+                option.selected = true;
+                break; // Exit loop after setting selected option
+              }
+            }
+          }
+        });
+        search.forEach(input => {
+          for (const paramName in params) {
+            if (params.hasOwnProperty(paramName) && paramName === input.name) {
+              const selectValue = params[paramName];
+              input.value = selectValue;
+            }
+          }
+        })
+      });
+
+      var Prod_TGT_Start_Date = document.getElementById('Prod_TGT_Start_Date');
+      var Prod_TGT_End_Date = document.getElementById('Prod_TGT_End_Date');
+      var QC_TGT_Start_Date = document.getElementById('QC_TGT_Start_Date');
+      var QC_TGT_End_Date = document.getElementById('QC_TGT_End_Date');
+      let dateInput = [Prod_TGT_Start_Date, Prod_TGT_End_Date, QC_TGT_Start_Date, QC_TGT_End_Date];
+      dateInput.forEach(input => {
+        input.addEventListener('change', () => {
+          validateDate(Prod_TGT_Start_Date.value, Prod_TGT_End_Date.value, QC_TGT_Start_Date.value, QC_TGT_End_Date.value);
+        });
+      })
+      function validateDate(PSDate, PEDate, QSDate, QEDate) {
+        if (PSDate && PEDate && QSDate && QEDate) {
+          if (!((new Date(PEDate) >= new Date(PSDate)) && (new Date(QEDate) >= new Date(QSDate)) && (new Date(QSDate) >= new Date(PEDate)))) {
+            Prod_TGT_Start_Date.value = "";
+            Prod_TGT_End_Date.value = "";
+            QC_TGT_Start_Date.value = "";
+            QC_TGT_End_Date.value = "";
+            toasts.push({
+              title: "Error",
+              content: "Please provide the valid dates.",
+              style: "error",
+              dismissAfter: '10s',
+            });
+
+          }
+        }
+      }
+      let Table=new DataTable('#Project-List',{
+        paging:true,
+        pageLength: 50,
+        order: {
+        idx: 6,
+        dir: 'desc'
+    }
+      })
+      function sortTable(columnIndex) {
+        let table, rows, switching, i, x, y, shouldSwitch;
+        table = document.querySelector('table');
+        switching = true;
+        while (switching) {
+          switching = false;
+          rows = table.rows;
+          for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName('td')[columnIndex];
+            y = rows[i + 1].getElementsByTagName('td')[columnIndex];
+            console.log(x.innerText)
+            if (parseInt(x.innerText) < parseInt(y.innerText)) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+          if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+          }
+        }
+      }
+
+    </script>
+
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Home</title>
+    <%- include('../partials/dependencies') %>
+    <style>
+        :root { --navy-900:#0f1e36;--navy-800:#152844;--navy-700:#1b3258;--blue-500:#2d7dd2;--blue-400:#4a96e8;--accent-cyan:#00c6ff;--page-bg:#f0f4fa;--card-bg:#ffffff;--border:#e2e8f4;--text:#1e2d45;--muted:#7a8aaa;--radius:12px;--shadow:0 2px 10px rgba(15,30,80,0.07),0 6px 22px rgba(15,30,80,0.06);--tr:all 0.18s cubic-bezier(0.4,0,0.2,1); }
+        html,body{background:var(--page-bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);}
+        main{min-height:calc(100vh - 52px);padding:14px 20px 40px;}
+        .dash-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;margin-bottom:16px;}
+        .dash-title i{color:var(--blue-500);font-size:16px;}
+
+        /* Stats grid */
+        .stats-grid{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+        .stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;flex:1;min-width:140px;box-shadow:var(--shadow);transition:var(--tr);position:relative;overflow:hidden;}
+        .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue-500),var(--accent-cyan));}
+        .stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(45,125,210,0.12);}
+        .stat-card-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:var(--muted);margin-bottom:6px;}
+        .stat-card-value{font-size:26px;font-weight:800;color:var(--blue-500);font-variant-numeric:tabular-nums;line-height:1;}
+        .stat-card-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:28px;color:rgba(45,125,210,0.1);}
+
+        /* Section bar */
+        .section-bar{display:flex;align-items:center;justify-content:space-between;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(15,30,80,0.05);}
+        .sec-left{display:flex;align-items:center;gap:9px;}
+        .sec-icon{width:34px;height:34px;border-radius:9px;background:rgba(45,125,210,0.1);display:flex;align-items:center;justify-content:center;}
+        .sec-icon i{font-size:15px;color:var(--blue-500);}
+        .sec-title{font-size:13px;font-weight:700;color:var(--text);}
+
+        /* Table */
+        .pmo-table-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 1px 4px rgba(15,30,80,0.06),0 6px 20px rgba(15,30,80,0.07);overflow:hidden;}
+        .pmo-table-scroll{overflow-x:auto;}
+        .pmo-table-scroll::-webkit-scrollbar{height:5px;}
+        .pmo-table-scroll::-webkit-scrollbar-thumb{background:#c0cce0;border-radius:3px;}
+        .pmo-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:0;}
+        .pmo-table thead tr th{background:linear-gradient(135deg,#1a3060,#1e3a5f);color:rgba(255,255,255,0.88);font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;padding:10px 14px;white-space:nowrap;border-bottom:2px solid rgba(45,125,210,0.35);border-right:1px solid rgba(255,255,255,0.06);}
+        .pmo-table thead tr th:last-child{border-right:none;}
+        .pmo-table tbody tr{border-bottom:1px solid #edf1fa;transition:background 0.12s,box-shadow 0.12s;}
+        .pmo-table tbody tr:nth-child(even){background:#fafcff;}
+        .pmo-table tbody tr:hover{background:#f0f6ff !important;box-shadow:inset 3px 0 0 var(--blue-500);}
+        .pmo-table tbody tr:last-child{border-bottom:none;}
+        .pmo-table tbody td{padding:9px 14px;color:var(--text);vertical-align:middle;border-right:1px solid #f0f4fc;}
+        .pmo-table tbody td:last-child{border-right:none;}
+        .pmo-table a{color:var(--blue-500);text-decoration:none;font-weight:600;}
+        .pmo-table a:hover{text-decoration:underline;}
+        .empty-state{text-align:center;padding:44px 20px;}
+        .empty-state .empty-icon{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(45,125,210,0.09),rgba(45,125,210,0.04));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;color:rgba(45,125,210,0.35);}
+        .empty-state p{font-size:13px;color:var(--muted);font-weight:500;margin:0;}
+    </style>
+</head>
+
+<%- include('../partials/Admin-header',{userData:userData}) %>
+
+<body>
+<main>
+    <div class="dash-title"><i class="bi bi-speedometer2"></i> Admin Dashboard</div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <% let UserCount=Count.users; let Customers=Count.Customers;
+           for(let i=0;i<Object.keys(UserCount).length;i++){ %>
+        <div class="stat-card">
+            <div class="stat-card-label"><%= UserCount[i].Role=="Employee" ? "Engineers" : UserCount[i].Role %></div>
+            <div class="stat-card-value"><%= UserCount[i].Count %></div>
+            <i class="bi bi-<%= UserCount[i].Role=='Employee'?'people-fill':UserCount[i].Role=='Manager'?'person-check-fill':UserCount[i].Role=='PMO'?'kanban-fill':'shield-fill' %> stat-card-icon"></i>
+        </div>
+        <% } %>
+        <div class="stat-card">
+            <div class="stat-card-label">Active Customers</div>
+            <div class="stat-card-value"><%= Object.keys(Customers).length %></div>
+            <i class="bi bi-handshake-fill stat-card-icon"></i>
+        </div>
+    </div>
+
+    <!-- Active Task Table -->
+    <div class="section-bar">
+        <div class="sec-left">
+            <div class="sec-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+            <span class="sec-title">Currently Active Tasks</span>
+        </div>
+    </div>
+    <div class="pmo-table-card">
+        <div class="pmo-table-scroll">
+            <table class="pmo-table" id="MasterActiveTaskTable">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>User Name</th>
+                        <th>Task ID</th>
+                        <th>Task Name</th>
+                        <th>Milestone</th>
+                        <th>Start Time</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-lightning-charge"></i></div>
+                                <p>No active tasks right now</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+</html>

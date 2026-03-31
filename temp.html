@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <table border="1">
+        <tbody class="qg-tab">
+            <tr>
+                <td>
+                    <input type="checkbox" id="toggle1" class="toggle" data-Target="tab__content-1">
+                    <label for="toggle1" class="qg-tab__label">Toggle Rows 1</label>
+                </td>
+            </tr>
+        </tbody>
+        <tbody class="qg-tab__content" id="tab__content-1">
+            <tr>
+                <td>Row 1</td>
+            </tr>
+            <tr>
+                <td>Row 2</td>
+            </tr>
+            <tr>
+                <td>Row 3</td>
+            </tr>
+
+        </tbody>
+
+
+
+        <tbody class="qg-tab">
+            <tr>
+                <td>
+                    <input type="checkbox" id="toggle2" class="toggle" data-Target="tab__content-2">
+                    <label for="toggle2" class="qg-tab__label">Toggle Rows 2</label>
+                </td>
+            </tr>
+        </tbody>
+        <tbody class="qg-tab__content" id="tab__content-2">
+            <tr>
+                <td>Row 11</td>
+            </tr>
+            <tr>
+                <td>Row 21</td>
+            </tr>
+            <tr>
+                <td>Row 31</td>
+            </tr>
+
+        <tbody class="qg-tab">
+            <tr>
+                <td>
+                    <input type="checkbox" id="toggle3" class="toggle" data-Target="tab__content-3">
+                    <label for="toggle3" class="qg-tab__label">Toggle Rows 3</label>
+                </td>
+            </tr>
+        </tbody>
+        <tbody class="qg-tab__content" id="tab__content-3">
+            <tr>
+                <td>Row 13</td>
+            </tr>
+            <tr>
+                <td>Row 23</td>
+            </tr>
+            <tr>
+                <td>Row 33</td>
+            </tr>
+        </tbody>
+
+        </tbody>
+    </table>
+    <iframe title="BI" width="1140" height="541.25"
+        src="https://app.powerbi.com/reportEmbed?reportId=3d9c5129-b83a-4a40-801f-9cd388f8c91f&autoAuth=true&ctid=bc4f0330-40ad-4c17-a8b1-207a74e52375&navContentPaneEnabled=false&filterPaneEnabled=false&filter=Master/Type eq 'IQC'"
+        frameborder="0" allowFullScreen="true"></iframe>
+    <iframe title="Test_Report" width="1140" height="541.25"
+        src="https://app.powerbi.com/reportEmbed?reportId=e7f6ab94-f3e1-4172-aebe-f9f070ea48f9&autoAuth=true&ctid=bc4f0330-40ad-4c17-a8b1-207a74e52375&navContentPaneEnabled=false&filterPaneEnabled=false&visualHeadersPaneEnable=false&filter=users/Employee_ID eq 'QGI573'"
+        frameborder="0" allowFullScreen="true"></iframe>
+    <iframe title="QGPMS Live" width="1140" height="541.25"
+        src="
+    https://app.powerbi.com/reportEmbed?reportId=14699227-7ea5-4349-9168-fb0c39fbe058&autoAuth=true&ctid=bc4f0330-40ad-4c17-a8b1-207a74e52375&navContentPaneEnabled=false&filterPaneEnabled=false&visualHeadersPaneEnable=false&filter=User_Data/Employee_ID eq 'QGI573'"
+        frameborder="0" allowFullScreen="true"></iframe>
+        <iframe title="QGPMS Live" width="1140" height="541.25"
+        src="
+    https://app.powerbi.com/reportEmbed?reportId=14699227-7ea5-4349-9168-fb0c39fbe058&autoAuth=true&ctid=bc4f0330-40ad-4c17-a8b1-207a74e52375&navContentPaneEnabled=false&filterPaneEnabled=false&visualHeadersPaneEnable=false&filter=User_Data/Employee_ID eq 'QGI573'"
+        frameborder="0" allowFullScreen="true"></iframe>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var toggles = document.querySelectorAll(".toggle");
+            toggles.forEach(function (toggle) {
+                //var content = toggle.closest('.qg-tab').nextElementSibling;
+                var content = document.getElementById(toggle.getAttribute("data-Target"));
+                var label = toggle.closest('.qg-tab').querySelector('.qg-tab__label');
+                toggle.addEventListener('change', function () {
+                    if (toggle.checked) {
+                        content.style.display = 'table-row-group';
+                        label.classList.add('open');
+                    } else {
+                        content.style.display = 'none';
+                        label.classList.remove('open');
+                    }
+                });
+            })
+            // var toggle = document.getElementById('toggle1');
+            // var content = document.querySelector('.qg-tab__content');
+            // var label = document.querySelector('.qg-tab__label');
+
+
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile</title>
+
+<%- include('../partials/dependencies') %>
+
+<style>
+
+/* Page background */
+
+body{
+background:#eef2f8;
+font-family:Segoe UI, Inter;
+font-size:14px;
+}
+
+/* Profile card */
+
+.profile-card{
+background:white;
+border-radius:14px;
+padding:25px;
+box-shadow:0 8px 25px rgba(0,0,0,0.08);
+}
+
+/* Profile image */
+
+.profile-img{
+width:85px;
+height:85px;
+border-radius:50%;
+object-fit:cover;
+border:3px solid white;
+box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Section title */
+
+.section-title{
+font-weight:600;
+font-size:15px;
+color:#2f6bdc;
+margin-bottom:15px;
+}
+
+/* Inputs */
+
+.input-group-text{
+background:#f3f5fa;
+border:none;
+font-weight:600;
+min-width:160px;
+}
+
+.form-control{
+border:none;
+background:#f7f8fc;
+}
+
+.form-control:focus{
+background:white;
+box-shadow:0 0 0 2px rgba(47,107,220,.15);
+}
+
+/* Password card */
+
+.security-card{
+background:white;
+border-radius:14px;
+padding:20px;
+box-shadow:0 8px 25px rgba(0,0,0,0.08);
+}
+
+/* Buttons */
+
+.btn-primary{
+background:#2f6bdc;
+border:none;
+border-radius:8px;
+}
+
+.btn-primary:hover{
+background:#1f4fa3;
+}
+
+</style>
+
+</head>
+
+
+<% if (userData.Role=="Employee") { %>
+<%- include('../partials/Employee-header',{userData:userData}) %>
+<% }else if(userData.Role=="Admin"){ %>
+<%- include('../partials/Admin-header',{userData:userData}) %>
+<% }else if(userData.Role=="PMO"){ %>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+<% }else if(userData.Role=="Manager"){ %>
+<%- include('../partials/Manager-header',{userData:userData}) %>
+<% } %>
+
+
+<body>
+
+<main class="container mt-4">
+
+<div class="row g-4">
+
+<!-- USER PROFILE -->
+
+<section class="col-lg-8">
+
+<div class="profile-card">
+
+<div class="text-center mb-4">
+
+<img 
+src="/uploads/Profile/<%= Profile.Profile || 'profile.png' %>"
+alt="profile image"
+class="profile-img mb-2">
+
+<h6 class="fw-bold mb-0"><%= Profile.Full_Name %></h6>
+<small class="text-muted"><%= Profile.Designation %></small>
+
+</div>
+
+
+<div class="section-title">User Information</div>
+
+
+<div class="input-group mb-3">
+<span class="input-group-text">Employee ID</span>
+<input type="text" class="form-control"
+value="<%= Profile.Employee_ID %>" readonly>
+</div>
+
+<div class="input-group mb-3">
+<span class="input-group-text">Name</span>
+<input type="text" class="form-control"
+value="<%= Profile.Full_Name %>" readonly>
+</div>
+
+<div class="input-group mb-3">
+<span class="input-group-text">Email ID</span>
+<input type="text" class="form-control"
+value="<%= Profile.Email_ID %>" readonly>
+</div>
+
+
+<div class="input-group mb-3">
+
+<span class="input-group-text">
+
+Mobile No
+
+<i class="ms-2 bi bi-info-circle"
+data-bs-toggle="tooltip"
+data-bs-title="Double Click to Update Mobile Number"></i>
+
+</span>
+
+<input
+type="tel"
+minlength="10"
+id="MobileNo"
+class="form-control"
+value="<%= Profile.Mobile_No %>"
+ondblclick="this.removeAttribute('readonly');document.getElementById('mobileUpdateBtn').classList.remove('visually-hidden')"
+readonly>
+
+<button
+type="button"
+class="btn btn-outline-secondary visually-hidden"
+id="mobileUpdateBtn">
+Update
+</button>
+
+</div>
+
+
+<div class="input-group mb-3">
+<span class="input-group-text">Location</span>
+<input type="text" class="form-control"
+value="<%= Profile.Location %>" readonly>
+</div>
+
+
+<div class="input-group mb-3">
+<span class="input-group-text">Reporting Manager</span>
+<input type="text" class="form-control"
+value="<%= Profile.Reporting_Manager_Name %>" readonly>
+</div>
+
+
+<div class="input-group mb-2">
+
+<span class="input-group-text">Profile Picture</span>
+
+<input
+type="file"
+name="ProfileFile"
+class="form-control"
+id="ProfileFile"
+accept="image/png, image/jpeg">
+
+<button
+type="button"
+class="btn btn-secondary"
+id="ChangeProfilePicBtn">
+Change
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PASSWORD SETTINGS -->
+
+<section class="col-lg-4">
+
+<div class="security-card">
+
+<div class="section-title">Security Settings</div>
+
+<p class="text-muted small">
+Need to update your password?
+</p>
+
+
+<span class="btn btn-outline-secondary w-100 mb-3"
+id="pwdQuestionBtn">
+
+Yes
+
+<span class="spinner-border spinner-border-sm visually-hidden"></span>
+<i class="bi bi-check2 visually-hidden"></i>
+
+</span>
+
+
+<input
+type="text"
+id="OTPfield"
+class="form-control opacity-50 mb-3"
+placeholder="Enter OTP"
+disabled>
+
+
+<form
+action="/UpdatePassword"
+method="post"
+id="UpdatePasswordForm"
+class="opacity-25">
+
+<div class="input-group mb-3">
+
+<span class="input-group-text">
+<i class="bi bi-lock-fill"></i>
+</span>
+
+<input
+class="form-control"
+type="text"
+name="Password"
+minlength="8"
+id="password"
+placeholder="Enter Password"
+disabled required>
+
+</div>
+
+
+<div class="input-group mb-3">
+
+<span class="input-group-text">
+<i class="bi bi-lock-fill"></i>
+</span>
+
+<input
+class="form-control"
+type="password"
+name="C_Password"
+id="c_password"
+minlength="8"
+placeholder="Re-Enter Your Password"
+disabled required>
+
+</div>
+
+
+<input
+class="btn btn-primary w-100"
+type="submit"
+value="Update"
+disabled>
+
+</form>
+
+</div>
+
+</section>
+
+</div>
+
+</main>
+
+</body>
+
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+
+
+<script>
+
+/* YOUR ORIGINAL JS (UNCHANGED) */
+
+const UpdatePasswordForm = document.getElementById("UpdatePasswordForm");
+
+document.getElementById("pwdQuestionBtn").addEventListener("click", () => {
+
+document.querySelector(".spinner-border").classList.remove("visually-hidden")
+
+axios.post("/api/GeneratePasswordResetOPT").then((res) => {
+
+document.querySelector(".bi-check2").classList.remove("visually-hidden");
+
+document.querySelector(".spinner-border").classList.add("visually-hidden")
+
+const otpField = document.getElementById("OTPfield");
+
+otpField.removeAttribute("disabled");
+
+otpField.classList.remove("opacity-50");
+
+otpField.focus();
+
+otpField.addEventListener("change", () => {
+
+if (otpField.value) {
+
+otpField.setAttribute("disabled", '');
+
+axios.post("/api/verifyOTP", { otp: otpField.value }).then((res) => {
+
+UpdatePasswordForm.classList.remove("opacity-25")
+
+UpdatePasswordForm.querySelectorAll("input").forEach(field => {
+
+field.removeAttribute("disabled");
+
+})
+
+})
+
+}
+
+})
+
+})
+
+})
+
+UpdatePasswordForm.addEventListener("submit", (e) => {
+
+e.preventDefault();
+
+const pwd = document.getElementById("password");
+
+const cpwd = document.getElementById("c_password");
+
+if (pwd.value.trim() === cpwd.value.trim()) {
+
+UpdatePasswordForm.submit();
+
+} else {
+
+alert("Both the Passwords are Not Matching.")
+
+pwd.value = cpwd.value = null;
+
+pwd.focus();
+
+}
+
+});
+
+
+document.getElementById("mobileUpdateBtn").addEventListener("click", () => {
+
+const Mobile_No = document.getElementById("MobileNo");
+
+if (Mobile_No.value.length === 10 && !isNaN(Mobile_No.value)) {
+
+axios.post("/api/updateMobileNo", { newMobileNo: Mobile_No.value }).then(() => {
+
+window.location.reload();
+
+})
+
+} else {
+
+Mobile_No.focus();
+
+Mobile_No.value = null;
+
+alert("Invalid Mobile Number");
+
+}
+
+});
+
+
+document.getElementById("ChangeProfilePicBtn").addEventListener("click", async (e) => {
+
+const fileInput = document.getElementById("ProfileFile");
+
+const file = (fileInput.files[0]) ? fileInput.files[0] : null;
+
+if (!file) {
+
+alert("Please select a file.")
+
+fileInput.focus();
+
+} else {
+
+const formData = new FormData();
+
+formData.append('ProfilePic', file);
+
+axios.post('/api/UpdateProfilePic', formData, {
+
+headers: {
+'Content-Type': 'multipart/form-data'
+}
+
+}).then(res => {
+
+window.location.reload();
+
+})
+
+}
+
+})
+
+</script>
+
+</html>

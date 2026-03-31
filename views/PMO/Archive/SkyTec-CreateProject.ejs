@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+  <body>
+    <main>
+      <form action="/PMO/createProject/SkyTec" method="post" id="createProjectForm">
+        <div class="row m-2 border border-2 p-2">
+          <label for="" class="position-absolute bg-white w-auto" style="top: -10px;">Project Info</label>
+          <div class="col m-2">
+            <div class="row fs-6">
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="JOB_ID">JOB ID</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="JOB_ID" id="JOB_ID" value="" placeholder="Enter the JOB ID" pattern="[A-Za-z0-9]+"
+                title="Alpha Numeric Only" required>
+              <input type="hidden" name="Customer" id="Customer" value="SkyTec" readonly>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="SOW">SOW</label>
+              <select class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                name="SOW" id="SOW" required>
+                <option selected value="">Select SOW</option>
+                <%  SOW.forEach(sow=>{ %>
+                  <option value="<%- sow %>"><%- sow %></option>
+                  <% }) %>
+              </select>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="Worktype">Work Type</label>
+                <select class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                name="Worktype" id="Worktype" required>
+                <option selected value="">Select Work Type</option>
+                <%  WT.forEach(wt=>{ %>
+                  <option value="<%- wt %>"><%- wt %></option>
+                  <% }) %>
+              </select>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Footage">Total Footage</label>
+              <div class="col-sm-8  mb-1 p-0 ">
+                <div class="input-group flex-nowrap">
+                  <input type="text" class="border-start  border-light bg-body-secondary border-start border-light"
+                    name="Total_Footage" id="Total_Footage" placeholder="Enter the Total Footage" minlength="8"
+                    value="0" title="Positive Integers Only..." pattern="[0-9]+">
+                  <span class="input-group-text bg-body-secondary border-0 rounded-0" id="basic-addon2">ft</span>
+                </div>
+              </div>
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Actives">Total No of
+                Actives</label>
+
+              <input class="col-sm-8  mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Total_Actives" id="Total_Actives" minlength="3" value="0"
+                placeholder="Enter the Total No of Actives" title="Positive Integers Only..." pattern="[0-9]+" required>
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Home_Passing">Total Home
+                Passing</label>
+
+              <input class=" col-sm-8  mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Total_Home_Passing" id="Total_Home_Passing" minlength="3" value="0"
+                placeholder="Enter the Total Home Passing" title="Positive Integers Only..." pattern="[0-9]+" required>
+            </div>
+          </div>
+          <div class="m-2 col">
+            <div class="row">
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="Region">Region</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Region" id="Region" value="" placeholder="Enter the Region" pattern="[A-Za-z0-9]+"
+                title="Alpha Numeric Only" required>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Division">Division</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Division" id="Division" value="" placeholder="Enter the Division"
+                pattern="[A-Za-z0-9\s]+" title="Alpha Numeric Only">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="No_Nodes">No of
+                Nodes</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="number" name="No_Nodes" id="No_Nodes" placeholder="Enter the No of Nodes" minlength="3" value="0"
+                title="Positive Integers Only..." pattern="[0-9]+" required>
+
+              <label class="col-sm-4 mb-1 col-form-label  bg-body-secondary required" for="ReceivedDate">Received
+                Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary" type="date" name="ReceivedDate"
+                id="ReceivedDate" value="" required>
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="DueDate">Due Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="date" name="DueDate" id="DueDate" value="" required>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="ApprovedDate">Approved Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="date" name="ApprovedDate" id="ApprovedDate" value="">
+
+            </div>
+          </div>
+        </div>
+        </div>
+        <div id="" class=" m-2">
+          <div class="bg-cyan fg-white p-2">Comments <i class="bi bi-chat-quote"></i></div>
+          <div class="border border-2 p-2 ">
+            <div id="NoteArea">
+            </div>
+            <button class="button primary outline rounded shadowed" type="button"
+              onclick="Metro.dialog.open('#AddNoteDialog')" id="AddNoteBtn"><i class="bi bi-plus-circle"></i></button>
+          </div>
+
+          <!-- <button class="button primary" type="button" onclick="Metro.dialog.open('#AddNoteDialog')">Add Note</button> -->
+        </div>
+
+        <div class="text-center m-2">
+          <button type="submit" class="button primary shadowed rounded-pill">Submit <i
+              class="bi bi-arrow-right fs-6 ms-2 p-0"></i></button>
+          <span class="text-secondary m-2">Or</span>
+          <button type="button" class="button info shadowed rounded-pill"
+            onclick="Metro.dialog.open('#BulkUploadDialog')">Upload <i
+              class="bi bi-cloud-plus fs-6 p-0 ms-2"></i></button>
+        </div>
+      </form>
+    </main>
+  </body>
+  <div class="dialog" data-role="dialog" data-close-button="true" data-overlay-click-close="true" id="AddNoteDialog">
+    <div class="dialog-title">Add Comment</div>
+    <div class="dialog-content">
+      <textarea name="CommentInput" id="CommentInput" rows="1" cols="30" placeholder="Enter your Comment..!"
+        data-role="textarea" data-auto-size="true" data-max-height="200" autocapitalize="on"
+        spellcheck="true"></textarea>
+      <form action="" id="dialog-form">
+        <input class="my-2" type="file" dir="rtl" data-role="file" accept=".pdf, .xls, .xlsx,.docx" name="attachment"
+          id="attachment" placeholder="Select the Attachment" onchange='getExtension(this)'>
+        <input type="hidden" name="attachmentType" id="attachmentType">
+        <input type="hidden" name="attachmentLocation" id="attachmentLocation">
+      </form>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="button secondary rounded js-dialog-close" id="uploadCommentBtn">Upload</button>
+    </div>
+  </div>
+
+
+  <div class="dialog" data-role="dialog" data-close-button="true" data-overlay-click-close="true" id="BulkUploadDialog">
+    <div class="dialog-title">Upload Projects</div>
+    <div class="dialog-content">
+      <div class="d-flex align-items-center">
+        <a href="/api/downloadProjectTemplate/SkyTec" class="mx-auto mb-2"><button type="button"
+            class="btn btn-sm btn-outline-secondary rounded-pill">Template <i
+              class="bi bi-cloud-download"></i></button></a>
+      </div>
+      <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+      <form class="form-container" enctype='multipart/form-data'>
+        <div class="upload-files-container">
+          <div class="drag-file-area">
+            <span class="material-icons-outlined upload-icon"> file_upload </span>
+            <h3 class="dynamic-message"> Drag & drop any file here </h3>
+            <label class="label"> or <span class="browse-files"> <input type="file" class="default-file-input" /><span
+                  class="browse-files-text">browse file</span> <span>from device</span> </span> </label>
+          </div>
+        </div>
+      </form>
+      <span class="cannot-upload-message mx-auto"> <span class="material-icons-outlined">error</span> Please select a
+        file
+        first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
+
+      <div class="file-block">
+        <div class="file-info"> <span class="material-icons-outlined file-icon">description</span> <span
+            class="file-name"> </span> | <span class="file-size"> </span> </div>
+        <span class="material-icons remove-file-icon">delete</span>
+      </div>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="upload-button mx-auto btn-sm"> Upload <i class="bi bi-cloud-upload"></i></button>
+    </div>
+  </div>
+  <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+    <script>
+      var isAdvancedUpload = (function () {
+        var div = document.createElement("div");
+        return (
+          ("draggable" in div || ("ondragstart" in div && "ondrop" in div)) &&
+          "FormData" in window &&
+          "FileReader" in window
+        );
+      })();
+
+      let draggableFileArea = document.querySelector(".drag-file-area");
+      let browseFileText = document.querySelector(".browse-files");
+      let uploadIcon = document.querySelector(".upload-icon");
+      let dragDropText = document.querySelector(".dynamic-message");
+      let fileInput = document.querySelector(".default-file-input");
+      let cannotUploadMessage = document.querySelector(".cannot-upload-message");
+      let cancelAlertButton = document.querySelector(".cancel-alert-button");
+      let uploadedFile = document.querySelector(".file-block");
+      let fileName = document.querySelector(".file-name");
+      let fileSize = document.querySelector(".file-size");
+      let removeFileButton = document.querySelector(".remove-file-icon");
+      let uploadButton = document.querySelector(".upload-button");
+      let fileFlag = 0;
+
+      fileInput.addEventListener("click", () => {
+        fileInput.value = null;
+        // console.log(fileInput.value);
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        console.log(" > " + fileInput.value);
+        uploadIcon.innerHTML = "check_circle";
+        dragDropText.innerHTML = "File Dropped Successfully!";
+        // document.querySelector(
+        //   ".label"
+        // ).innerHTML = `or <span class="browse-files"> <input type="file" class="default-file-input" /><span
+        //             class="browse-files-text">browse file</span> <span>from device</span> </span>`;
+        uploadButton.innerHTML = `Upload`;
+        fileName.innerHTML = fileInput.files[0].name;
+        fileSize.innerHTML = (fileInput.files[0].size / 1024).toFixed(1) + " KB";
+        uploadedFile.style.cssText = "display: flex;";
+        fileFlag = 0;
+      });
+
+      uploadButton.addEventListener("click", async () => {
+        let isFileUploaded = fileInput.value;
+        const Customer = document.getElementById('Customer').value;
+        if (isFileUploaded != "" || fileInput.value == null) {
+          uploadButton.innerHTML = `<span class="material-symbols-outlined"></span> Uploading`;
+          const file = fileInput.files[0];
+          let fromData = new FormData();
+          fromData.append("Project", file)
+
+          await axios.post(`/api/uploadProject/${Customer}`, fromData).then(res => {
+            if (res.status == 200) {
+              uploadButton.innerHTML = `<span class="material-icons-outlined upload-button-icon"> check_circle </span> Uploaded`;
+              const Responses = res.data;
+              console.log(Responses)
+              Responses.forEach(response => {
+                toasts.push(response);
+              })
+              Metro.dialog.close('#BulkUploadDialog')
+            }
+          }).catch(e => {
+            console.log(e)
+            alert("Unable to Inport all the Data");
+            window.location.reload();
+          })
+        } else {
+          cannotUploadMessage.style.cssText =
+            "display: flex; animation: fadeIn linear 1.5s;";
+        }
+      });
+
+      cancelAlertButton.addEventListener("click", () => {
+        cannotUploadMessage.style.cssText = "display: none;";
+      });
+
+      if (isAdvancedUpload) {
+        [
+          "drag",
+          "dragstart",
+          "dragend",
+          "dragover",
+          "dragenter",
+          "dragleave",
+          "drop"
+        ].forEach((evt) =>
+          draggableFileArea.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          })
+        );
+
+        ["dragover", "dragenter"].forEach((evt) => {
+          draggableFileArea.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadIcon.innerHTML = "file_download";
+            dragDropText.innerHTML = "Drop your file here!";
+          });
+        });
+
+        draggableFileArea.addEventListener("drop", (e) => {
+          uploadIcon.innerHTML = "check_circle";
+          dragDropText.innerHTML = "File Dropped Successfully!";
+          // document.querySelector(
+          //   ".label"
+          // ).innerHTML = `drag & drop or <span class="browse-files"> <input type="file" class="default-file-input" style=""/> <span class="browse-files-text" style="top: -23px; left: -20px;"> browse file</span> <span>from device</span></span>`;
+          uploadButton.innerHTML = `Upload`;
+
+          let files = e.dataTransfer.files;
+          fileInput.files = files;
+          console.log(files[0].name + " " + files[0].size);
+          console.log(document.querySelector(".default-file-input").value);
+          fileName.innerHTML = files[0].name;
+          fileSize.innerHTML = (files[0].size / 1024).toFixed(1) + " KB";
+          uploadedFile.style.cssText = "display: flex;";
+          progressBar.style.width = 0;
+          fileFlag = 0;
+        });
+      }
+
+      removeFileButton.addEventListener("click", () => {
+        uploadedFile.style.cssText = "display: none;";
+        fileInput.value = null;
+        uploadIcon.innerHTML = "file_upload";
+        dragDropText.innerHTML = "Drag & drop any file here";
+        // document.querySelector(
+        //   ".label"
+        // ).innerHTML = `or <span class="browse-files"> <input type="file" class="default-file-input"/> <span class="browse-files-text">browse file</span> <span>from device</span> </span>`;
+        uploadButton.innerHTML = `Upload`;
+      });
+
+      function calculateCableLength() {
+        var arial1, arial2, arial3, arial4, ug1, ug2, ug3, ug4;
+        arial1 = parseInt(document.getElementById("Air_Coax_Est").value);
+        arial2 = parseInt(document.getElementById("Air_Coax_Act").value);
+        arial3 = parseInt(document.getElementById("Air_Fib_Est").value);
+        arial4 = parseInt(document.getElementById("Air_Fib_Act").value);
+        ug1 = parseInt(document.getElementById("UG_Coax_Est").value);
+        ug2 = parseInt(document.getElementById("UG_Coax_Act").value);
+        ug3 = parseInt(document.getElementById("UG_Fib_Est").value);
+        ug4 = parseInt(document.getElementById("UG_Fib_Act").value);
+        document.getElementById("Total_Coax_Act").value = arial2 + ug2;
+        document.getElementById("Total_Coax_Est").value = arial1 + ug1;
+        document.getElementById("Total_Fib_Act").value = arial4 + ug4;
+        document.getElementById("Total_Fib_Est").value = arial3 + ug3;
+        document.getElementById("Total_Est").value = arial1 + arial3 + ug1 + ug3;
+        document.getElementById("Total_Act").value = arial2 + arial4 + ug2 + ug4;
+      }
+      function getExtension(e) {
+        const fileInput = document.getElementById(e.id);
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('NoteRefDoc', file);
+        axios.post('/api/uploadNoteRefDoc', formData)
+          .then(response => {
+            document.getElementById(`attachmentLocation`).value = response.data;
+            document.getElementById(`attachmentType`).value = e.files[0].name.split('.').pop();
+          })
+          .catch(error => {
+            console.error(error);
+            alert(error.response.data)
+
+          })
+
+      }
+      document.getElementById("uploadCommentBtn").addEventListener('click', (e) => {
+        let Comment = document.getElementById("CommentInput").value;
+        const attachmentName = document.getElementById('attachmentLocation').value;
+        const type = document.getElementById('attachmentType').value;
+
+        if (Comment.length > 2) {
+          var area = document.getElementById('NoteArea');
+          area.innerHTML += `
+          <div class="row border border-1">
+                <div class="col-sm-1 align-self-center text-center">
+                  <p>1<p>
+                  <input type="hidden" name="location" id="location" value="${attachmentName}">
+                </div>
+                <div class="col-sm-10">
+                  <p>${Comment.replace(/\r?\n/g, '<br/>')}</p>
+                 <input type='hidden' class='border-0 ' value='${Comment.replace(/\r?\n/g, '<br/>')}' readonly>
+                </div>
+                  ${(attachmentName !== null && attachmentName != undefined && attachmentName != "") ? `
+                  <div class="col-sm-1 align-self-center text-start">
+                  <a href="./public/uploads/ReferenceDoc/${attachmentName}" class="text-decoration-none btn btn-outline-secondary border-0"><span id="type" class="text-uppercase">${type}
+                    </span><i class="bi bi-download"></i></a>
+                </div>`: ``}
+                <div class="col-sm-1 position-absolute end-0">
+                  <button type="button" id="ProfileCardCloseBtn"
+                    class="btn-close position-absolute top-0 end-0 m-1 border-0 rounded-circle btn-sm" onclick=removeNote(this)></button>
+                </div>
+              </div>`
+          document.getElementById("CommentInput").value = '';
+          document.getElementById("dialog-form").reset();
+          updateSLNo();
+
+        } else {
+          document.getElementById("dialog-form").reset();
+        }
+      })
+
+      function removeNote(e) {
+        const container = document.getElementById('NoteArea');
+        const inputs = container.querySelectorAll('div .row');
+        e.closest('div .row').remove()
+        updateSLNo();
+      }
+      function updateSLNo() {
+        const container = document.getElementById('NoteArea');
+        const rows = container.querySelectorAll("div .row");
+        rows.forEach((row, index) => {
+          let cells = row.querySelectorAll('div')
+          cells[0].getElementsByTagName('p')[0].innerText = index + 1;
+          cells[0].getElementsByTagName('input')[0].id = `attachment${index + 1}Location`;
+          cells[0].getElementsByTagName('input')[0].name = `attachment${index + 1}Location`;
+          cells[1].getElementsByTagName('input')[0].id = `Note${index + 1}`;
+          cells[1].getElementsByTagName('input')[0].name = `Note${index + 1}`;
+        });
+      }
+
+      //To Set the data Range as Current Date
+      
+      // $(function () {
+      //   $('[type="date"]').prop('min', function () {
+      //     return new Date().toJSON().split('T')[0];
+      //   });
+      // });
+
+      var receivedDate = document.getElementById('ReceivedDate');
+      var dueDate = document.getElementById('DueDate');
+      var approveDate = document.getElementById('ApprovedDate');
+      receivedDate.addEventListener('change', () => {
+        validateDate(new Date(receivedDate.value), new Date(dueDate.value),new Date(approveDate.value));
+      });
+      dueDate.addEventListener('change', () => {
+        validateDate(new Date(receivedDate.value), new Date(dueDate.value),new Date(approveDate.value));
+      });
+      approveDate.addEventListener('change', () => {
+        validateDate(new Date(receivedDate.value), new Date(dueDate.value),new Date(approveDate.value));
+      });
+      function validateDate(rDate, dDate,aDate) {
+        if (rDate && dDate) {
+          if (dDate < rDate) {
+            dueDate.value = "";
+            receivedDate.value = "";
+            toasts.push({
+              title: "Error",
+              content: "Due date should be greater than Received date",
+              style: "error",
+              dismissAfter: '10s',
+
+            });
+          }
+        }
+        if (aDate < rDate) {
+            approveDate.value = "";
+            receivedDate.value = "";
+            toasts.push({
+              title: "Error",
+              content: "Approved date should be greater than received date.",
+              style: "error",
+              dismissAfter: '10s',
+
+            });
+          }
+      }
+    </script>
+
+</html>

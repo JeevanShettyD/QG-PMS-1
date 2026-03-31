@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PMO Home</title>
+  <%- include('../partials/dependencies') %>
+  <style>
+    /* ══════════════════════════════════════
+       DESIGN SYSTEM — matches PMO-header
+    ══════════════════════════════════════ */
+    :root {
+      --navy-900: #0f1e36;
+      --navy-800: #152844;
+      --navy-700: #1b3258;
+      --navy-600: #1e3a5f;
+      --blue-500: #2d7dd2;
+      --blue-400: #4a96e8;
+      --accent-cyan: #00c6ff;
+      --page-bg:  #f0f4fa;
+      --card-bg:  #ffffff;
+      --border:   #e2e8f4;
+      --text:     #1e2d45;
+      --muted:    #7a8aaa;
+      --radius:   12px;
+      --shadow:   0 2px 10px rgba(15,30,80,0.07), 0 6px 22px rgba(15,30,80,0.06);
+      --tr:       all 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+    html, body { background: var(--page-bg); font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); }
+    main { min-height: calc(100vh - 52px); padding: 14px 20px 40px; background: var(--page-bg); }
+
+    /* ── Page title ── */
+    .dash-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      margin-bottom: 12px;
+    }
+    .dash-title i { color: var(--blue-500); font-size: 16px; }
+
+    /* ══════════════════════════════════════
+       MAIN CONTROL TABS — same as Milestone
+    ══════════════════════════════════════ */
+    .pmo-tabs-wrap {
+      display: flex; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .pmo-tabs {
+      display: inline-flex; align-items: center;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 4px; gap: 3px;
+      box-shadow: var(--shadow);
+    }
+    .pmo-tab {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 20px; border-radius: 9px;
+      font-size: 12.5px; font-weight: 600; cursor: pointer;
+      border: none; background: transparent; color: var(--muted);
+      transition: var(--tr); white-space: nowrap;
+    }
+    .pmo-tab i { font-size: 13px; }
+    .pmo-tab:hover { background: #eef5ff; color: var(--blue-500); }
+    .pmo-tab.active {
+      background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(45,125,210,0.3);
+    }
+    .pmo-tab .tab-count {
+      background: rgba(255,255,255,0.22); border-radius: 20px;
+      padding: 1px 8px; font-size: 10px; font-weight: 700;
+    }
+    .pmo-tab:not(.active) .tab-count {
+      background: rgba(45,125,210,0.1); color: var(--blue-500);
+    }
+
+    /* ══════════════════════════════════════
+       SECTION BAR
+    ══════════════════════════════════════ */
+    .section-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 16px; margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(15,30,80,0.05);
+    }
+    .sec-left { display: flex; align-items: center; gap: 9px; }
+    .sec-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: rgba(45,125,210,0.1);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sec-icon i { font-size: 15px; color: var(--blue-500); }
+    .sec-title { font-size: 13px; font-weight: 700; color: var(--text); }
+
+    /* View toggle (List/Grid) */
+    .view-toggle {
+      display: flex; gap: 3px; background: var(--page-bg);
+      border: 1px solid var(--border); border-radius: 9px; padding: 3px;
+    }
+    .view-toggle button {
+      border: none; border-radius: 7px;
+      padding: 5px 10px; font-size: 13px; color: var(--muted);
+      background: transparent; transition: var(--tr); line-height: 1; cursor: pointer;
+    }
+    .view-toggle button:hover { color: var(--blue-500); }
+    .view-toggle button.active {
+      background: var(--blue-500); color: #fff;
+      box-shadow: 0 2px 8px rgba(45,125,210,0.25);
+    }
+
+    /* ══════════════════════════════════════
+       ENHANCED TABLE — same as Milestone
+    ══════════════════════════════════════ */
+    .pmo-table-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(15,30,80,0.06), 0 6px 20px rgba(15,30,80,0.07);
+      overflow: hidden;
+    }
+    .pmo-table-scroll { overflow-x: auto; }
+    .pmo-table-scroll::-webkit-scrollbar { height: 5px; }
+    .pmo-table-scroll::-webkit-scrollbar-track { background: #f0f4fc; }
+    .pmo-table-scroll::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+    .pmo-table-scroll::-webkit-scrollbar-thumb:hover { background: var(--blue-500); }
+
+    .pmo-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 12.5px; table-layout: auto;
+      margin: 0;
+    }
+    /* Thead */
+    .pmo-table thead tr th {
+      background: linear-gradient(135deg, #1a3060, #1e3a5f);
+      color: rgba(255,255,255,0.88);
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 10px 14px; white-space: nowrap;
+      border-bottom: 2px solid rgba(45,125,210,0.35);
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .pmo-table thead tr th:last-child { border-right: none; }
+    /* Tbody */
+    .pmo-table tbody tr {
+      border-bottom: 1px solid #edf1fa;
+      transition: background 0.12s, box-shadow 0.12s;
+    }
+    .pmo-table tbody tr:nth-child(even) { background: #fafcff; }
+    .pmo-table tbody tr:hover {
+      background: #f0f6ff !important;
+      box-shadow: inset 3px 0 0 var(--blue-500);
+    }
+    .pmo-table tbody tr:last-child { border-bottom: none; }
+    .pmo-table tbody td {
+      padding: 9px 14px; color: var(--text);
+      vertical-align: middle;
+      border-right: 1px solid #f0f4fc;
+    }
+    .pmo-table tbody td:last-child { border-right: none; }
+    .pmo-table a { color: var(--blue-500); text-decoration: none; font-weight: 600; }
+    .pmo-table a:hover { text-decoration: underline; }
+
+    /* ── Delivery status badges ── */
+    .ds-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 10.5px; font-weight: 700; white-space: nowrap;
+    }
+    .ds-badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor; display: block; flex-shrink: 0;
+    }
+    .ds-on-time    { background: #e8faf2; color: #0d9f6a; }
+    .ds-approach   { background: #fff8e6; color: #c07a00; }
+    .ds-today      { background: #eef4ff; color: #2d6ec0; }
+    .ds-delayed    { background: #fff0f2; color: #c02038; }
+    .ds-escalation { background: #fff0f2; color: #c02038; }
+    .ds-default    { background: #f4f4f8; color: var(--muted); }
+
+    /* ── Status badge ── */
+    .st-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 10.5px; font-weight: 600;
+    }
+    .st-wip       { background: #eef4ff; color: #2d6ec0; }
+    .st-completed { background: #e8faf2; color: #0d9f6a; }
+    .st-pending   { background: #fff8e6; color: #c07a00; }
+    .st-default   { background: #f4f4f8; color: var(--muted); }
+
+    /* ══════════════════════════════════════
+       EMPTY STATE
+    ══════════════════════════════════════ */
+    .empty-state {
+      text-align: center; padding: 44px 20px;
+    }
+    .empty-state .empty-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(45,125,210,0.09), rgba(45,125,210,0.04));
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px; font-size: 20px; color: rgba(45,125,210,0.35);
+    }
+    .empty-state p { font-size: 13px; color: var(--muted); font-weight: 500; margin: 0; }
+
+    /* ══════════════════════════════════════
+       GRID / WEEK CARDS
+    ══════════════════════════════════════ */
+    .grid-wrap { display: flex; flex-wrap: wrap; gap: 12px; }
+    .week-card {
+      flex: 0 0 calc(50% - 6px);
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s, transform 0.2s;
+      animation: fadeUp 0.3s ease both;
+    }
+    .week-card:hover { box-shadow: 0 6px 22px rgba(45,125,210,0.12); transform: translateY(-2px); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    .week-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px; font-size: 12px; font-weight: 700;
+      border-bottom: 1px solid var(--border);
+    }
+    .week-card-header .left { display: flex; align-items: center; gap: 7px; }
+    .week-card-header.danger { background: rgba(192,32,56,0.05); color: #c02038; }
+    .week-card-header.primary { background: rgba(45,125,210,0.05); color: var(--blue-500); }
+    .wk-count {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+    }
+    .week-card-header.danger .wk-count { background: rgba(192,32,56,0.1); color: #c02038; }
+    .week-card-header.primary .wk-count { background: rgba(45,125,210,0.1); color: var(--blue-500); }
+
+    .week-card-cols {
+      display: flex; padding: 5px 14px;
+      background: rgba(45,125,210,0.04); border-bottom: 1px solid var(--border);
+      font-size: 9.5px; font-weight: 800; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .week-card-cols span { flex: 1; }
+
+    .week-card-body { max-height: 140px; overflow-y: auto; }
+    .week-card-body::-webkit-scrollbar { width: 4px; }
+    .week-card-body::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 2px; }
+
+    .week-card-row {
+      display: flex; align-items: center;
+      padding: 7px 14px; border-bottom: 1px solid #f0f4fc;
+      font-size: 12px; transition: background 0.12s;
+    }
+    .week-card-row:last-child { border-bottom: none; }
+    .week-card-row:hover { background: #f4f8ff; }
+    .week-card-row span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .week-card-row a { color: var(--blue-500); font-weight: 600; text-decoration: none; font-size: 12px; }
+    .week-card-row a:hover { text-decoration: underline; }
+    .week-card-empty {
+      padding: 20px; text-align: center;
+      font-size: 12px; color: var(--muted);
+    }
+
+    /* Tab panes */
+    .pmo-tab-pane { display: none; }
+    .pmo-tab-pane.active { display: block; }
+
+    /* Sub-view panes (list/grid) */
+    .view-pane { display: none; }
+    .view-pane.active { display: block; }
+  </style>
+</head>
+
+<%- include('../partials/PMO-header', {userData: userData}) %>
+
+<body>
+<%
+  /* ── Delivery badge helper ── */
+  const dsMap = {
+    "On Time":              "on-time",
+    "Approaching Due Date": "approach",
+    "Due Today":            "today",
+    "Delayed":              "delayed",
+    "Escalation":           "escalation"
+  };
+  function badge(status) {
+    if (!status) return '<span class="ds-badge ds-default">—</span>';
+    const cls = dsMap[status] || 'default';
+    return '<span class="ds-badge ds-' + cls + '">' + status + '</span>';
+  }
+  function stBadge(status) {
+    if (!status) return '<span class="st-badge st-default">—</span>';
+    const s = status.toLowerCase();
+    const cls = s.includes('wip') ? 'st-wip' : s.includes('complet') ? 'st-completed' : s.includes('pend') ? 'st-pending' : 'st-default';
+    return '<span class="st-badge ' + cls + '">' + status + '</span>';
+  }
+
+  /* ── Date helpers ── */
+  function parseDueDate(d) {
+    const p = d ? d.split("/") : [];
+    if (p.length < 3) return new Date(0);
+    const yy = parseInt(p[2], 10);
+    return new Date(yy < 50 ? 2000+yy : 1900+yy, parseInt(p[0],10)-1, parseInt(p[1],10));
+  }
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  let weeks=[], week=[];
+  for (let d=1; d<=daysInMonth; d++) {
+    week.push(d);
+    if (week.length===7 || d===daysInMonth) { weeks.push(week); week=[]; }
+  }
+%>
+
+<main>
+
+  <!-- Page title -->
+  <div class="dash-title">
+    <i class="bi bi-kanban-fill"></i> PMO Dashboard
+  </div>
+
+  <!-- ══ MAIN TABS ══ -->
+  <div class="pmo-tabs-wrap">
+    <div class="pmo-tabs" id="mainTabs">
+      <button class="pmo-tab active" onclick="switchMain('milestone', this)">
+        <i class="bi bi-flag"></i> Active Milestone
+        <span class="tab-count"><%= Milestone.length %></span>
+      </button>
+      <button class="pmo-tab" onclick="switchMain('task', this)">
+        <i class="bi bi-check2-square"></i> Active Task
+        <span class="tab-count"><%= Task.length %></span>
+      </button>
+      <button class="pmo-tab" onclick="switchMain('subtask', this)">
+        <i class="bi bi-diagram-3"></i> Active Subtask
+        <span class="tab-count"><%= subtask.length %></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ MILESTONE TAB ══════════ -->
+  <div class="pmo-tab-pane active" id="pane-milestone">
+    <div class="section-bar">
+      <div class="sec-left">
+        <div class="sec-icon"><i class="bi bi-flag-fill"></i></div>
+        <span class="sec-title">Active Milestones</span>
+      </div>
+      <div class="view-toggle">
+        <button class="active" id="m-list-btn" onclick="switchView('m','list',this)"><i class="bi bi-list-ul"></i></button>
+        <button id="m-grid-btn" onclick="switchView('m','grid',this)"><i class="bi bi-grid-fill"></i></button>
+      </div>
+    </div>
+
+    <!-- List view -->
+    <div class="view-pane active" id="m-list">
+      <div class="pmo-table-card">
+        <div class="pmo-table-scroll">
+          <table class="pmo-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Milestone Name</th>
+                <th>Project</th>
+                <th>Prod TGT Start</th>
+                <th>Prod TGT End</th>
+                <th>QC TGT Start</th>
+                <th>QC TGT End</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Delivery Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (Milestone.length > 0) { %>
+                <% for (let i=0; i<Milestone.length; i++) {
+                    let m_due = Milestone[i].f_Due_Date ? Milestone[i].f_Due_Date : Milestone[i].f_QC_TGT_End_Date;
+                    let ds = compareDates(m_due, "", Milestone[i].Milestone_Status);
+                %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= i+1 %></td>
+                  <td><a href="/ViewMilestone/<%= Milestone[i].Customer %>/<%= Milestone[i].idProjects %>/<%= Milestone[i].Milestone_Name %>"><%= Milestone[i].Milestone_Name %></a></td>
+                  <td><a href="/Project/<%= Milestone[i].Customer %>/<%= Milestone[i].Project_ID %>/<%= Milestone[i].idProjects %>"><%= Milestone[i].Project_ID %></a></td>
+                  <td><%= Milestone[i].Prod_TGT_Start_Date %></td>
+                  <td><%= Milestone[i].Prod_TGT_End_Date %></td>
+                  <td><%= Milestone[i].QC_TGT_Start_Date %></td>
+                  <td><%= Milestone[i].QC_TGT_End_Date %></td>
+                  <td><%- stBadge(Milestone[i].Milestone_Status) %></td>
+                  <td><%= Milestone[i].Due_Date || "—" %></td>
+                  <td><%- badge(ds) %></td>
+                </tr>
+                <% } %>
+              <% } else { %>
+                <tr><td colspan="10">
+                  <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-flag"></i></div>
+                    <p>No active milestones</p>
+                  </div>
+                </td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid view -->
+    <div class="view-pane" id="m-grid">
+      <% const overdueMilestone = Milestone.filter(t => parseDueDate(t.Due_Date) < today); %>
+      <div class="grid-wrap">
+        <!-- Overdue card -->
+        <div class="week-card">
+          <div class="week-card-header danger">
+            <div class="left"><i class="bi bi-exclamation-triangle-fill"></i> Overdue Milestones</div>
+            <span class="wk-count"><%= overdueMilestone.length %></span>
+          </div>
+          <% if (overdueMilestone.length > 0) { %>
+            <div class="week-card-cols"><span>Project</span><span>Milestone</span><span>Due Date</span><span>Status</span></div>
+            <div class="week-card-body">
+              <% overdueMilestone.forEach(t => { %>
+              <div class="week-card-row">
+                <span><%= t.Project_ID %></span>
+                <span><a href="/ViewMilestone/<%= t.Customer %>/<%= t.idProjects %>/<%= t.Milestone_Name %>"><%= t.Milestone_Name %></a></span>
+                <span><%= t.Due_Date %></span>
+                <span><%= t.Milestone_Status %></span>
+              </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="week-card-empty"><i class="bi bi-check-circle text-success me-1"></i> No overdue milestones</div>
+          <% } %>
+        </div>
+        <!-- Week cards -->
+        <% weeks.forEach((wd, i) => {
+            const wt = Milestone.filter(t => { const d=parseDueDate(t.Due_Date); return d.getMonth()===month && d.getFullYear()===year && wd.includes(d.getDate()) && d>=today; });
+        %>
+        <div class="week-card" style="animation-delay:<%= i*0.04 %>s">
+          <div class="week-card-header primary">
+            <div class="left"><i class="bi bi-calendar-week"></i> Week <%= i+1 %> <span style="font-weight:400;font-size:10.5px;margin-left:4px;">(<%= wd[0] %>–<%= wd[wd.length-1] %>)</span></div>
+            <span class="wk-count"><%= wt.length %></span>
+          </div>
+          <% if (wt.length > 0) { %>
+            <div class="week-card-cols"><span>Project</span><span>Milestone</span><span>Due Date</span><span>Status</span></div>
+            <div class="week-card-body">
+              <% wt.forEach(t => { %>
+              <div class="week-card-row">
+                <span><%= t.Project_ID %></span>
+                <span><a href="/ViewMilestone/<%= t.Customer %>/<%= t.idProjects %>/<%= t.Milestone_Name %>"><%= t.Milestone_Name %></a></span>
+                <span><%= t.Due_Date %></span>
+                <span><%= t.Milestone_Status %></span>
+              </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="week-card-empty">No milestones this week</div>
+          <% } %>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TASK TAB ══════════ -->
+  <div class="pmo-tab-pane" id="pane-task">
+    <div class="section-bar">
+      <div class="sec-left">
+        <div class="sec-icon"><i class="bi bi-check2-square"></i></div>
+        <span class="sec-title">Active Tasks</span>
+      </div>
+      <div class="view-toggle">
+        <button class="active" id="t-list-btn" onclick="switchView('t','list',this)"><i class="bi bi-list-ul"></i></button>
+        <button id="t-grid-btn" onclick="switchView('t','grid',this)"><i class="bi bi-grid-fill"></i></button>
+      </div>
+    </div>
+
+    <!-- List view -->
+    <div class="view-pane active" id="t-list">
+      <div class="pmo-table-card">
+        <div class="pmo-table-scroll">
+          <table class="pmo-table">
+            <thead>
+              <tr>
+                <th>S.No</th><th>Task ID</th><th>Task Name</th>
+                <th>Milestone</th><th>Due Date</th><th>Status</th><th>Delivery Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (Task.length > 0) { %>
+                <% for (let i=0; i<Task.length; i++) {
+                    let e_date = Task[i].f_EndDate ? Task[i].f_EndDate : "";
+                    let ds = compareDates(Task[i].f_DueDate, e_date, Task[i].Status);
+                %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= i+1 %></td>
+                  <td><a href="/ViewTask/<%= Task[i].Customer %>/<%= Task[i].Milestone_Name %>/<%= Task[i].TaskName %>"><%= Task[i].TaskName %></a></td>
+                  <td><%= Task[i].TaskLabel || "—" %></td>
+                  <td><a href="/ViewMilestone/<%= Task[i].Customer %>/<%= Task[i].idProjects %>/<%= Task[i].Milestone_Name %>"><%= Task[i].Milestone_Name %></a></td>
+                  <td><%= Task[i].DueDate || "—" %></td>
+                  <td><%- stBadge(Task[i].Status) %></td>
+                  <td><%- badge(ds) %></td>
+                </tr>
+                <% } %>
+              <% } else { %>
+                <tr><td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-check2-square"></i></div>
+                    <p>No active tasks</p>
+                  </div>
+                </td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid view -->
+    <div class="view-pane" id="t-grid">
+      <% const overdueTask = Task.filter(t => parseDueDate(t.DueDate) < today); %>
+      <div class="grid-wrap">
+        <div class="week-card">
+          <div class="week-card-header danger">
+            <div class="left"><i class="bi bi-exclamation-triangle-fill"></i> Overdue Tasks</div>
+            <span class="wk-count"><%= overdueTask.length %></span>
+          </div>
+          <% if (overdueTask.length > 0) { %>
+            <div class="week-card-cols"><span>Milestone</span><span>Task ID</span><span>Due Date</span><span>Status</span></div>
+            <div class="week-card-body">
+              <% overdueTask.forEach(t => { %>
+              <div class="week-card-row">
+                <span><%= t.Milestone_Name %></span>
+                <span><a href="/ViewTask/<%= t.Customer %>/<%= t.Milestone_Name %>/<%= t.TaskName %>"><%= t.TaskName %></a></span>
+                <span><%= t.DueDate %></span>
+                <span><%= t.Status %></span>
+              </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="week-card-empty"><i class="bi bi-check-circle text-success me-1"></i> No overdue tasks</div>
+          <% } %>
+        </div>
+        <% weeks.forEach((wd, i) => {
+            const wt = Task.filter(t => { const d=parseDueDate(t.DueDate); return d.getMonth()===month && d.getFullYear()===year && wd.includes(d.getDate()) && d>=today; });
+        %>
+        <div class="week-card" style="animation-delay:<%= i*0.04 %>s">
+          <div class="week-card-header primary">
+            <div class="left"><i class="bi bi-calendar-week"></i> Week <%= i+1 %> <span style="font-weight:400;font-size:10.5px;margin-left:4px;">(<%= wd[0] %>–<%= wd[wd.length-1] %>)</span></div>
+            <span class="wk-count"><%= wt.length %></span>
+          </div>
+          <% if (wt.length > 0) { %>
+            <div class="week-card-cols"><span>Milestone</span><span>Task ID</span><span>Due Date</span><span>Status</span></div>
+            <div class="week-card-body">
+              <% wt.forEach(t => { %>
+              <div class="week-card-row">
+                <span><%= t.Milestone_Name %></span>
+                <span><a href="/ViewTask/<%= t.Customer %>/<%= t.Milestone_Name %>/<%= t.TaskName %>"><%= t.TaskName %></a></span>
+                <span><%= t.DueDate %></span>
+                <span><%= t.Status %></span>
+              </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="week-card-empty">No tasks this week</div>
+          <% } %>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SUBTASK TAB ══════════ -->
+  <div class="pmo-tab-pane" id="pane-subtask">
+    <div class="section-bar">
+      <div class="sec-left">
+        <div class="sec-icon"><i class="bi bi-diagram-3-fill"></i></div>
+        <span class="sec-title">Active Subtasks</span>
+      </div>
+      <div class="view-toggle">
+        <button class="active" id="s-list-btn" onclick="switchView('s','list',this)"><i class="bi bi-list-ul"></i></button>
+        <button id="s-grid-btn" onclick="switchView('s','grid',this)"><i class="bi bi-grid-fill"></i></button>
+      </div>
+    </div>
+
+    <!-- List view -->
+    <div class="view-pane active" id="s-list">
+      <div class="pmo-table-card">
+        <div class="pmo-table-scroll">
+          <table class="pmo-table">
+            <thead>
+              <tr>
+                <th>S.No</th><th>Subtask ID</th><th>Subtask Name</th>
+                <th>Task ID</th><th>Milestone</th><th>Status</th>
+                <th>Due Date</th><th>Delivery Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (subtask.length > 0) { %>
+                <% for (let i=0; i<subtask.length; i++) {
+                    let ds = compareDates(subtask[i].f_DueDate, "", subtask[i].Status);
+                %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= i+1 %></td>
+                  <td><a href="/SubTask/<%= subtask[i].SubTaskName %>"><%= subtask[i].SubTaskName %></a></td>
+                  <td><%= subtask[i].SubTaskLabel || "—" %></td>
+                  <td><a href="/ViewTask/<%= subtask[i].Customer %>/<%= subtask[i].Milestone_Name %>/<%= subtask[i].Task_Name %>"><%= subtask[i].Task_Name %></a></td>
+                  <td><a href="/ViewMilestone/<%= subtask[i].Customer %>/<%= subtask[i].idProjects %>/<%= subtask[i].Milestone_Name %>"><%= subtask[i].Milestone_Name %></a></td>
+                  <td><%- stBadge(subtask[i].Status) %></td>
+                  <td><%= subtask[i].DueDate || "—" %></td>
+                  <td><%- badge(ds) %></td>
+                </tr>
+                <% } %>
+              <% } else { %>
+                <tr><td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-diagram-3"></i></div>
+                    <p>No active subtasks</p>
+                  </div>
+                </td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid view -->
+    <div class="view-pane" id="s-grid">
+      <% const overdueSubTask = subtask.filter(t => parseDueDate(t.DueDate) < today); %>
+      <div class="grid-wrap">
+        <div class="week-card">
+          <div class="week-card-header danger">
+            <div class="left"><i class="bi bi-exclamation-triangle-fill"></i> Overdue Subtasks</div>
+            <span class="wk-count"><%= overdueSubTask.length %></span>
+          </div>
+          <% if (overdueSubTask.length > 0) { %>
+            <div class="week-card-cols"><span>Task ID</span><span>Subtask ID</span><span>Due Date</span><span>Status</span></div>
+            <div class="week-card-body">
+              <% overdueSubTask.forEach(t => { %>
+              <div class="week-card-row">
+                <span><a href="/ViewTask/<%= t.Customer %>/<%= t.Milestone_Name %>/<%= t.Task_Name %>"><%= t.Task_Name %></a></span>
+                <span><a href="/SubTask/<%= t.SubTaskName %>"><%= t.SubTaskName %></a></span>
+                <span><%= t.DueDate %></span>
+                <span><%= t.Status %></span>
+              </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="week-card-empty"><i class="bi bi-check-circle text-success me-1"></i> No overdue subtasks</div>
+          <% } %>
+        </div>
+        <% weeks.forEach((wd, i) => {
+            const wt = subtask.filter(t => { const d=parseDueDate(t.DueDate); return d.getMonth()===month && d.getFullYear()===year && wd.includes(d.getDate()) && d>=today; });
+        %>
+        <div class="week-card" style="animation-delay:<%= i*0.04 %>s">
+          <div class="week-card-header primary">
+            <div class="left"><i class="bi bi-calendar-week"></i> Week <%= i+1 %> <span style="font-weight:400;font-size:10.5px;margin-left:4px;">(<%= wd[0] %>–<%= wd[wd.length-1] %>)</span></div>
+            <span class="wk-count"><%= wt.length %></span>
+          </div>
+          <% if (wt.length > 0) { %>
+            <div class="week-card-cols"><span>Task ID</span><span>Subtask ID</span><span>Due Date</span><span>Status</span></div>
+            <div class="week-card-body">
+              <% wt.forEach(t => { %>
+              <div class="week-card-row">
+                <span><a href="/ViewTask/<%= t.Customer %>/<%= t.Milestone_Name %>/<%= t.Task_Name %>"><%= t.Task_Name %></a></span>
+                <span><a href="/SubTask/<%= t.SubTaskName %>"><%= t.SubTaskName %></a></span>
+                <span><%= t.DueDate %></span>
+                <span><%= t.Status %></span>
+              </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="week-card-empty">No subtasks this week</div>
+          <% } %>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+</main>
+</body>
+
+<%- include('../partials/dependencies-js', {Notifications: Notifications}) %>
+<script>
+/* ── Tab switching ── */
+function switchMain(name, btn) {
+  document.querySelectorAll('.pmo-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.pmo-tab-pane').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('pane-' + name).classList.add('active');
+}
+
+/* ── List / Grid view toggle ── */
+function switchView(prefix, view, btn) {
+  /* toggle buttons */
+  document.getElementById(prefix + '-list-btn').classList.toggle('active', view === 'list');
+  document.getElementById(prefix + '-grid-btn').classList.toggle('active', view === 'grid');
+  /* toggle panes */
+  document.getElementById(prefix + '-list').classList.toggle('active', view === 'list');
+  document.getElementById(prefix + '-grid').classList.toggle('active', view === 'grid');
+}
+
+const temp = JSON.parse('<%-JSON.stringify(ActiveCustomer) %>');
+const fetchData = async (Customer) => {
+  const response = await fetch('/api/getProjectReport/' + Customer);
+  const data = await response.json();
+  return data.data;
+};
+</script>
+</html>

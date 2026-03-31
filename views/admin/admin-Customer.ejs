@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers</title>
+    <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/Admin-header',{userData:userData}) %>
+    <style>
+        button.accordion {
+            background-color: inherit;
+            margin-top: 5px;
+            width: 100%;
+            border: none;
+            outline: none;
+            text-align: left;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s linear;
+        }
+
+        /* button.accordion:after {
+            color: #4f8af8;
+            font-family: FontAwesome;
+            content: "\f150";
+            font-family: "fontawesome";
+            font-size: 18px;
+            position: absolute;
+            right: 10px;
+        }
+
+        button.accordion.is-open:after {
+            content: "\f151";
+        } */
+
+        button.accordion:hover,
+        button.accordion.is-open {
+            background-color: #ddd;
+        }
+
+        .accordion-content {
+            margin: 5px;
+            background-color: white;
+            border-left: 1px solid whitesmoke;
+            border-right: 1px solid whitesmoke;
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-in-out;
+        }
+
+        .sow::before {
+            content: '->';
+        }
+    </style>
+
+    <body>
+        <section class="d-flex">
+            <main class="flex-grow-1 border scrollbar-style-3 rounded-3"
+                style="height: calc(100vh - 46px); overflow: scroll; z-index: 1;">
+                <table class="table table-sm table-hover rounded-top" style="font-size: 14px;">
+                    <thead class="bg-primary bg-gradient text-light border-0  bg-opacity-50 sticky-top">
+                        <tr class="text-center rounded-top">
+                            <th class="text-light text-nowrap" scope="col">Sl.No</th>
+                            <th class="text-light text-nowrap" scope="col">Customer Name</th>
+                            <th class="text-light text-nowrap" scope="col">Email</th>
+                            <th class="text-light text-nowrap" scope="col">Contact</th>
+                            <!-- <th class="text-light text-nowrap" scope="col">Address</th>
+                             <th class="text-light text-nowrap" scope="col">Billing Address</th>
+                            <th class="text-light text-nowrap" scope="col">Shipping Address</th>
+                            <th class="text-light text-nowrap" scope="col">Shipping Country</th> -->
+                            <th class="text-light text-nowrap" scope="col">Web Site</th>
+                        </tr>
+                    </thead>
+                    <tbody id="content-area">
+                        <% if (Object.values(Data).length>0) { %>
+                            <% for( let index=0; index < Object.values(Data).length; index++ ) { %>
+                                <tr onclick="getCustomerData('<%= Data[index].idCustomers %>')">
+                                    <td>
+                                        <%= index+1%>
+                                    </td>
+                                    <td><span>
+                                            <%= Data[index].Name %>
+                                        </span>
+                                    </td>
+                                    <td><span>
+                                            <%= Data[index].Email %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            <%= Data[index].Point_of_Contact %>
+                                        </span>
+                                    </td>
+                                    <!-- <td>
+                                        <address>
+                                            <%= Data[index].Address %>
+                                        </address>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            <%= Data[index].Billing_Address %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            <%= Data[index].Shipping_Address %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            <%= Data[index].Shipping_Country %>
+                                        </span>
+                                    </td> -->
+                                    <td>
+                                        <span>
+                                            <%= Data[index].WebLink %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="9" class="text-center">No Customers</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="9" class="text-center">
+                                                <a href="/" class="btn btn-outline-primary rounded-pill"><i
+                                                        class="bi bi-arrow-left-circle-fill"></i> Go Back To Home</a>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+                <div class="position-absolute  bottom-0 end-0 m-2">
+                    <button type="button" class="btn btn-info btn-sm text-light rounded-pill" data-bs-toggle="modal"
+                        data-bs-target="#CustomerBulkUploadDialog">Upload <i
+                            class="bi bi-cloud-plus fs-6 p-0 ms-2"></i></button>
+                </div>
+            </main>
+            <aside class="border mx-1 scrollbar-style-3  rounded-3"
+                style="height: calc(100vh - 46px); overflow-x: scroll;width: 400px;">
+                <div class="d-flex flex-column align-items-center">
+                    <p class="mx-auto p-1 bg-secondary bg-gradient w-100 text-center text-light">Profile</p>
+                    <div>
+                        <img src="/static/images/Data report-amico.svg" alt="Image" width="200" height="200"
+                            id="DataReportIcon" class="mt-1">
+                        <img src="/static/images/DatanotFound.svg" alt="Image" width="200" height="200"
+                            id="DataNotFoundIcon" class="d-none">
+                        <img src="/static/images/loading.svg" alt="Image" width="200" height="200" id="loadingIcon"
+                            class="d-none">
+                    </div>
+                    <div id="profileCard" class="w-100">
+                    </div>
+                </div>
+            </aside>
+        </section>
+    </body>
+    <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        id="CustomerBulkUploadDialog">
+        <div class="modal-dialog" style="font-size: 12px;">
+            <div class="modal-content">
+                <div class="modal-content">
+                    <div class="modal-header p-1 px-2 d-flex align-items-center justify-content-center">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <a href="/api/downloadCustomersTemplate" class="mx-auto m-2"><button type="button" class="btn btn-sm btn-outline-secondary rounded-pill">Template <i class="bi bi-cloud-download"></i></button></a>
+                    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined"
+                        rel="stylesheet">
+                    <form class="form-container" enctype='multipart/form-data'>
+                        <div class="upload-files-container">
+                            <div class="drag-file-area">
+                                <span class="material-icons-outlined upload-icon"> file_upload </span>
+                                <h3 class="dynamic-message"> Drag & drop any file here </h3>
+                                <label class="label"> or <span class="browse-files"> <input type="file"
+                                            class="default-file-input" /><span class="browse-files-text">browse
+                                            file</span>
+                                        <span>from device</span> </span> </label>
+                            </div>
+                        </div>
+                    </form>
+                    <span class="cannot-upload-message mx-auto"> <span class="material-icons-outlined">error</span>
+                        Please
+                        select a
+                        file
+                        first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
+
+                    <div class="file-block">
+                        <div class="file-info"> <span class="material-icons-outlined file-icon">description</span> <span
+                                class="file-name"> </span> | <span class="file-size"> </span> </div>
+                        <span class="material-icons remove-file-icon">delete</span>
+                    </div>
+                </div>
+                <div class="modal-footer p-1">
+                    <button type="button" class="upload-button mx-auto btn-sm"> Upload <i
+                            class="bi bi-cloud-upload ms-1"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+        <script>
+
+            // socket.on('login-successful', (e) => {
+            //     toasts.push({
+            //         title: 'Success..!',
+            //         content: "ok",
+            //         style: 'success',
+            //         dismissAfter: '2s'
+            //     });
+            // })
+
+            function getCustomerData(id) {
+                axios.get('/api/getCustomerData', { params: { CustomerID: id } }).then(async res => {
+                    document.getElementById('loadingIcon').classList.remove('d-none');
+                    document.getElementById('DataReportIcon').classList.add('d-none');
+                    document.getElementById('DataNotFoundIcon').classList.add('d-none');
+                    document.getElementById('loadingIcon').classList.add('d-none');
+                    await generateProfileCard(res.data);
+                }).catch(error => {
+                    console.log(error);
+                    document.getElementById('DataReportIcon').classList.add('d-none');
+                    document.getElementById('loadingIcon').classList.add('d-none');
+                    document.getElementById('DataNotFoundIcon').classList.remove('d-none');
+                    document.getElementById('profileCard').innerHTML = null;
+                })
+            }
+            async function generateProfileCard(Customer) {
+                let SOW = Customer.SOW;
+                let SOWhtml = '';
+                if (SOW) {
+                    SOW = SOW.split(',');
+                    SOWhtml = SOW.map(value => `
+                    <div class="input-group m-1">
+                    <input type='text' class='form-control sow' value="${value}" placeholder='Enter the scope of Work' readonly/>
+                    <button class="btn delete-btn" type="button"><i class="bi bi-dash-lg"></i></button>
+                    </div>
+                `).join('');
+                }
+                let WorkType = Customer.WorkType;
+
+                let WorkTypeHtml = ''
+                if (WorkType) {
+                    WorkType = WorkType.split(',');
+                    WorkTypeHtml = WorkType.map(value => `
+                    <div class="input-group m-1">
+                    <input type='text' class='form-control wt' value="${value}" placeholder='Enter the Work Type' readonly/>
+                    <button class="btn delete-btn" type="button"><i class="bi bi-dash-lg"></i></button>
+                    </div>
+                `).join('');
+                }
+                let Milestone = Customer.Milestone;
+                let MilestoneHtml = '';
+                if (Milestone) {
+                    Milestone = Milestone.split(',');
+                    MilestoneHtml = Milestone.map(value => `
+                    <div class="input-group m-1">
+                    <input type='text' class='form-control ml' value="${value}" placeholder='Enter the Milestone' readonly/>
+                    <button class="btn delete-btn" type="button"><i class="bi bi-dash-lg"></i></button>
+                    </div>
+                    `).join('');
+                }
+                const profileCard = document.getElementById('profileCard');
+                const cardTemplate = `
+                <div class='shadow-sm'>
+                    <button class="accordion">Profile</button>
+                    <div class="accordion-content" style='height:max-contact'>
+                        <div class='w-100 position-relative'>
+                            <img src='/public/uploads/Customer/Icon/unnamed.jpg' alt='Logo' class="mx-auto img-thumbnail rounded-circle overflow-hidden opacity-50" style="object-fit: fill;width: 150px;height: 150px;">
+                            <button class='btn position-absolute top-50 start-50 translate-middle'><i class="bi bi-pencil-square"></i></button>
+                        </div>
+                        <input type="hidden" name="CustomerID" id='CustomerID' value="${Customer.idCustomers}" readonly required>
+                        <p class="card-text">Name: ${Customer.Name}</p>
+                        <p class="card-text">Point of Contact: ${Customer.Point_of_Contact}</p>
+                    </div>
+                </div>
+                <div class='shadow-sm'>
+                    <button class="accordion">Contact-Info</button>
+                    <div class="accordion-content">
+                        <p class="card-text">Address: ${Customer.Address}</p>
+                        <p class="card-text">Bulling-Address: ${Customer.Billing_Address}</p>
+                        <p class="card-text">Shipping-Address: ${Customer.Shipping_Address}</p>
+                        <p class="card-text">Shipping_Country: ${Customer.Shipping_Country}</p>
+                        <p class="card-text">Email: ${Customer.Email}</p>
+                    </div>
+                </div>
+                <div class='shadow-sm'>
+                    <button class="accordion">SOW</button>
+                    <div class="accordion-content sow_container">
+                        ${SOWhtml}
+                        <button type='button' class='btn btn-primary btn-sm mb-1' id='addSOWbtn'><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                </div>
+                <div class='shadow-sm'>
+                    <button class="accordion">Work Type</button>
+                    <div class="accordion-content wt_container">
+                        ${WorkTypeHtml}
+                        <button type='button' class='btn btn-primary btn-sm mb-1' id='addWTbtn'><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                </div>
+                <div class='shadow-sm'>
+                    <button class="accordion">Milestone</button>
+                    <div class="accordion-content ml_container">
+                        ${MilestoneHtml}
+                        <button type='button' class='btn btn-primary btn-sm mb-1' id='addMLbtn'><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                </div>
+                `;
+                profileCard.innerHTML = cardTemplate;
+
+
+
+                document.getElementById('addSOWbtn').addEventListener('click', await function () {
+                    const data = prompt("Enter the Scope of Work...?");
+                    if (data.length > 1) {
+                        const outerDiv = document.createElement('div');
+                        outerDiv.classList.add('input-group', 'm-1');
+
+                        // Create a new input field with the same attributes
+                        const newInput = document.createElement('input');
+                        newInput.type = 'text';
+                        newInput.classList.add('sow', 'form-control');
+                        newInput.value = data; // Set a default value here
+                        newInput.placeholder = 'Enter the scope of Work';
+                        newInput.readOnly = true;
+                        outerDiv.appendChild(newInput);
+                        const button = document.createElement('button');
+                        button.classList.add('btn', 'delete-btn')
+                        button.type = 'button';
+                        button.innerHTML = '<i class="bi bi-dash-lg"></i>'
+                        outerDiv.appendChild(button);
+                        // Get the container and Manage button
+                        const container = document.querySelector('.sow_container');
+                        const manageButton = document.getElementById('addSOWbtn');
+
+                        // Insert the new input before the Manage button
+                        container.insertBefore(outerDiv, manageButton);
+
+                        // Get all delete buttons
+                        const deleteButtons = document.querySelectorAll('.delete-btn');
+                        deleteButtons.forEach(button => {
+                            button.addEventListener('click', function () {
+                                // Remove the parent element (the entire div)
+                                console.log(this.parentNode.parentNode)
+                                this.parentNode.remove();
+                                updateSow();
+                                this.parentNode.parentNode.style.maxHeight = this.parentNode.parentNode.scrollHeight + "px";
+                            });
+                        });
+                        this.parentNode.style.maxHeight = this.parentNode.scrollHeight + "px";
+                        updateSow();
+                    }
+                });
+
+                document.getElementById('addWTbtn').addEventListener('click', await function () {
+                    const data = prompt("Enter the Work Type...?");
+                    if (data.length > 1) {
+                        const outerDiv = document.createElement('div');
+                        outerDiv.classList.add('input-group', 'm-1');
+
+                        // Create a new input field with the same attributes
+                        const newInput = document.createElement('input');
+                        newInput.type = 'text';
+                        newInput.classList.add('wt', 'form-control');
+                        newInput.value = data; // Set a default value here
+                        newInput.placeholder = 'Enter the Work type..?';
+                        newInput.readOnly = true;
+                        outerDiv.appendChild(newInput);
+                        const button = document.createElement('button');
+                        button.classList.add('btn', 'delete-btn')
+                        button.type = 'button';
+                        button.innerHTML = '<i class="bi bi-dash-lg"></i>'
+                        outerDiv.appendChild(button);
+                        // Get the container and Manage button
+                        const container = document.querySelector('.wt_container');
+                        const manageButton = document.getElementById('addWTbtn');
+
+                        // Insert the new input before the Manage button
+                        container.insertBefore(outerDiv, manageButton);
+
+                        // Get all delete buttons
+                        const deleteButtons = document.querySelectorAll('.delete-btn');
+                        deleteButtons.forEach(button => {
+                            button.addEventListener('click', function () {
+                                // Remove the parent element (the entire div)
+                                console.log(this.parentNode.parentNode)
+                                this.parentNode.remove();
+                                updateWT();
+                                this.parentNode.parentNode.style.maxHeight = this.parentNode.parentNode.scrollHeight + "px";
+                            });
+                        });
+                        this.parentNode.style.maxHeight = this.parentNode.scrollHeight + "px";
+                        updateWT();
+                    }
+                });
+
+                document.getElementById('addMLbtn').addEventListener('click', await function () {
+                    const data = prompt("Enter the Milestone...?");
+                    if (data.length > 1) {
+                        const outerDiv = document.createElement('div');
+                        outerDiv.classList.add('input-group', 'm-1');
+
+                        // Create a new input field with the same attributes
+                        const newInput = document.createElement('input');
+                        newInput.type = 'text';
+                        newInput.classList.add('ml', 'form-control');
+                        newInput.value = data; // Set a default value here
+                        newInput.placeholder = 'Enter the Milestone..?';
+                        newInput.readOnly = true;
+                        outerDiv.appendChild(newInput);
+                        const button = document.createElement('button');
+                        button.classList.add('btn', 'delete-btn')
+                        button.type = 'button';
+                        button.innerHTML = '<i class="bi bi-dash-lg"></i>'
+                        outerDiv.appendChild(button);
+                        // Get the container and Manage button
+                        const container = document.querySelector('.ml_container');
+                        const manageButton = document.getElementById('addMLbtn');
+
+                        // Insert the new input before the Manage button
+                        container.insertBefore(outerDiv, manageButton);
+
+                        // Get all delete buttons
+                        const deleteButtons = document.querySelectorAll('.delete-btn');
+                        deleteButtons.forEach(button => {
+                            button.addEventListener('click', function () {
+                                // Remove the parent element (the entire div)
+                                console.log(this.parentNode.parentNode)
+                                this.parentNode.remove();
+                                updateML();
+                                this.parentNode.parentNode.style.maxHeight = this.parentNode.parentNode.scrollHeight + "px";
+                            });
+                        });
+                        this.parentNode.style.maxHeight = this.parentNode.scrollHeight + "px";
+                        updateML();
+                    }
+                });
+
+                let deleteButtons = document.querySelectorAll('.delete-btn');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        // Remove the parent element (the entire div)
+                        this.parentNode.remove();
+                        updateSow();
+                        updateWT();
+                        updateML();
+                        this.parentNode.parentNode.style.maxHeight = this.parentNode.parentNode.scrollHeight + "px";
+
+                    });
+                });
+
+                const accordionBtns = document.querySelectorAll(".accordion");
+                accordionBtns.forEach((accordion) => {
+                    accordion.onclick = function () {
+                        this.classList.toggle("is-open");
+
+                        let content = this.nextElementSibling;
+
+                        if (content.style.maxHeight) {
+                            //this is if the accordion is open
+                            content.style.maxHeight = null;
+                        } else {
+                            //if the accordion is currently closed
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    };
+                });
+            }
+
+            function updateSow() {
+                const CustomerID = document.getElementById('CustomerID').value;
+                // Get all input elements with class 'sow'
+                const inputs = document.querySelectorAll('.sow');
+                // Get values of input elements with class 'sow'
+                const values = Array.from(inputs).map(input => input.value);
+                if (CustomerID.length > 0) {
+                    axios.post('/api/updateSOW/', { CustomerID: CustomerID, SOW: values.toString() }).then(res => {
+                        toasts.push({
+                            title: 'Success..!',
+                            content: res.data.message,
+                            style: 'success',
+                            dismissAfter: '2s'
+                        });
+                    }).catch(e => {
+                        console.log(e);
+                        toasts.push({
+                            title: 'Error..!',
+                            content: "Something went wrong, Unable to Update the SOW.",
+                            style: 'error',
+                            dismissAfter: '2s'
+                        });
+                    })
+                }
+            }
+
+            function updateWT() {
+                const CustomerID = document.getElementById('CustomerID').value;
+                // Get all input elements with class 'sow'
+                const inputs = document.querySelectorAll('.wt');
+                // Get values of input elements with class 'sow'
+                const values = Array.from(inputs).map(input => input.value);
+                if (CustomerID.length > 0) {
+                    axios.post('/api/updateWt/', { CustomerID: CustomerID, WT: values.toString() }).then(res => {
+                        toasts.push({
+                            title: 'Success..!',
+                            content: res.data.message,
+                            style: 'success',
+                            dismissAfter: '2s'
+                        });
+                    }).catch(e => {
+                        console.log(e);
+                        toasts.push({
+                            title: 'Error..!',
+                            content: "Something went wrong, Unable to Update the Work Type.",
+                            style: 'error',
+                            dismissAfter: '2s'
+                        });
+                    })
+                }
+            }
+            function updateML() {
+                const CustomerID = document.getElementById('CustomerID').value;
+                // Get all input elements with class 'sow'
+                const inputs = document.querySelectorAll('.ml');
+                // Get values of input elements with class 'sow'
+                const values = Array.from(inputs).map(input => input.value);
+                if (CustomerID.length > 0) {
+                    axios.post('/api/updateML/', { CustomerID: CustomerID, ML: values.toString() }).then(res => {
+                        toasts.push({
+                            title: 'Success..!',
+                            content: res.data.message,
+                            style: 'success',
+                            dismissAfter: '2s'
+                        });
+                    }).catch(e => {
+                        console.log(e);
+                        toasts.push({
+                            title: 'Error..!',
+                            content: "Something went wrong, Unable to Update the Work Type.",
+                            style: 'error',
+                            dismissAfter: '2s'
+                        });
+                    })
+                }
+            }
+
+            var isAdvancedUpload = (function () {
+                var div = document.createElement("div");
+                return (
+                    ("draggable" in div || ("ondragstart" in div && "ondrop" in div)) &&
+                    "FormData" in window &&
+                    "FileReader" in window
+                );
+            })();
+
+            let draggableFileArea = document.querySelector(".drag-file-area");
+            let browseFileText = document.querySelector(".browse-files");
+            let uploadIcon = document.querySelector(".upload-icon");
+            let dragDropText = document.querySelector(".dynamic-message");
+            let fileInput = document.querySelector(".default-file-input");
+            let cannotUploadMessage = document.querySelector(".cannot-upload-message");
+            let cancelAlertButton = document.querySelector(".cancel-alert-button");
+            let uploadedFile = document.querySelector(".file-block");
+            let fileName = document.querySelector(".file-name");
+            let fileSize = document.querySelector(".file-size");
+            let removeFileButton = document.querySelector(".remove-file-icon");
+            let uploadButton = document.querySelector(".upload-button");
+            let fileFlag = 0;
+
+            fileInput.addEventListener("click", () => {
+                fileInput.value = null;
+                // console.log(fileInput.value);
+            });
+
+            fileInput.addEventListener("change", (e) => {
+                console.log(" > " + fileInput.value);
+                uploadIcon.innerHTML = "check_circle";
+                dragDropText.innerHTML = "File Dropped Successfully!";
+                // document.querySelector(
+                //   ".label"
+                // ).innerHTML = `or <span class="browse-files"> <input type="file" class="default-file-input" /><span
+                //             class="browse-files-text">browse file</span> <span>from device</span> </span>`;
+                uploadButton.innerHTML = `Upload`;
+                fileName.innerHTML = fileInput.files[0].name;
+                fileSize.innerHTML = (fileInput.files[0].size / 1024).toFixed(1) + " KB";
+                uploadedFile.style.cssText = "display: flex;";
+                fileFlag = 0;
+            });
+
+            uploadButton.addEventListener("click", async () => {
+                let isFileUploaded = fileInput.value;
+                if (isFileUploaded != "" || fileInput.value == null) {
+                    uploadButton.innerHTML = `<span class="material-symbols-outlined">progress_activity </span> Uploading`;
+
+                    const file = fileInput.files[0];
+                    let fromData = new FormData();
+                    fromData.append("Customers", file)
+
+                    await axios.post(`/api/uploadCustomers/`, fromData).then(res => {
+                        if (res.status == 200) {
+                            uploadButton.innerHTML = `<span class="material-icons-outlined upload-button-icon"> check_circle </span> Uploaded`;
+                            const Responses = res.data;
+                            Responses.forEach(response => {
+                                toasts.push(response);
+                            })
+                            Metro.dialog.close('#CustomerBulkUploadDialog')
+                            window.location.reload();
+                        }
+                    }).catch(e => {
+                        console.log(e)
+                        //alert(e.response.data);
+                    })
+                } else {
+                    cannotUploadMessage.style.cssText =
+                        "display: flex; animation: fadeIn linear 1.5s;";
+                }
+            });
+
+            cancelAlertButton.addEventListener("click", () => {
+                cannotUploadMessage.style.cssText = "display: none;";
+            });
+
+            if (isAdvancedUpload) {
+                [
+                    "drag",
+                    "dragstart",
+                    "dragend",
+                    "dragover",
+                    "dragenter",
+                    "dragleave",
+                    "drop"
+                ].forEach((evt) =>
+                    draggableFileArea.addEventListener(evt, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    })
+                );
+
+                ["dragover", "dragenter"].forEach((evt) => {
+                    draggableFileArea.addEventListener(evt, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        uploadIcon.innerHTML = "file_download";
+                        dragDropText.innerHTML = "Drop your file here!";
+                    });
+                });
+
+                draggableFileArea.addEventListener("drop", (e) => {
+                    uploadIcon.innerHTML = "check_circle";
+                    dragDropText.innerHTML = "File Dropped Successfully!";
+                    // document.querySelector(
+                    //   ".label"
+                    // ).innerHTML = `drag & drop or <span class="browse-files"> <input type="file" class="default-file-input" style=""/> <span class="browse-files-text" style="top: -23px; left: -20px;"> browse file</span> <span>from device</span></span>`;
+                    uploadButton.innerHTML = `Upload`;
+
+                    let files = e.dataTransfer.files;
+                    fileInput.files = files;
+                    console.log(files[0].name + " " + files[0].size);
+                    console.log(document.querySelector(".default-file-input").value);
+                    fileName.innerHTML = files[0].name;
+                    fileSize.innerHTML = (files[0].size / 1024).toFixed(1) + " KB";
+                    uploadedFile.style.cssText = "display: flex;";
+                    progressBar.style.width = 0;
+                    fileFlag = 0;
+                });
+            }
+
+            removeFileButton.addEventListener("click", () => {
+                uploadedFile.style.cssText = "display: none;";
+                fileInput.value = null;
+                uploadIcon.innerHTML = "file_upload";
+                dragDropText.innerHTML = "Drag & drop any file here";
+                // document.querySelector(
+                //   ".label"
+                // ).innerHTML = `or <span class="browse-files"> <input type="file" class="default-file-input"/> <span class="browse-files-text">browse file</span> <span>from device</span> </span>`;
+                uploadButton.innerHTML = `Upload`;
+            });
+        </script>
+
+</html>

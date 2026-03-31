@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="/admin/UpdateUser" method="post" id="UpdateUserForm">
+        <div class="container">
+            <div class="text-center">
+                <img src="../../public/uploads/Profile/${user.Profile?user.Profile:" user.png"}"
+                    class="w-25 h-25 rounded-circle m-2" alt="DP" srcset="">
+            </div>
+            <div class="d-flex mb-2">
+                <label for="ID" class="from-label fs-5 me-2"><i class="bi bi-person-badge"></i></label>
+                <input type="text" class="form-control form-control-sm border" id="ID" placeholder="Employee ID"
+                   required title="Employee ID" disabled value="${user.Employee_ID}">
+            </div>
+            <div class="d-flex mb-2">
+                <label for="Name" class="from-label fs-5 me-2"><i class="bi bi-person"></i></label>
+                <input type="text" class="form-control form-control-sm border" id="Name" placeholder="Full Name"
+                    title="Full Name" disabled value="${user.Full_Name}">
+            </div>
+            <div class="d-flex mb-2 mb-3">
+                <label for="Email" class="from-label fs-5 me-2"><i class="bi bi-envelope-at"></i></label>
+                <input type="email" class="form-control form-control-sm" id="Email" placeholder="Email" disabled
+                    title="${user.Email_ID}" value="${user.Email_ID}">
+            </div>
+            <div class="d-flex mb-2">
+                <label for="Role" class="from-label fs-5 me-2"><i class="bi bi-person-gear"></i></label>
+                <select class="form-select form-select-sm" id="Role" aria-label="Floating label select example"
+                    title="User Role" disabled>
+                    <option selected>User Role</option>
+                    <option value="Employee">Employee</option>
+                    <option value="Manager">Manager</option>
+                    <option value="PMO">PMO</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <div class="d-flex mb-2">
+                <label for="Mobile_No" class="from-label fs-5 me-2"><i class="bi bi-phone"></i></label>
+                <input type="number" class="form-control form-control-sm border" id="Mobile_No" maxlength="10"
+                    placeholder="Mobile Number" title="Mobile Number" disabled value="${user.Mobile_No}">
+            </div>
+            <div class="d-flex mb-2">
+                <label for="Designation" class="from-label fs-5 me-2"><i class="bi bi-award"></i></label>
+                <input type="text" class="form-control form-control-sm border" id="Designation"
+                    placeholder="Designation" title="Designation" disabled value="${user.Designation}">
+            </div>
+            <div class="form-check form-switch">
+                <label class="form-check-label" for="Status">Status</label>
+                <input class="form-check-input" type="checkbox" role="switch" id="Status" name="Status" value="Active" checked>
+            </div>
+            <div>
+                <button type="button" id="editBtn" class="btn btn-info">Edit</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+    </form>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+    crossorigin="anonymous"></script>
+<script>
+
+</script>
+
+</html>

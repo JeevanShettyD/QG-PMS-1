@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+  <body>
+    <main>
+      <div class="m-2">
+        <table class="table table-hover overflow-hidden rounded-3" data-horizontal-scroll="true"
+          data-show-rows-steps="false">
+          <thead class="bg-cyan fg-white   bg-opacity-50 ">
+            <tr class="text-center ">
+              <th class="text-light" scope="col">Sl.No</th>
+              <th class="text-light" scope="col">JOB-ID</th>
+              <th class="text-light" scope="col">SOW</th>
+              <th class="text-light" scope="col">Market</th>
+              <th class="text-light" scope="col">Priority</th>
+              <th class="text-light" scope="col" data-format="date">Received Date</th>
+              <th class="text-light" scope="col" data-format="date">Due Date</th>
+              <th class="text-light" scope="col" data-format="date">Approved Date</th>
+              <th class="text-light" scope="col">Status</th>
+            </tr>
+
+          </thead>
+          <tbody id="content-area">
+            <% if (Object.values(Data).length>0) { %>
+              <% for( let index=0; index < Object.values(Data).length; index++ ) { %>
+                <tr ondblclick="viewProject('<%= Data[index].idProjects %>')">
+                  <td>
+                    <%= index+1%>
+                  </td>
+                  <td><span>
+                      <%= Data[index].JOB_ID %>
+                    </span>
+                  </td>
+                  <td><span>
+                      <%= Data[index].SOW %>
+                    </span>
+
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].Market %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].Priority %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].n_ReceivedDate %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].n_DueDate %>
+                    </span>
+                  </td>
+                  <td>
+                    <span>
+                      <%= Data[index].n_ApprovedDate %>
+                    </span>
+                  </td>
+                  <td>
+                    <p>
+                      <%= Data[index].Status %>
+                    </p>
+                  </td>
+
+                </tr>
+                <% } %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="9" class="text-center">No Projects</td>
+                    </tr>
+                    <tr>
+                      <td colspan="9" class="text-center">
+                        <a href="/" class="btn btn-outline-primary rounded-pill"><i
+                            class="bi bi-arrow-left-circle-fill"></i> Go Back To Home</a>
+                      </td>
+                    </tr>
+                    <% } %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog  modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <!-- <h1 class="modal-title fs-5 p-1" id="CFAS_ID"></h1>-->
+          <h5 class="p-1" id="">Status:<span id="Status"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2"><b>Project Info</b></p>
+          <div class="row ms-0 mb-2 rounded-3"
+            style="box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;">
+
+            <div class="col">
+              <div class="row">
+                <p class="col "> <b>JOB ID:</b> <span id="JOB_ID"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>SOW:</b> <span id="SOW"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>Market:</b> <span id="Market"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>Region:</b> <span id="Region"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>Received Date:</b> <span id="n_ReceivedDate"></span></p>
+              </div>
+            </div>
+            <div class="col">
+
+              <div class="row">
+                <p class="col "> <b>Division:</b> <span id="Division"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>Total No of Actives:</b> <span id="Total_Actives"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>Total Home Passing:</b> <span id="Total_Home_Passing"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>Due Date:</b> <span id="n_DueDate"></span></p>
+              </div>
+              <div class="row">
+                <p class="col "> <b>Approved Date:</b><span id="n_ApprovedDate"></span></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row ms-0 mb-2 rounded-3"
+            style="box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;">
+            <div class="row m-0 border-bottom bg-body-secondary">
+              <p class="col"></p>
+              <p class="col text-center"><b>COAX</b></p>
+              <p class="col"></p>
+              <p class="col text-center"><b>FIBER</b></p>
+              <p class="col"></p>
+            </div>
+            <div class="row m-0 border-bottom">
+              <p class="col"><b>Aerial</b></p>
+              <p class="col"><b>Estimated:</b><span id="Air_Coax_Est"></span>(ft)</p>
+              <p class="col"><b>Actual:</b><span id="Air_Coax_Act"></span>(ft)</p>
+              <p class="col"><b>Estimated:</b><span id="Air_Fib_Est"></span>(ft)</p>
+              <p class="col"><b>Actual:</b><span id="Air_Fib_Act"></span>(ft)</p>
+            </div>
+            <div class="row m-0 border-bottom">
+              <p class="col"><b>Buried/UG</b></p>
+              <p class="col"><b>Estimated:</b><span id="UG_Coax_Est"></span>(ft)</p>
+              <p class="col"><b>Actual:</b><span id="UG_Coax_Act"></span>(ft)</p>
+              <p class="col"><b>Estimated:</b><span id="UG_Fib_Est"></span>(ft)</p>
+              <p class="col"><b>Actual:</b><span id="UG_Fib_Act"></span>(ft)</p>
+            </div>
+            <div class="row m-0 border-bottom">
+              <p class="col"><b>Total</b></p>
+              <p class="col"><b>Estimated:</b><span id="Total_Coax_Est"></span>(ft)</p>
+              <p class="col"><b>Actual:</b><span id="Total_Coax_Act"></span>(ft)</p>
+              <p class="col"><b>Estimated:</b><span id="Total_Fib_Est"></span>(ft)</p>
+              <p class="col"><b>Actual:</b><span id="Total_Fib_Act"></span>(ft)</p>
+            </div>
+            <div class="row m-0 border-bottom bg-body-secondary">
+              <p class="col"><b>Total Footage</b></p>
+              <p class="col"><b>Estimated:</b><span id="Total_Est"></span>(ft)</p>
+              <p class="col"><b>Actual:</b><span id="Total_Act"></span>(ft)</p>
+            </div>
+          </div>
+
+          <div class="row ms-0 rounded-3" id="Note">
+
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <a href="/editProject/" class="btn btn-secondary text-decoration-none" id="editButton">Edit</a>
+          <button type="button" class="btn btn-primary">Go to Milestone's</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+    <script>
+      function makeEditable(fieldId) {
+        return;
+        // const span = document.getElementById(fieldId);
+        // const inputField = document.getElementById('input_' + fieldId);
+
+        // span.style.display = 'none';
+        // inputField.style.display = 'inline-block';
+        // inputField.value = span.innerText.trim();
+
+        // const updateBtn = document.getElementById('updateBtn_' + fieldId.split('_')[1]);
+        // updateBtn.style.display = 'block';
+      }
+      function viewProject(id) {
+        axios.get('/api/projectInfo/Comcast', {
+          params: {
+            ID: id
+          }
+        }).then(res => {
+          console.log(res)
+          const object = res.data[0];
+          for (const key in object) {
+            if (Object.hasOwnProperty.call(object, key)) {
+              var element = object[key];
+              try {
+                if (key == 'Note') {
+                  var area = document.getElementById('Note');
+                  area.innerHTML = `<p><b>Comment's</b></p>`;
+                  element = JSON.parse(element);
+                  for (const group in element) {
+                    const note = element[group];
+                    let values = Object.values(note);
+                    let attachmentName = values[4];
+                    area.innerHTML += `
+                                <div class="row  m-1">
+                                      <div class="col-sm-12">
+                                        <p><small><span><i class="bi bi-person-fill"></i>&nbsp;${values[3]}</span> <b>|</b> <span><i class="bi bi-calendar3"></i>&nbsp;${values[0]}</span>${(attachmentName !== null && attachmentName != undefined && attachmentName != "") ? `<b> | </b> <span> <a href="../public/uploads/ReferenceDoc/${attachmentName}" class="text-decoration-none btn btn-outline-secondary border-0 btn-sm" download>
+                                          <span id="type" class="text-uppercase"> </span><i class="bi bi-paperclip"></i></a></span> `: ``} </small></p>
+                                        <p class='border comment-section p-2 m-0'>${values[1]}</p>
+                                      </div>
+
+                                    </div>`;
+                  }
+                } else if (key == 'idProjects') {
+                  let href = document.getElementById("editButton").getAttribute('href');
+                  document.getElementById("editButton").setAttribute('href', `/PMO/editProject/Comcast/${object[key]}`)
+
+                } else {
+                  document.getElementById(`${key}`).innerText = element;
+                }
+              } catch (error) {
+                console.log(error)
+              }
+            }
+          }
+        }).catch(error => {
+          console.log(error);
+        })
+        $("#exampleModal").modal('show')
+      }
+    </script>
+
+</html>

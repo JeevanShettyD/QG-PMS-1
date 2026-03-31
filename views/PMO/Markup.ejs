@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markup</title>
+    <%- include('../partials/dependencies') %>
+</head>
+<% if (userData.Role=="Employee" ) { %>
+    <%- include('../partials/Employee-header',{userData:userData}) %>
+        <% }else if(userData.Role=="Admin" ){ %>
+            <%- include('../partials/Admin-header',{userData:userData}) %>
+                <% }else if(userData.Role=="PMO" ){ %>
+                    <%- include('../partials/PMO-header',{userData:userData}) %>
+                        <%}if(userData.Role=="Manager"){ %>
+                            <%- include('../partials/Manager-header',{userData:userData}) %>
+                                <%}%>
+
+                                    <body>
+                                        <main class="d-flex h-100" style="font-size: 12px;">
+                                            <section class="shadow w-75 p-2 rounded  scrollbar-style-3"
+                                                style="height: calc(100vh - 46px); overflow-y: scroll; overflow-x: hidden; ">
+                                                <div class="d-flex  justify-content-between  align-items-center">
+                                                    <div class="d-flex">
+                                                        <img width="40" height="40"
+                                                            src="https://img.icons8.com/nolan/64/checklist.png"
+                                                            alt="checklist" />
+                                                        <div class="d-flex align-items-center">
+                                                            <p class="rounded bg-primary bg-gradient bg-opacity-50  p-1 m-1 text-light"
+                                                                style="width:fit-content; font-size: 12px;">
+                                                                Markup
+                                                            </p>
+                                                            <p class="m-0 p-0 fs-6">
+                                                                <%= Markup.Sub_Task_Name %>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p class="p-0 m-0 d-inline">Current Status: <span class="bg-gradient bg-opacity-75  text-light 
+                                                                <% if(Markup.Status==='YTS'){%> bg-danger <% }else if(Markup.Status==='WIP' ){ %>
+                                                                bg-warning <% }else if(Markup.Status==='Completed' ){ %>
+                                                                bg-success <% } %>rounded-5
+                                                                    px-2 py-1">
+                                                                <%= Markup.Status %>
+                                                            </span>
+                                                        </p>
+                                                        <button type="button" id="markTaskCompleted"
+                                                            class="d-inline rounded bg-primary bg-gradient btn btn-primary btn-sm mx-2 <% if (Markup.Status!='WIP') { %> visually-hidden <% } %>">Submit
+                                                            <i class="mx-2 bi bi-arrow-right"></i></button>
+                                                    </div>
+                                                </div>
+
+                                                <section>
+                                                    <div
+                                                        class="d-flex justify-content-between w-100 bg-primary bg-gradient bg-opacity-75 text-light p-2 rounded-3 shadow-sm accordion">
+                                                        <p class="m-0">Information</p>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <p class="col ">Markup Name:<br>
+                                                            <input type="text"
+                                                                class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                value="<%=Markup.Sub_Task_Name %>" readonly></input>
+                                                        </p>
+                                                        <p class="col">Job-ID:<br>
+                                                            <a href="/Project/<%=Customer%>/<%= Markup.Project_ID %>/<%= Markup.idProjects %>"
+                                                                class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1">
+                                                                <%= Markup.Project_ID %>
+                                                            </a>
+                                                        </p>
+                                                        <p class="col">Milestone: <br>
+                                                            <a class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                href="/ViewMilestone/<%=Customer%>/<%= Markup.idProjects %>/<%= Markup.Milestone_Name %>">
+                                                                <%= Markup.Milestone_Name %>
+                                                            </a>
+                                                        </p>
+                                                    </div>
+                                                    <div class="row">
+                                                        <p class="col">Task Name: <br>
+                                                            <% if (Markup.MarkupFor=="Task" ) { %>
+                                                                <a class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    href="/ViewTask/<%=Customer%>/<%= Markup.Milestone_Name %>/<%=Markup.Task_Name  %>">
+                                                                    <%= Markup.Task_Name %>
+                                                                </a>
+                                                                <% }else if(Markup.MarkupFor=="Subtask" ){ %>
+                                                                    <a class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        href="/SubTask/<%=Markup.Task_Name  %>">
+                                                                        <%= Markup.Task_Name %>
+                                                                    </a>
+                                                                    <% } %>
+
+                                                        </p>
+                                                        <div class="col">
+                                                            <% if ((userData.Role=="PMO" || userData.Role=="Manager" )
+                                                                && (Markup.Status !='Completed' )) { %>
+                                                                <span class="d-inline">Owner:</span><br>
+                                                                <select name="" id=""
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 w-auto select-list hidden"
+                                                                    data-OwnerFor="Markup"
+                                                                    data-ID="<%=Markup.Sub_Task_Name %>">
+                                                                    <% for( let index=0; index <
+                                                                        Object.values(Owners).length; index++){%>
+                                                                            <option
+                                                                                value="<%= Owners[index].Employee_ID %>"
+                                                                                <%
+                                                                                if(Owners[index].Employee_ID==Markup.Owner)
+                                                                                { %>
+                                                                                selected
+                                                                                <% } %>>
+                                                                                    <%= Owners[index].Full_Name %> (
+                                                                                        <%= Owners[index].Employee_ID %>
+                                                                                            )
+                                                                            </option>
+                                                                                <% } %>
+                                                                </select>
+                                                                <span  class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill fs-5 text-primary opacity-75 m-1"></i></span>
+                                                                <p
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 m-0 user-info">
+                                                                    <span class="Owner text-truncate text-nowrap m-0 p-0"
+                                                                        data-userID="<%= Markup.Owner %>">
+                                                                        <%= Markup.Full_Name %>
+                                                                    </span><span class="toggle-button"><i
+                                                                            class="bi bi-pencil-square"></i></span>
+                                                                </p>
+                                                                <% } else { %>
+                                                                    <p class="col">Owner:<br><span
+                                                                            class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 ">
+                                                                            <span class="Owner"
+                                                                                data-userID="<%= Markup.Owner %>">
+                                                                                <%= Markup.Full_Name %>
+                                                                            </span> </span>
+                                                                    </p>
+                                                                    <% } %>
+
+                                                        </div>
+                                                        <p class="col">Total Time:<br> <input type="text"
+                                                                class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                value="<%=secondsToMinutes(Markup.TotalTime) %>"
+                                                                readonly></input> </p>
+                                                    </div>
+                                                    <div class="row mb-2">
+                                                        <div class="col"><span class="d-inline">Due Date:</span>
+                                                            <% if ((userData.Role=="PMO" || userData.Role=="Manager"
+                                                                )&&(Markup.Status!='Completed' )) { %>
+                                                                <p type="text"
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 user-info m-0">
+                                                                    <%= Markup.DueDate?Markup.DueDate:"-" %> <span
+                                                                            class="toggle-button"><i
+                                                                                class="bi bi-pencil-square"></i></span>
+                                                                </p>
+                                                                <input type="date" name="DueDate" id="DueDate"
+                                                                    class="today-date bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 select-list hidden"
+                                                                    data-Target="Markup"
+                                                                    data-ID="<%= Markup.idsubtask %>"
+                                                                    value="<%= Markup.n_DueDate?formatDateString(Markup.n_DueDate):null %>"></input>
+                                                                    <span  class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill fs-5 text-primary opacity-75 m-1"></i></span>
+                                                                <%}else{%>
+                                                                    <input type="text"
+                                                                        class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        value="<%= Markup.DueDate?Markup.DueDate:" -" %>"
+                                                                    readonly></input>
+                                                                    <%}%>
+                                                        </div>
+                                                        <p class="col">Actual Start Date:<br> <input type="text"
+                                                                class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                value="<%= Markup.StartDate %>" readonly></input> </p>
+                                                        <p class="col">Actual End Date:<br> <input type="text"
+                                                                class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                value="<%= Markup.EndDate %>" readonly></input> </p>
+                                                    </div>
+                                                </section>
+                                                <!--Attachments Section-->
+                                                    <section class="qg-tab bg-primary bg-gradient bg-opacity-75 mt-2 rounded-3 shadow-sm">
+                                                        <input type="checkbox" name="accordion-1" id="cb5" checked class="position-absolute opacity-0">
+                                                        <label for="cb5" class="qg-tab__label">Attachments</label>
+                                                        <div class="position-absolute end-0 top-0 p-1">
+                                                            <p class="m-0 p-0 btn text-light visually-hidden" id="zipDownload" data-FileName="<%-Markup.Sub_Task_Name%>"><i class="bi bi-cloud-arrow-down-fill"></i></p>
+                                                            <p class="m-0 p-0 btn text-light"
+                                                                data-bs-toggle="modal" data-bs-target="#AttachmentDialog" ><i class="bi bi-plus-circle"></i>
+                                                            </p>
+                                                        </div>
+                                                        <div class="qg-tab__content bg-light">
+                                                            <%if(Object.values(attachments).length>0){%>
+                                                            <table class="table table-hover overflow-hidden table-striped m-0 rounded-3"
+                                                                aria-label="log" style="font-size: 12px;" id="AttachmentsTable">
+                                                                <thead class="bg-primary  bg-opacity-50 bg-gradient border-0">
+                                                                    <tr class="text-center">
+                                                                        <th scope="col" class="text-light">
+                                                                    <div class="form-check">
+                                                                        <%if(Object.values(attachments).length>0){%><input type="checkbox" id="selectAll" name="selectAll" class="form-check-input" title="Select All"><%}%> <!-- Select All Checkbox -->
+                                                                        <label for="selectAll" class="form-check-label">Sl.No</label>
+                                                                    </div>
+                                                                    </th>
+                                                                    <th scope="col" class="text-light text-start">File Name</th>
+                                                                    <th scope="col" class="text-light text-nowrap">Created Date</th>
+                                                                    <th scope="col" class="text-light text-nowrap">File Size</th>
+                                                                    <th scope="col" class="text-light text-nowrap">Type</th>
+                                                                    <th scope="col" class="text-light text-nowrap">Owner</th>
+                                                                    <th scope="col" class="text-light text-nowrap"></th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <%if(Object.values(attachments).length>0){%>
+                                                                        <% for( let index=0; index < Object.values(attachments).length; index++ ) { %>
+                                                                            <tr class="text-center">
+                                                                                <td><div class="form-check"><input type="checkbox"  class="record-checkbox form-check-input opacity-100 z-1" value="<%= attachments[index].idattachments %>" id="ATT-<%= attachments[index].idattachments %>"><label for="ATT-<%= attachments[index].idattachments %>"><%=index+1%></label></div></td>
+                                                                                <td><a href="../../..<%=attachments[index].path%>" target="_blank"><p class="m-0 text-start text-wrap" title="<%=attachments[index].Name%>"><%=attachments[index].Name.substring(0,70)%></p></a></td>
+                                                                                <td><%=attachments[index].Created_Date%></td>
+                                                                                <td><%=attachments[index].Size%>.MB</td>
+                                                                                <td><img width="25" height="25" src="/static/icons/<%=attachments[index].Type.substring(1)%>.png" alt="<%=attachments[index].Type%>"/></td>
+                                                                                <td><%=attachments[index].Full_Name%></td>
+                                                                                <td>
+                                                                                    <i class="bi bi-trash3-fill text-secondary archive-btn fs-6 <%if(attachments[index].Owner!=userData.Employee_ID){%> visually-hidden <%}%>"  data-fileID="<%= attachments[index].idattachments %>"></i>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <%}%>
+                                                                    <%}%>
+                                                                </tbody>
+                                                            </table>
+                                                            <%}else{%>  
+                                                                <% let noteFound = false; %>
+                                                                        <% Object.keys(Comments).forEach(function(groupKey) { %>
+                                                                        <% for (const key in Comments[groupKey]) { %>
+                                                                        <% if (key.startsWith('Note') && Comments[groupKey][key].startsWith("Reason For No Attachment") ) { %>
+                                                                            <!--<td colspan="10" class="text-center"><%- Comments[groupKey][key] %>  <sub>(<%= Comments[groupKey].Author_Name %>/<%= Comments[groupKey].On %>)</sub></td>-->
+                                                                            <div class="container" >
+                                                                                <div class="row">
+                                                                                <div class=" col p-0 align-content-center text-end"><p class="m-0 p-0 w-auto  text-center text-light p-2 rounded-pill bg-primary bg-gradient bg-opacity-75"><%- Comments[groupKey][key] %></span></div>
+                                                                                <img src="../../../static/images/empty-animate.svg" class="col p-0" width="200" height="300"  alt="">
+                                                                            </div>
+                                                                            </div>
+                                                                        <% noteFound = true } %>
+                                                                        <% } %>
+                                                                        <% }) %>
+                                                                        <% if (!noteFound) { %>
+                                                                            <div class="container" >
+                                                                                <div class="row">
+                                                                                <div class="col p-0 align-content-center text-end"><p class="m-0 p-0 w-auto  text-center text-light p-2 rounded-pill bg-primary bg-gradient bg-opacity-75">No Attachment</p></div>
+                                                                                <img src="../../../static/images/empty-animate.svg" class="col p-0" width="200" height="300"  alt="">
+                                                                            </div>
+                                                                            </div>
+                                                                        <% } %>
+                                                            <%}%>
+                                                        </div>
+                                                    </section>
+                                                </section>
+                                            <button type="button" data-bs-toggle="modal" data-bs-target="#Add_Comment_Modal"  class="position-absolute bottom-0 end-0 btn btn-primary z-3 bordre border-1 m-1 rounded-circle bg-gradient visually-hidden"><i
+                                                    class="bi bi-chat-dots fs-4"></i></button>
+                                            <section class="w-25 p-2 scrollbar-style-3" style="z-index: 1;">
+                                                <div class="shadow bg-body-tertiary rounded mb-2">
+                                                    <div
+                                                        class="d-flex flex-column mb-2 p-2 border-bottom sticky-top bg-light align-items-center <% if (Markup.Status=='Completed' || Markup.Owner != userData.Employee_ID) { %> visually-hidden <% }%>">
+                                                        <span
+                                                            class="display w-100 rounded-5 p-1 m-1 text-center align-middle bg-danger bg-gradient bg-opacity-100 text-light fs-3 fw-bolder shadow-sm"
+                                                            id="display">00:00:00:00</span>
+                                                        <div
+                                                            class="w-25 m-1 d-flex align-items-center justify-content-center">
+                                                            <% let lock=false; if(Object.values(Log).length){
+                                                                if((Log[Object.values(Log).length-1].startTime !=null ||
+                                                                Log[Object.values(Log).length-1].startTime !=undefined)
+                                                                && (Log[Object.values(Log).length-1].endTime==null)){
+                                                                lock=true; }}%>
+                                                                <button
+                                                                    class="btn  btn-sm btn-primary bg-gradient m-1 <% if(lock==true){ %> d-none <% } %>"
+                                                                    id="startBtn"><i
+                                                                        class="bi bi-play fs-5"></i></button>
+                                                                <button
+                                                                    class=" btn btn-sm btn-secondary bg-gradient m-1  <% if(lock!=true){ %> d-none <% } %>"
+                                                                    id="stopBtn"><i
+                                                                        class="bi bi-stop fs-5"></i></button>
+
+                                                                <button onclick="pause(this)"
+                                                                    class="btn col visually-hidden" id="pauseBtn"
+                                                                    disabled><i class="bi bi-pause"></i></button>
+                                                        </div>
+
+                                                    </div>
+                                                    <div
+                                                        class="w-100 bg-primary bg-gradient bg-opacity-75 p-2 m-0 rounded-3 shadow-sm">
+                                                        <img width="20" height="20" class="d-inline" src="https://img.icons8.com/glyph-neue/64/FFFFFF/future.png" alt="future"/>
+                                                        <p class="d-inline text-light">Time Sheet</p>
+                                                    </div>
+                                                    <div id="lapTimes" class="overflow-x-scroll" style="font-size: 12px; height: fit-content;">
+                                                        <% if (Object.values(Log).length>0) { %>
+                                                            <table class="table table-hover table-striped"
+                                                                aria-label="Time Sheet">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th></th>
+                                                                        <th>User</th>
+                                                                        <th>Start</th>
+                                                                        <th>End</th>
+                                                                        <th>Duration</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <% slNO=1; %>
+                                                                        <% for( let index=0; index <
+                                                                            Object.values(Log).length; index++ ) { %>
+                                                                            <tr>
+                                                                                <td>
+                                                                                    <%= slNO %>
+                                                                                </td>
+                                                                                <td class="text-nowrap">
+                                                                                    <p class="Owner text-truncate text-nowrap m-0 p-0" data-userID="<%= Log[index].UserID %>">   <%= Log[index].Full_Name %></p>
+                                                                                </td>
+                                                                                <td class="text-nowrap">
+                                                                                    <%= Log[index].startTime %>
+                                                                                </td>
+                                                                                <td class="text-nowrap">
+                                                                                    <%= Log[index].endTime %>
+                                                                                </td>
+                                                                                <td class="text-nowrap">
+                                                                                    <%= secondsToMinutes(Log[index].duration)
+                                                                                        %>
+                                                                                </td>
+                                                                            </tr>
+
+                                                                            <% slNO++; } %>
+                                                                                <% }else{ %>
+                                                                                    <div class="d-flex justify-content-center"
+                                                                                        id="">
+                                                                                        <img src="/static/images/Data report-amico.svg"
+                                                                                            alt="" width="200"
+                                                                                            height="200"
+                                                                                            id="DataReportIcon">
+                                                                                    </div>
+                                                                                    <% } %>
+                                                                </tbody>
+                                                            </table>
+                                                    </div>
+                                                </div>
+                                                <section>
+                                                    <% if (Comments) { %>
+                                                        <div class="d-flex justify-content-between bg-primary bg-gradient bg-opacity-75 p-2 rounded-top shadow-sm">
+                                                        <div class="">
+                                                            <img width="20" height="20" class="d-inline" src="https://img.icons8.com/ios-filled/50/FFFFFF/messaging-.png" alt="messaging-"/>
+                                                            <p class="d-inline text-light">Comments</p>
+                                                        </div>
+                                                            <button type="button" class="d-inline text-light btn m-0 p-0" data-bs-toggle="modal" data-bs-target="#Add_Comment_Modal"><i class="bi bi-plus-circle"></i></button>
+                                                    </div>
+                                                    <% 
+                                                        let relevantComments = Object.keys(Comments).filter(groupKey => {
+                                                            const comment = Comments[groupKey];
+                                                            // Check if there is any note that doesn’t start with "Reason For No Attachments"
+                                                            return Object.keys(comment).some(key => key.startsWith('Note') && !comment[key].startsWith("Reason For No Attachments"));
+                                                        });
+
+                                                        // If there are relevant comments, proceed to display them
+                                                        if (relevantComments.length) { %>
+                                                            <% relevantComments.forEach(groupKey => { 
+                                                                const comment = Comments[groupKey];
+                                                                const isOwner = userData.Employee_ID === comment.Author_ID;
+                                                            %>
+                                                                <div class="row m-1" style="font-size: 12px;">
+                                                                    <div class="col-sm-12 p-0">
+                                                                        <p class="m-0">
+                                                                            <small>
+                                                                                <span><i class="bi bi-person-fill"></i>&nbsp; <%= comment.Author_Name %></span>&nbsp;
+                                                                                <b>|</b>&nbsp;<span><i class="bi bi-calendar3"></i>&nbsp; <%= comment.On %></span>
+
+                                                                                <% for (const key in comment) {
+                                                                                    if (key.startsWith('attachment') && comment[key]) { %>
+                                                                                        <b> |</b><span>
+                                                                                            <a href="../public/uploads/ReferenceDoc/<%= comment[key] %>" class="text-decoration-none btn btn-outline-secondary border-0 btn-sm" download>
+                                                                                                <i class="bi bi-paperclip"></i>
+                                                                                            </a>
+                                                                                        </span>
+                                                                                <% }} %>
+                                                                            </small>
+
+                                                                            <% if (isOwner) { %>
+                                                                                &nbsp; <b>|</b>&nbsp;
+                                                                                <i class="bi bi-trash3-fill btn btn-outline-danger border-0 btn-sm p-0 deleteBtn" 
+                                                                                data-project-id="<%= Markup.Sub_Task_Name %>"
+                                                                                data-target="Task"
+                                                                                data-comment-id="<%= groupKey %>"
+                                                                                data-customer="<%= Customer %>">
+                                                                                </i>
+                                                                            <% } %>
+                                                                        </p>
+
+                                                                        <% for (const key in comment) {
+                                                                            if (key.startsWith('Note') && !comment[key].startsWith("Reason For No Attachments")) { %>
+                                                                                <p class='border p-2 m-0 text-break <%= isOwner ? "comment-section-owner bg-primary bg-gradient bg-opacity-50" : "comment-section" %>'>
+                                                                                    <%- comment[key] %>
+                                                                                </p>
+                                                                        <% }} %>
+                                                                    </div>
+                                                                </div>
+                                                            <% }); %>
+
+                                                        <% } else { %>
+                                                            <!-- Display "No Comments" message if no relevant comments are found -->
+                                                            <div class="position-relative shadow">
+                                                                <img src="../../../static/images/co-workers-animate.svg" alt="No Comments" class="mx-auto d-block">
+                                                            </div>
+                                                        <% } %>
+
+                                                <% } %>
+                                                </section>
+                                            </section>
+                                        </main>
+                                    </body>
+                                    <!--Comments Modal-->
+                                    <div class="modal fade" id="Add_Comment_Modal" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Comment</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <form action="/api/AddCommentTo/Markup/<%=Markup.Sub_Task_Name %>" method="post" enctype="multipart/form-data" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
+                                                    <div class="modal-body">
+                                                        <div class="form-floating">
+                                                            <textarea class="form-control mb-2"
+                                                                placeholder="Leave a comment here" name="Comment"
+                                                                id="Comment" style="height: 100px" minlength="5"
+                                                                required></textarea>
+                                                            <label for="Comment">Enter Comments...</label>
+                                                        </div>
+                                                        <input type="file" name="attachment" id="attachment"
+                                                            class="form-control visually-hidden">
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-primary">Add</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>There is already a timer running on the task <b> <span
+                                                                id="taskID">Prod-00000028</span></b>, so you can't start
+                                                        this task right now. <br>Please stop the current timer first.
+                                                        <br>Click <a href="#" id="TaskURL" class="fs-5">here</a> to go
+                                                        to that task.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Attachments Modal-->
+                                    <div class="modal fade" tabindex="-1" aria-hidden="true" id="AttachmentDialog" data-bs-backdrop="static" data-bs-keyboard="false"
+                                        aria-labelledby="AttachmentDialog">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Add Attachment <i class="bi bi-paperclip"></i></h5>
+                                                    <button type="button" class="btn-close modal-close-btn" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <ul class="list-group list-group-flush p-0 m-0">
+                                                        <li class="list-group-item text-center p-0"><div class="d-flex justify-content-between bg-primary text-light bg-opacity-50 bg-gradient p-2 rounded">
+                                                              <div class="m-0 p-0 w-50">File Name</div>
+                                                                <div class="m-0 p-0 w-25">Size&nbsp; &nbsp;</div>
+                                                                <div class="m-0 p-0 w-25 text-start">Progress</div>
+                                                            </div>
+                                                            </li>
+                                                    </ul>  
+                                                        <ul id="filelist" class="list-group list-group-flush mb-2 ">
+                                                            <li class="list-group-item text-center">No Files Selected</li>
+                                                        </ul>                                                        
+                                                        <div id="container" style="text-align: center;">
+                                                        </div>
+                                                </div>            
+                                                <div class="modal-footer">
+                                                    <input type="file" id="fileInput"  class="form-control form-control-sm w-50" name="file" multiple>                                              
+                                                    <input type="button" value="Upload" class="btn btn-outline-primary btn-sm" id="startUpload">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+                                        <% if(lock==true){%>
+                                            <script>
+                                                elapsedTime = Date.now() - new Date('<%=Log[Object.values(Log).length-1].startTime%>');
+                                                start();
+                                            </script>
+                                            <% } %>
+                                                <script>
+                                                    document.getElementById("stopBtn").addEventListener('click', (e) => {
+                                                        $("#stopBtn").prop("disabled", true)
+                                                        axios.post('/api/updateTimeLog/<%=Markup.Sub_Task_Name %>/stop').then(res => {
+                                                            stop(e.target)
+                                                            window.location.reload();
+                                                        }).catch(e => {
+                                                            console.log(e);
+                                                            if (e.response.data == "Access Denied") {
+                                                                alert("Your session got closed.Login again to continue")
+                                                            } else {
+                                                                console.log(e)
+                                                                alert("Unable to stop the Timer. Try again...!")
+                                                            }
+                                                        })
+                                                    });
+                                                    document.getElementById("startBtn").addEventListener('click', (e) => {
+                                                        $("#startBtn").prop("disabled", true)
+                                                        axios.post('/api/updateTimeLog/<%=Markup.Sub_Task_Name %>/start').then(res => {
+                                                            start(e.target);
+                                                            window.location.reload();
+                                                        }).catch(e => {
+                                                            let pendingTask = e.response.data.OngoingTaskInfo;
+                                                            if (pendingTask) {
+
+                                                                let URL = "#";
+                                                                if (pendingTask.TaskName.startsWith("SUB")) {
+                                                                    URL = `/SubTask/${pendingTask.TaskName}`
+                                                                } else if (pendingTask.TaskName.startsWith("MKUP")) {
+                                                                    URL = `/Markup/${pendingTask.TaskName}`
+                                                                } else {
+                                                                    URL = `/ViewTask/${pendingTask.Customer}/${pendingTask.Milestone_Name}/${pendingTask.TaskName}`
+                                                                }
+                                                                document.getElementById("TaskURL").setAttribute("href", URL);
+                                                                document.getElementById("taskID").innerHTML = pendingTask.TaskLabel ? pendingTask.TaskLabel : pendingTask.TaskName;
+                                                                var myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"), {
+                                                                    keyboard: false
+                                                                });
+                                                                myModal.show();
+                                                            } else if (e.response.data == "Access Denied") {
+                                                                alert("Your session got closed.Login again to continue")
+                                                            } else {
+                                                                console.log(e)
+                                                                alert("Unable to start the Timer. Try again...!")
+                                                            }
+                                                            console.log(e);
+                                                        })
+                                                    });
+                                                    const ProjectStatus = '<%= Markup.Status %>'
+                                                    const techInfo = document.querySelectorAll('input[type=number].techInfo');
+                                                    techInfo.forEach(input => {
+                                                        input.addEventListener('change', saveTechInfo);
+                                                        if (ProjectStatus === 'WIP') {
+                                                            input.removeAttribute('readonly')
+                                                        } else {
+                                                            input.setAttribute('readonly', '')
+                                                        }
+                                                    });
+
+                                                    function saveTechInfo() {
+                                                        document.getElementById("autosaveStatus").innerHTML = '<span><i class="bi bi-arrow-repeat"></i></span>'
+                                                        let values = {};
+                                                        techInfo.forEach(input => {
+                                                            values[input.name] = input.value ? parseInt(input.value) : 0;
+                                                        });
+                                                        axios.post("/api/updateTechInfo/<%= Markup.TaskName %>", { values }).then(res => {
+                                                            document.getElementById("autosaveStatus").innerHTML = '<span><i class="bi bi-cloud-check"></i></span>';
+                                                            toasts.push(res.data.Notification)
+                                                        }).catch(error => {
+                                                            toasts.push(error.response.data.Notification)
+                                                            document.getElementById("autosaveStatus").innerHTML = '<span class="text-danger">Error <i class="bi bi-info-circle"></i></span>'
+                                                        })
+                                                    }
+                                                    let AttachmentLength=parseInt('<%=Object.values(attachments).length%>');
+                                                    document.getElementById("markTaskCompleted").addEventListener("click", (e) => {
+                                                        e.target.setAttribute("disabled", "");
+                                                        let attachConfirm=false;
+                                                        let temp = false;
+                                                        if (elapsedTime != 0) {
+                                                            alert("Please stop the timer before submitting the Markup.")
+                                                        } else if (elapsedTime == 0) {
+                                                            if(AttachmentLength==0){
+                                                                    attachConfirm=confirm("Proceed without attachment? Select OK or Cancel to add one.");
+                                                                    if(attachConfirm){
+                                                                        let reason=prompt("Reason for no attachments (Min 5 Characters):")
+                                                                        if(!reason || reason.trim().toLocaleLowerCase==="no"|| reason.trim().length < 6){
+                                                                            alert("Submission Canceled.")
+                                                                        }else{
+                                                                            temp = confirm('Do you want to submit this markup?\nYour total working time is <%=secondsToMinutes(Markup.TotalTime) %>.');
+                                                                        }
+                                                                    }
+                                                                }else{
+                                                                    temp = confirm('Do you want to submit this markup?\nYour total working time is <%=secondsToMinutes(Markup.TotalTime) %>.');
+                                                                }
+                                                            if (temp) {
+                                                                e.target.innerHTML = null;
+                                                                e.target.innerHTML = `Submitting...<div class="spinner-border spinner-border-sm text-light" role="status"></div>`
+                                                                axios.post('/api/MarkMarkupCompleted/<%=Markup.Sub_Task_Name %>').then(res => {
+                                                                    e.target.innerHTML = "Submitted";
+                                                                    toasts.push(res.data.Notification)
+                                                                    if(res.status==200 && reason?.trim()){
+                                                                    axios.post("/api/AddCommentTo/Markup/<%=Markup.Sub_Task_Name %>",{Comment:"Reason For No Attachments: "+reason}).then(e=>{
+                                                                        window.location.reload();
+                                                                    });
+                                                                }else{
+                                                                    location.reload();
+                                                                }
+                                                                }).catch(error => {
+                                                                    console.log(error)
+                                                                    toasts.push(error.response.data.Notification)
+                                                                })
+                                                            }
+                                                        } else if (parseInt('<%=secondsToMinutes(Markup.TotalTime) %>') < 10) {
+                                                            alert("You can't submit this job now.\nMin of 10 min working is required.")
+                                                        }
+                                                    });
+                                                    const commentDeleteBtn = document.querySelectorAll('.deleteBtn');
+                                                    commentDeleteBtn.forEach(btn => btn.addEventListener("click", e => {
+                                                        e.target.setAttribute('disabled', '')
+                                                        const commentID = e.target.getAttribute('data-comment-id');
+                                                        const projectID = e.target.getAttribute('data-project-id');
+                                                        const Customer = e.target.getAttribute('data-Customer');
+                                                        const Target = e.target.getAttribute("data-target");
+                                                        axios.delete('/api/deleteComment', {
+                                                            data: {
+                                                                Customer: Customer,
+                                                                commentID: commentID,
+                                                                projectID: projectID,
+                                                                Target: Target
+                                                            }
+                                                        }).then(res => {
+                                                            window.location.reload();
+                                                            console.log(res)
+                                                        }).catch(error => {
+                                                            console.log(error);
+                                                            e.target.removeAttribute('disabled')
+                                                        })
+                                                    }));
+                                                    syncArchiveButton();
+                                                </script>

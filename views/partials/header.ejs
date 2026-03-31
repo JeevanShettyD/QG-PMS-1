@@ -1,0 +1,39 @@
+<script type="text/javascript">
+    socket.on('notification-<%-userData.Employee_ID%>', (info) => {
+      Notification.requestPermission().then((permission) => {
+        new Notification('QGMPS', { body: info, icon: '../static/icons/QG-Logo.png' });
+        if (permission != 'granted') {
+          Notification.requestPermission();
+        }
+      })
+    })
+  </script>
+<nav>
+    <input type="checkbox" id="nav-toggle">
+    <div class="d-flex justify-content-between align-items-center">
+
+    <div class="logo"><img src="../../static/images/Quadgen_Logo.png" alt="Quadgen_Logo" srcset="" ></div>
+   <ul class="links  d-flex align-items-end">
+       <!-- <li><a href="/"><span><i class="bi bi-house-fill"></i></span>&nbsp; Home</a></li> 
+       <li><a href="/login"><span><i class="bi bi-box-arrow-in-right"></i></span>&nbsp; Login</a></li>
+      <li><a href="/CreateAssessment">Create Assessment</a></li>
+       <li><a href="/viewAssessment">View Assessment</a></li>
+     <li><a href="/faq" id="logoutbtn">&nbsp;FAQ &nbsp;<span><i class="bi bi-question-circle"></i></span></a></li> -->
+   </ul>
+   </div>
+   <label for="nav-toggle" class="icon-burger">
+       <div class="line"></div>
+       <div class="line"></div>
+       <div class="line"></div>
+   </label>
+</nav>
+<label for="nav-toggle" class="icon-burger">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+</label>
+<div class="alert alert-danger alert-dismissible fade show visually-hidden d-flex flex-row align-items-center p-1 shadow " id="notification-alert" role="alert">
+  <div class="fs-4"><i class="bi bi-info-circle fw-bold me-2"></i></div>
+  <p class="m-0 p-0 me-3"><B>Please grant permission for notification access in order to receive instance notifications from </B><strong>QGPMS</strong>. </p>
+  <button type="button" class="btn-close ms-3 flex-shrink-0" data-bs-dismiss="alert" aria-label="Close" style="flex-shrink:0;"></button>
+</div>

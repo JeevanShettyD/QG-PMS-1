@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+  <body>
+
+    <main>
+
+      <form action="/PMO/createProject/Comcast" method="post" id="createProjectForm">
+        <div class="row m-2 border border-2 p-2">
+          <label for="" class="position-absolute bg-white w-auto" style="top: -10px;">Project Info</label>
+          <div class="col m-2">
+            <div class="row fs-6">
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="JOB_ID">JOB ID</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="JOB_ID" id="JOB_ID" value="" placeholder="Enter the JOB_ID" pattern="[A-Za-z0-9]+"
+                title="Alpha Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="SOW">SOW</label>
+              <select class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                name="SOW" id="SOW">
+                <option value="BAU">BAU</option>
+                <option value="Drafting">Drafting</option>
+                <option value="PFP">PFP</option>
+                <option value="Planning & Drafting">Planning & Drafting</option>
+              </select>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Market">Market</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Market" id="Market" value="" placeholder="Enter the Market" pattern="[A-Za-z0-9]+"
+                title="Alpha Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Priority">Priority</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="number" name="Priority" id="Priority" value="0" min="0" placeholder="Enter the Priority"
+                title="Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label  bg-body-secondary" for="ReceivedDate">Received Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary" type="date" name="ReceivedDate"
+                id="ReceivedDate" value="" autocomplete="off">
+            </div>
+          </div>
+          <div class="m-2 col">
+            <div class="row">
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Region">Region</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Region" id="Region" value="" placeholder="Enter the Region" pattern="[A-Za-z0-9]+"
+                title="Alpha Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Division">Division</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Division" id="Division" value="" placeholder="Enter the Division"
+                pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="DueDate">Due Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="date" name="DueDate" id="DueDate" value="" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="ApprovedDate">Approved Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="date" name="ApprovedDate" id="ApprovedDate" value="" autocomplete="off">
+
+            </div>
+          </div>
+        </div>
+        <div class="m-2  border border-2">
+          <table class="table table-hover">
+            <thead class="bg-cyan">
+              <tr>
+                <th></th>
+                <th scope="col" class="text-center border-end border-2 text-light" colspan="4">COAX</th>
+                <th scope="col" class="text-center text-light" colspan="4">FIBER</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-bottom">
+                <td class="border-end border-2">
+
+                  <b>Aerial</b>
+                </td>
+                <td class="border-end border-2">
+                  <b>Estimated <small>(ft)</small></b>
+                </td>
+                <td class="border-end border-2"> <input type="number" min="0" value="0" name="Air_Coax_Est"
+                    id="Air_Coax_Est" onchange="calculateCableLength()"></td>
+                <td class="border-end border-2">
+                  <b>Actual <small>(ft)</small></b>
+                </td>
+                <td class="border-end border-2"> <input type="number" min="0" value="0" name="Air_Coax_Act"
+                    id="Air_Coax_Act" onchange="calculateCableLength()"></td>
+                <td class="border-end border-2">
+                  <b>Estimated <small>(ft)</small></b>
+                </td>
+                <td class="border-end border-2"> <input type="number" min="0" value="0" name="Air_Fib_Est"
+                    id="Air_Fib_Est" onchange="calculateCableLength()"></td>
+                <td class="border-end border-2">
+                  <b>Actual <small>(ft)</small></b>
+                </td>
+                <td> <input type="number" min="0" value="0" name="Air_Fib_Act" id="Air_Fib_Act"
+                    onchange="calculateCableLength()"></td>
+
+              </tr>
+              <tr class="border-bottom">
+                <td class="border-end border-2">
+                  <b>Buried/UG</b>
+                </td>
+                <td class="border-end border-2">
+                  <b>Estimated <small>(ft)</small></b>
+                </td>
+                <td class="border-end border-2"> <input type="number" min="0" value="0" name="UG_Coax_Est"
+                    id="UG_Coax_Est" onchange="calculateCableLength()"></td>
+                <td class="border-end border-2">
+                  <b>Actual <small>(ft)</small></b>
+                </td>
+                <td class="border-end border-2"> <input type="number" min="0" value="0" name="UG_Coax_Act"
+                    id="UG_Coax_Act" onchange="calculateCableLength()"></td>
+                <td class="border-end border-2">
+                  <b>Estimated <small>(ft)</small></b>
+                </td>
+                <td class="border-end border-2"> <input type="number" min="0" value="0" name="UG_Fib_Est"
+                    id="UG_Fib_Est" onchange="calculateCableLength()"></td>
+                <td class="border-end border-2">
+                  <b>Actual <small>(ft)</small></b>
+                </td>
+                <td> <input type="number" min="0" value="0" name="UG_Fib_Act" id="UG_Fib_Act"
+                    onchange="calculateCableLength()"></td>
+
+              </tr>
+              <tr class="border-bottom">
+                <td class="border-end border-2"><b>Total</b></td>
+                <td colspan="2" class="border-end border-2">
+                  <input type="number" name="Total_Coax_Est" min="0" value="0" id="Total_Coax_Est" readonly>
+                </td>
+                <td colspan="2" class="border-end border-2">
+                  <input type="number" name="Total_Coax_Act" min="0" value="0" id="Total_Coax_Act" readonly>
+                </td>
+                <td colspan="2" class="border-end border-2">
+                  <input type="number" name="Total_Fib_Est" min="0" value="0" id="Total_Fib_Est" readonly>
+                </td>
+                <td colspan="2">
+                  <input type="number" name="Total_Fib_Act" min="0" value="0" id="Total_Fib_Act" readonly>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="d-flex justify-content-evenly align-items-center m-2">
+            <label for="">Total Footage</label>
+            <div class="d-flex total align-items-center">
+              <label for="Total_Est" class="text-nowrap">Estimated (ft) </label>
+              <input type="number" name="Total_Est" id="Total_Est" min="0" value="0" readonly>
+            </div>
+            <div class="d-flex total align-items-center">
+              <label for="Total_Act" class="text-nowrap">Actual (ft) </label>
+              <input type="number" name="Total_Act" id="Total_Act" min="0" value="0" readonly>
+            </div>
+          </div>
+        </div>
+        <div class=" row m-2  border border-2">
+
+            <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Actives">Total No of
+              Actives</label>
+            <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+              type="number" name="Total_Actives" id="Total_Actives" value="" placeholder="Enter the Total No of Actives"
+              title="Numeric Only" autocomplete="off">
+
+            <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Home_Passing">Total Home
+              Passing</label>
+            <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+              type="number" name="Total_Home_Passing" id="Total_Home_Passing" value=""
+              placeholder="Enter the Total Home Passing" title="Numeric Only" autocomplete="off">
+
+        </div>
+
+        </div>
+        <div id="" class=" m-2">
+          <div class="bg-cyan fg-white p-2">Comments <i class="bi bi-chat-quote"></i></div>
+          <div class="border border-2 p-2 ">
+            <div id="NoteArea">
+            </div>
+            <button class="button primary outline rounded shadowed" type="button"
+              onclick="Metro.dialog.open('#AddNoteDialog')" id="AddNoteBtn"><i class="bi bi-plus-circle"></i></button>
+          </div>
+
+          <!-- <button class="button primary" type="button" onclick="Metro.dialog.open('#AddNoteDialog')">Add Note</button> -->
+        </div>
+
+        <div class="text-center m-2">
+          <input type="submit" class="button primary shadowed rounded" value="Submit">
+        </div>
+      </form>
+    </main>
+  </body>
+  <div class="dialog" data-role="dialog" data-close-button="true" data-overlay-click-close="true" id="AddNoteDialog">
+    <div class="dialog-title">Add Comment</div>
+    <div class="dialog-content">
+      <form action="" id="dialog-form">
+        <textarea name="CommentInput" id="CommentInput" data-role="textarea" data-auto-size="true" data-max-height="200"
+          cols="30" rows="1" placeholder="Enter your note here"></textarea>
+        <input class="my-2" type="file" dir="rtl" data-role="file" accept=".pdf, .xls, .xlsx,.docx" name="attachment"
+          id="attachment" placeholder="Select the Attachment" onchange='getExtension(this)'>
+        <input type="hidden" name="attachmentType" id="attachmentType">
+        <input type="hidden" name="attachmentLocation" id="attachmentLocation">
+      </form>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="button secondary rounded js-dialog-close" id="uploadCommentBtn">Upload</button>
+    </div>
+  </div>
+  <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+    <script>
+      function calculateCableLength() {
+        var arial1, arial2, arial3, arial4, ug1, ug2, ug3, ug4;
+        arial1 = parseInt(document.getElementById("Air_Coax_Est").value);
+        arial2 = parseInt(document.getElementById("Air_Coax_Act").value);
+        arial3 = parseInt(document.getElementById("Air_Fib_Est").value);
+        arial4 = parseInt(document.getElementById("Air_Fib_Act").value);
+        ug1 = parseInt(document.getElementById("UG_Coax_Est").value);
+        ug2 = parseInt(document.getElementById("UG_Coax_Act").value);
+        ug3 = parseInt(document.getElementById("UG_Fib_Est").value);
+        ug4 = parseInt(document.getElementById("UG_Fib_Act").value);
+        document.getElementById("Total_Coax_Act").value = arial2 + ug2;
+        document.getElementById("Total_Coax_Est").value = arial1 + ug1;
+        document.getElementById("Total_Fib_Act").value = arial4 + ug4;
+        document.getElementById("Total_Fib_Est").value = arial3 + ug3;
+        document.getElementById("Total_Est").value = arial1 + arial3 + ug1 + ug3;
+        document.getElementById("Total_Act").value = arial2 + arial4 + ug2 + ug4;
+      }
+      function getExtension(e) {
+        const fileInput = document.getElementById(e.id);
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('NoteRefDoc', file);
+        axios.post('/api/uploadNoteRefDoc', formData)
+          .then(response => {
+            document.getElementById(`attachmentLocation`).value = response.data;
+            document.getElementById(`attachmentType`).value = e.files[0].name.split('.').pop();
+          })
+          .catch(error => {
+            console.error(error);
+            alert(error.response.data)
+
+          })
+
+      }
+      document.getElementById("uploadCommentBtn").addEventListener('click', (e) => {
+        const Comment = document.getElementById("CommentInput").value.trim();
+        const attachmentName = document.getElementById('attachmentLocation').value;
+        const type = document.getElementById('attachmentType').value;
+
+        if (Comment.length > 2) {
+          var area = document.getElementById('NoteArea');
+          area.innerHTML += `
+          <div class="row border border-1">
+                <div class="col-sm-1 align-self-center text-center">
+                  <p>1<p>
+                  <input type="hidden" name="location" id="location" value="${attachmentName}">
+                </div>
+                <div class="col-sm-10">
+                  <p>${Comment}</p>
+                 <input type='hidden' class='border-0 ' value='${Comment}' readonly>
+                </div>
+                  ${(attachmentName !== null && attachmentName != undefined && attachmentName != "") ? `
+                  <div class="col-sm-1 align-self-center text-start">
+                  <a href="./public/uploads/ReferenceDoc/${attachmentName}" class="text-decoration-none btn btn-outline-secondary border-0"><span id="type" class="text-uppercase">${type}
+                    </span><i class="bi bi-download"></i></a>
+                </div>`: ``}
+                <div class="col-sm-1 position-absolute end-0">
+                  <button type="button" id="ProfileCardCloseBtn"
+                    class="btn-close position-absolute top-0 end-0 m-1 border-0 rounded-circle btn-sm" onclick=removeNote(this)></button>
+                </div>
+              </div>`
+          document.getElementById("dialog-form").reset();
+          updateSLNo();
+
+        } else {
+          document.getElementById("dialog-form").reset();
+        }
+      })
+
+      function removeNote(e) {
+        const container = document.getElementById('NoteArea');
+        const inputs = container.querySelectorAll('div .row');
+        e.closest('div .row').remove()
+        updateSLNo();
+      }
+      function updateSLNo() {
+        const container = document.getElementById('NoteArea');
+        const rows = container.querySelectorAll("div .row");
+        rows.forEach((row, index) => {
+          let cells = row.querySelectorAll('div')
+          cells[0].getElementsByTagName('p')[0].innerText = index + 1;
+          cells[0].getElementsByTagName('input')[0].id = `attachment${index + 1}Location`;
+          cells[0].getElementsByTagName('input')[0].name = `attachment${index + 1}Location`;
+          cells[1].getElementsByTagName('input')[0].id = `Note${index + 1}`;
+          cells[1].getElementsByTagName('input')[0].name = `Note${index + 1}`;
+        });
+      }
+      $(function () {
+        $('[type="date"]').prop('min', function () {
+          return new Date().toJSON().split('T')[0];
+        });
+      });
+      // document.getElementById('createProjectForm').addEventListener('submit',(e)=>{
+      //   e.preventDefault();
+      //   const x=document.getElementById('createProjectForm').elements;
+      //   console.log(x)
+      //   const from=new FormData(x);
+      //   let formData=from.entries();
+      //   console.log(formData)
+      // })
+    </script>
+
+</html>

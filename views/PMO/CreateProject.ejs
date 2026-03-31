@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= Customer %>-Create Project</title>
+  <%- include('../partials/dependencies') %>
+  <style>
+    :root {
+      --primary: #4a89dc;
+      --primary-dark: #3a70c0;
+      --bg: #fffefc;
+      --card-bg: #ffffff;
+      --border: #e2e5f0;
+      --text-main: #1a1a2e;
+      --text-muted: #8a8fa8;
+      --input-bg: #f7f8fc;
+      --danger: #dc3545;
+      --success: #28a764;
+    }
+
+    main {
+      height: calc(100vh - 48px);
+      overflow-y: auto;
+      padding: 16px 22px;
+      background: var(--bg);
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .page-header .ph-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(74,137,220,0.1);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .page-header .ph-icon i { font-size: 17px; color: var(--primary); }
+    .page-header .ph-text h5 { font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0; }
+    .page-header .ph-text p { font-size: 11.5px; color: var(--text-muted); margin: 0; }
+    .page-header .ph-badges { display: flex; gap: 6px; margin-left: auto; }
+    .page-header .ph-badge {
+      font-size: 10.5px; font-weight: 600; padding: 3px 10px;
+      border-radius: 20px; background: rgba(74,137,220,0.08); color: var(--primary);
+    }
+
+    /* ── Section Card ── */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(74,137,220,0.06);
+      margin-bottom: 16px;
+    }
+    .form-card-header {
+      background: linear-gradient(135deg, #1e3a5f, #162440);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .form-card-header .fch-left {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13.5px; font-weight: 700; color: #ffffff;
+      letter-spacing: 0.2px;
+    }
+    .form-card-header .fch-left i { font-size: 15px; color: rgba(255,255,255,0.7); }
+    .form-card-header .fch-right .btn {
+      color: rgba(255,255,255,0.7); font-size: 14px; padding: 0;
+      transition: all 0.15s;
+    }
+    .form-card-header .fch-right .btn:hover { color: #fff; }
+    .form-card-body {
+      padding: 20px;
+    }
+
+    /* ── Form Grid ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 28px;
+    }
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Field Group ── */
+    .fg {
+      margin-bottom: 14px;
+    }
+    .fg label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      transition: color 0.2s;
+    }
+    .fg:focus-within label { color: var(--primary); }
+    .fg label.required::after {
+      content: ' *';
+      color: var(--danger);
+    }
+    .fg input,
+    .fg select {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 13px;
+      color: var(--text-main);
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      font-family: inherit;
+    }
+    .fg input:focus,
+    .fg select:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(74,137,220,0.10);
+    }
+    .fg input::placeholder { color: #c8cedd; font-size: 12px; }
+    .fg input[readonly] {
+      background: #f0f2f8;
+      color: var(--text-muted);
+      cursor: default;
+    }
+
+    /* Input with unit suffix */
+    .fg .input-unit {
+      position: relative;
+    }
+    .fg .input-unit input {
+      padding-right: 36px;
+    }
+    .fg .input-unit .unit {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* ── Enhanced Table (Footages) ── */
+    .footage-table {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(74,137,220,0.06);
+      margin-bottom: 16px;
+    }
+    .footage-table .ft-header {
+      background: linear-gradient(135deg, #1e3a5f, #162440);
+      padding: 10px 18px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700; color: #fff;
+    }
+    .footage-table .ft-header i { color: rgba(255,255,255,0.7); }
+    .footage-table table {
+      width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 0;
+    }
+    .footage-table thead {
+      background: linear-gradient(135deg, rgba(74,137,220,0.10), rgba(74,137,220,0.04));
+    }
+    .footage-table thead th {
+      padding: 8px 14px; font-size: 10.5px; font-weight: 700;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--text-muted); border-bottom: 1px solid var(--border);
+    }
+    .footage-table tbody td {
+      padding: 8px 14px; border-bottom: 1px solid #f0f2f8;
+      vertical-align: middle;
+    }
+    .footage-table tbody tr:last-child td { border-bottom: none; }
+    .footage-table tbody tr:hover { background: #f7f9ff; }
+    .footage-table tbody td b { font-weight: 600; color: var(--text-main); }
+    .footage-table input[type="number"] {
+      width: 100%; padding: 6px 10px; font-size: 12.5px;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: var(--input-bg); color: var(--text-main);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    .footage-table input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74,137,220,0.10);
+    }
+    .footage-table .ft-unit {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      margin-left: 6px;
+    }
+
+    /* ── Comments Section ── */
+    #NoteArea > .row {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px !important;
+      margin: 6px 0 !important;
+      transition: background 0.15s;
+    }
+    #NoteArea > .row:hover { background: #f7f9ff; }
+
+    /* ── Action Buttons ── */
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px 0;
+    }
+    .btn-submit {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 28px;
+      font-size: 13px; font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #5a96e8, #3a70c0);
+      border: none; border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(74,137,220,0.30);
+      transition: all 0.22s;
+      font-family: inherit;
+    }
+    .btn-submit:hover {
+      box-shadow: 0 6px 20px rgba(74,137,220,0.40);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-upload {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 28px;
+      font-size: 13px; font-weight: 600;
+      color: var(--primary);
+      background: rgba(74,137,220,0.08);
+      border: 1.5px solid rgba(74,137,220,0.2);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.22s;
+      font-family: inherit;
+    }
+    .btn-upload:hover {
+      background: rgba(74,137,220,0.12);
+      border-color: rgba(74,137,220,0.35);
+      box-shadow: 0 3px 12px rgba(74,137,220,0.12);
+      transform: translateY(-1px);
+    }
+    .btn-upload:active { transform: translateY(0); }
+
+    .or-divider {
+      font-size: 12px; color: var(--text-muted); font-weight: 500;
+    }
+
+    /* ── Modal enhancements ── */
+    #AddNoteDialog .modal-content,
+    #BulkUploadDialog .modal-content {
+      border: none; border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    #AddNoteDialog .modal-header,
+    #BulkUploadDialog .modal-header {
+      background: linear-gradient(135deg, #1e3a5f, #162440);
+      border-bottom: none; padding: 14px 20px;
+    }
+    #AddNoteDialog .modal-title,
+    #BulkUploadDialog .modal-title {
+      color: #fff; font-size: 14px; font-weight: 700;
+    }
+    #AddNoteDialog .modal-header .btn-close,
+    #BulkUploadDialog .modal-header .btn-close {
+      filter: invert(1); opacity: 0.6;
+    }
+    #AddNoteDialog .modal-header .btn-close:hover,
+    #BulkUploadDialog .modal-header .btn-close:hover { opacity: 1; }
+    #AddNoteDialog .modal-body,
+    #BulkUploadDialog .modal-body { padding: 20px; }
+    #AddNoteDialog textarea {
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 13px; padding: 10px 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #AddNoteDialog textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74,137,220,0.10);
+    }
+    #AddNoteDialog .modal-footer .btn-primary,
+    #BulkUploadDialog .modal-footer .btn-primary {
+      background: linear-gradient(135deg, #5a96e8, #3a70c0);
+      border: none; border-radius: 10px; font-weight: 600;
+      box-shadow: 0 3px 10px rgba(74,137,220,0.25);
+    }
+
+    /* ── Drag & Drop area ── */
+    .drag-file-area {
+      border: 2px dashed var(--border) !important;
+      border-radius: 14px !important;
+      padding: 30px !important;
+      text-align: center;
+      transition: all 0.2s;
+      background: var(--input-bg);
+    }
+    .drag-file-area:hover {
+      border-color: var(--primary) !important;
+      background: rgba(74,137,220,0.04);
+    }
+    .drag-file-area h3 { font-size: 14px !important; font-weight: 600; color: var(--text-main); }
+    .drag-file-area h6 { font-size: 12px; color: var(--text-muted); margin: 8px 0; }
+    .browse-files-text {
+      color: var(--primary) !important; font-weight: 600;
+      cursor: pointer; text-decoration: underline;
+    }
+  </style>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+<body>
+  <main class="scrollbar-style-3">
+    <% let IDName='', IDLabel='';
+    if(Customer=='AT&T' ){
+      IDName='CFAS_ID';
+      IDLabel='CFAS-ID';
+    }else{
+      IDName='JOB_ID';
+      IDLabel='Job ID';
+    }
+    %>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="ph-icon"><i class="bi bi-file-earmark-plus"></i></div>
+      <div class="ph-text">
+        <h5>Create New Project</h5>
+        <p>Fill in the project details below</p>
+      </div>
+      <div class="ph-badges">
+        <span class="ph-badge"><%= Customer %></span>
+        <span class="ph-badge"><%= Program %></span>
+      </div>
+    </div>
+
+    <form action="/PMO/createProject/<%= Customer %>" method="post" id="createProjectForm" onsubmit="this.querySelector('button[type=submit]').disabled = true">
+      <input type="hidden" name="Customer" id="Customer" value="<%= Customer %>" readonly>
+      <input type="hidden" name="Program" id="Program" value="<%= Program %>" readonly>
+
+      <!-- ══ Project Info ══ -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-left"><i class="bi bi-info-circle-fill"></i> Project Information</div>
+        </div>
+        <div class="form-card-body">
+          <div class="form-grid">
+            <!-- ── Left Column ── -->
+            <div>
+              <div class="fg">
+                <label for="<%= IDName %>" class="required"><%= IDLabel %></label>
+                <input type="text" name="<%= IDName %>" id="<%= IDName %>" value="" placeholder="Enter the <%= IDLabel %>" pattern="[A-Za-z0-9_-]+" title="Alpha Numeric Only" required>
+              </div>
+              <div class="fg">
+                <label for="SOW" class="required">SOW</label>
+                <select name="SOW" id="SOW" required>
+                  <option selected value="">Select SOW</option>
+                  <% SOW.forEach(sow=>{ %>
+                    <option value="<%- sow %>"><%- sow %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <% if(Customer!='AT&T' && Program!='MasTec-Tillman' && Program!='MasTec-Windstream' && Program!='MasTec-Comcast'){ %>
+                <div class="fg">
+                  <label for="Total_Est">Total Footage (Est)</label>
+                  <div class="input-unit">
+                    <input type="text" name="Total_Est" id="Total_Est" placeholder="Enter the Total Footage" min="0" value="0" title="Positive Integers Only..." pattern="[0-9]+" required>
+                    <span class="unit">ft</span>
+                  </div>
+                </div>
+                <% if(Program!='MasTec-Comcast' ){ %>
+                  <div class="fg">
+                    <label for="Total_Home_Passing">Total Home Passing</label>
+                    <input type="text" name="Total_Home_Passing" id="Total_Home_Passing" min="0" value="0" placeholder="Enter the Total Home Passing" title="Positive Integers Only..." pattern="[0-9]+" required>
+                  </div>
+                <% } %>
+              <% } %>
+              <% if(Program=='MasTec-Windstream' ){ %>
+                <div class="fg">
+                  <label for="WONumber" class="required">Work Order Number</label>
+                  <input type="text" name="WONumber" id="WONumber" value="" placeholder="Enter the Work Order Number" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only" required>
+                </div>
+                <div class="fg">
+                  <label for="Exchange" class="required">Exchange</label>
+                  <input type="text" name="Exchange" id="Exchange" value="" placeholder="Enter the Exchange" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only" required>
+                </div>
+              <% } %>
+              <% if(Customer!="SkyTec" && Customer!='AT&T' && Program!='MasTec-Tillman' && Program!='MasTec-Windstream' && Program!='MasTec-Comcast'){ %>
+                <div class="fg">
+                  <label for="Total_Actives">Total No of Actives</label>
+                  <input type="text" name="Total_Actives" id="Total_Actives" minlength="1" maxlength="3" value="0" placeholder="Enter the Total No of Actives" title="Positive Integers Only..." pattern="[0-9]+" required>
+                </div>
+              <% } %>
+              <% if(Customer=='AT&T' ){ %>
+                <div class="fg">
+                  <label for="CILLICode">CILLI Code</label>
+                  <input type="text" name="CILLICode" id="CILLICode" value="" placeholder="Enter the CILLI Code" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+                <div class="fg">
+                  <label for="Permit">Permit</label>
+                  <select name="Permit" id="Permit">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label for="WireCenter">Wire Center</label>
+                  <input type="text" name="WireCenter" id="WireCenter" value="" placeholder="Enter the Wire Center" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+                <div class="fg">
+                  <label for="NPPAXNo">NPPAX No</label>
+                  <input type="number" name="NPPAXNo" id="NPPAXNo" min="0" value="0" placeholder="Enter the NPPAX No" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+                <div class="fg">
+                  <label for="PFPAddress">PFP Address</label>
+                  <input type="text" name="PFPAddress" id="PFPAddress" value="" placeholder="Enter the PFP Address" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+              <% } %>
+              <% if(Customer=='AT&T' || Program=='MasTec-Tillman' ){ %>
+                <div class="fg">
+                  <label for="DANumber">DA Number</label>
+                  <input type="text" name="DANumber" id="DANumber" value="" placeholder="Enter the DA Number" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+              <% } %>
+              <%if(Program=='MasTec-Tillman' || Program=='MasTec-Comcast'){%>
+                <div class="fg">
+                  <label for="Market_ID" class="required"><%if(Program=='MasTec-Comcast'){%>Market/Area<%}else{%>Market ID<%}%></label>
+                  <input type="text" name="Market_ID" id="Market_ID" value="" placeholder="Enter the <%if(Program=='MasTec-Comcast'){%>Market/Area<%}else{%>Market ID<%}%>" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only" required>
+                </div>
+                <%if(Program=='MasTec-Tillman'){%>
+                  <div class="fg">
+                    <label for="Market_Order">Market Order</label>
+                    <input type="text" name="Market_Order" id="Market_Order" value="" placeholder="Enter the Market Order" pattern="[0-9]+" title="Numeric Only">
+                  </div>
+                <% } %>
+                <div class="fg">
+                  <label for="Project_No"><%if(Program=='MasTec-Comcast'){%>Parent JB#<%}else{%>Project #<%}%></label>
+                  <input type="text" name="Project_No" id="Project_No" value="" placeholder="Enter the Project #" pattern="[A-Za-z0-9_-/ ]+" title="Alpha Numeric Only">
+                </div>
+              <%}%>
+              <%if(Program=='MasTec-Comcast'){%>
+                <div class="fg">
+                  <label for="Region_ID">Region ID</label>
+                  <input type="text" name="Region_ID" id="Region_ID" value="" placeholder="Enter the Region ID" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+              <%}%>
+            </div>
+
+            <!-- ── Right Column ── -->
+            <div>
+              <div class="fg">
+                <label for="Job_Name" class="required">Job Name</label>
+                <input type="text" name="Job_Name" id="Job_Name" value="" placeholder="Enter the Job Name" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only" required>
+              </div>
+              <% if(Customer=='AT&T' ){ %>
+                <div class="fg">
+                  <label for="F1_CFAS_ID" class="required">F1 CFAS-ID</label>
+                  <input type="text" name="F1_CFAS_ID" id="F1_CFAS_ID" value="" placeholder="Enter the F1 CFAS-ID" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only" required>
+                </div>
+                <div class="fg">
+                  <label for="F2_CFAS_ID">F2 CFAS-ID</label>
+                  <input type="text" name="F2_CFAS_ID" id="F2_CFAS_ID" value="" placeholder="Enter the F2 CFAS-ID" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+                <div class="fg">
+                  <label for="PSANumber">PSA Number</label>
+                  <input type="text" name="PSANumber" id="PSANumber" value="" placeholder="Enter the PSA Number" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+                <div class="fg">
+                  <label for="Score">AT&T Score</label>
+                  <input type="number" name="Score" id="Score" value="0" placeholder="Enter the Score" pattern="[0-9]+" title="Alpha Numeric Only">
+                </div>
+              <% } %>
+              <% if(Customer=="ATX" ){ %>
+                <div class="fg">
+                  <label for="No_Rolts" class="required">No of ROLT's</label>
+                  <input type="number" name="No_ROLTs" id="No_Rolts" placeholder="Enter the No of ROLT's" maxlength="3" value="0" title="Positive Integers Only..." minlength="1" pattern="[0-9]+" required>
+                </div>
+              <% } %>
+              <div class="fg">
+                <label for="Region" class="required"><% if(Customer=="AT&T" || Program=='MasTec-Comcast' ){ %>State<%}else{%>Region<%}%></label>
+                <input type="text" name="Region" id="Region" value="" placeholder="Enter the <% if(Customer=='AT&T' || Program=='MasTec-Comcast'){ %>State<%}else{%>Region<%}%>" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only" required>
+              </div>
+              <% if(Customer!='AT&T' && Program!='MasTec-Windstream' && Program!='MasTec-Comcast'){ %>
+                <div class="fg">
+                  <label for="Division">Division</label>
+                  <input type="text" name="Division" id="Division" value="" placeholder="Enter the Division" pattern="[A-Za-z0-9_- ]+" title="Alpha Numeric Only">
+                </div>
+              <% } %>
+              <div class="fg">
+                <label for="ReceivedDate" class="required">Received Date</label>
+                <input type="date" name="ReceivedDate" id="ReceivedDate" value="" required>
+              </div>
+              <div class="fg">
+                <label for="DueDate" class="required">Due Date</label>
+                <input type="date" name="DueDate" id="DueDate" value="" required>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Footage Table (AT&T only) ══ -->
+      <% if (Customer=="AT&T" ) { %>
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="fch-left"><i class="bi bi-rulers"></i> Footages</div>
+          </div>
+          <div class="form-card-body" style="padding:0;">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+              <thead>
+                <tr style="background:linear-gradient(135deg,rgba(74,137,220,0.10),rgba(74,137,220,0.04));">
+                  <th style="padding:10px 14px;font-size:10.5px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);text-align:left;">Type</th>
+                  <th style="padding:10px 14px;font-size:10.5px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);text-align:left;">Estimated</th>
+                  <th style="padding:10px 14px;font-size:10.5px;font-weight:700;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);text-align:left;">Actual</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #f0f2f8;">
+                  <td style="padding:10px 14px;font-weight:600;color:var(--text-main);">Aerial</td>
+                  <td style="padding:10px 14px;">
+                    <div class="input-unit">
+                      <input type="number" min="0" value="0" name="Air_Fib_Est" id="Air_Fib_Est" onchange="calculateCableLength()" oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="padding:7px 36px 7px 10px;font-size:12.5px;border:1.5px solid var(--border);border-radius:8px;background:var(--input-bg);width:100%;outline:none;">
+                      <span class="unit">ft</span>
+                    </div>
+                  </td>
+                  <td style="padding:10px 14px;">
+                    <div class="input-unit">
+                      <input type="number" min="0" value="0" name="Air_Fib_Act" id="Air_Fib_Act" onchange="calculateCableLength()" oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="padding:7px 36px 7px 10px;font-size:12.5px;border:1.5px solid var(--border);border-radius:8px;background:var(--input-bg);width:100%;outline:none;">
+                      <span class="unit">ft</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr style="border-bottom:1px solid #f0f2f8;">
+                  <td style="padding:10px 14px;font-weight:600;color:var(--text-main);">Buried/UG</td>
+                  <td style="padding:10px 14px;">
+                    <div class="input-unit">
+                      <input type="number" min="0" value="0" name="UG_Fib_Est" id="UG_Fib_Est" onchange="calculateCableLength()" oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="padding:7px 36px 7px 10px;font-size:12.5px;border:1.5px solid var(--border);border-radius:8px;background:var(--input-bg);width:100%;outline:none;">
+                      <span class="unit">ft</span>
+                    </div>
+                  </td>
+                  <td style="padding:10px 14px;">
+                    <div class="input-unit">
+                      <input type="number" min="0" value="0" name="UG_Fib_Act" id="UG_Fib_Act" onchange="calculateCableLength()" oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="padding:7px 36px 7px 10px;font-size:12.5px;border:1.5px solid var(--border);border-radius:8px;background:var(--input-bg);width:100%;outline:none;">
+                      <span class="unit">ft</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr style="background:rgba(74,137,220,0.03);">
+                  <td style="padding:10px 14px;font-weight:700;color:var(--text-main);">Total</td>
+                  <td style="padding:10px 14px;">
+                    <div class="input-unit">
+                      <input type="number" name="Total_Fib_Est" min="0" value="0" id="Total_Fib_Est" readonly style="padding:7px 36px 7px 10px;font-size:12.5px;border:1.5px solid var(--border);border-radius:8px;background:#f0f2f8;width:100%;outline:none;color:var(--text-muted);">
+                      <span class="unit">ft</span>
+                    </div>
+                  </td>
+                  <td style="padding:10px 14px;">
+                    <div class="input-unit">
+                      <input type="number" name="Total_Fib_Act" min="0" value="0" id="Total_Fib_Act" readonly style="padding:7px 36px 7px 10px;font-size:12.5px;border:1.5px solid var(--border);border-radius:8px;background:#f0f2f8;width:100%;outline:none;color:var(--text-muted);">
+                      <span class="unit">ft</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- ══ Comments ══ -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-left"><i class="bi bi-chat-dots-fill"></i> Comments</div>
+          <div class="fch-right">
+            <button class="btn btn-sm text-light p-0 px-1" type="button" data-bs-toggle="modal" data-bs-target="#AddNoteDialog" id="AddNoteBtn">
+              <i class="bi bi-plus-circle"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-card-body" style="padding:12px 18px;min-height:50px;">
+          <div id="NoteArea"></div>
+        </div>
+      </div>
+
+      <!-- ══ Action Buttons ══ -->
+      <div class="form-actions">
+        <button type="submit" class="btn-submit">Submit <i class="bi bi-arrow-right"></i></button>
+        <span class="or-divider">or</span>
+        <button type="button" class="btn-upload" data-bs-toggle="modal" data-bs-target="#BulkUploadDialog">Upload <i class="bi bi-cloud-plus"></i></button>
+      </div>
+    </form>
+  </main>
+</body>
+
+<!-- Add Comment Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="AddNoteDialog" aria-labelledby="AddNoteDialog">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-chat-dots me-2" style="color:rgba(255,255,255,0.7)"></i>Add Comment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <textarea name="CommentInput" class="form-control" id="CommentInput" rows="4" cols="30"
+          placeholder="Enter your comment..." data-role="textarea" data-auto-size="true" data-max-height="200"
+          autocapitalize="on" spellcheck="true"></textarea>
+        <form action="" id="dialog-form">
+          <input class="my-2 form-control visually-hidden" type="file" dir="rtl" data-role="file" accept=".pdf, .xls, .xlsx,.docx"
+            name="attachment" id="attachment" placeholder="Select the Attachment" onchange='getExtension(this)'>
+          <input type="hidden" name="attachmentType" id="attachmentType">
+          <input type="hidden" name="attachmentLocation" id="attachmentLocation">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary rounded" id="uploadCommentBtn">Add Comment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Project Upload Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="BulkUploadDialog" aria-labelledby="BulkUploadModal">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-cloud-upload me-2" style="color:rgba(255,255,255,0.7)"></i>Upload Project</h5>
+        <p class="p-0 m-0 mx-2" style="color:rgba(255,255,255,0.5)" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Use the DD-MM-YYYY date format for all date fields when preparing the Excel sheet for project uploads."><i class="bi bi-info-circle-fill"></i></p>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-center visually-hidden">
+          <a href="/api/downloadProjectTemplate/<%= Customer %>/<%= Program %>" class="mx-auto mb-2"><button type="button"
+              class="btn btn-sm btn-outline-secondary rounded-pill">Template <i class="bi bi-cloud-download"></i></button></a>
+        </div>
+        <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+        <form class="form-container" enctype='multipart/form-data'>
+          <div class="upload-files-container">
+            <div class="drag-file-area">
+              <h3 class="dynamic-message">Drag & Drop Excel file here</h3>
+              <h6>Or</h6>
+              <label class="label"><span class="browse-files"><p class="m-1 p-0 browse-files-text">Browse File</p><input type="file" class="default-file-input" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/></span></label>
+            </div>
+          </div>
+        </form>
+        <span class="cannot-upload-message mx-auto"><span class="material-icons-outlined">error</span> Please select a file first <span class="material-icons-outlined cancel-alert-button">cancel</span></span>
+        <div class="file-block">
+          <div class="file-info"><span class="material-icons-outlined file-icon">description</span> <span class="file-name"></span> | <span class="file-size"></span></div>
+          <span class="material-icons remove-file-icon">delete</span>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-evenly">
+        <a href="/api/downloadProjectTemplate/<%= Customer %>/<%= Program %>"><button type="button" class="btn btn-secondary rounded-pill">Template <i class="bi bi-cloud-download"></i></button></a>
+        <button type="button" class="upload-button btn btn-primary rounded-pill">Upload <i class="bi bi-cloud-upload"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script>
+  var isAdvancedUpload = (function () {
+    var div = document.createElement("div");
+    return (
+      ("draggable" in div || ("ondragstart" in div && "ondrop" in div)) &&
+      "FormData" in window &&
+      "FileReader" in window
+    );
+  })();
+
+  let draggableFileArea = document.querySelector(".drag-file-area");
+  let browseFileText = document.querySelector(".browse-files");
+  let uploadIcon = document.querySelector(".upload-icon");
+  let dragDropText = document.querySelector(".dynamic-message");
+  let fileInput = document.querySelector(".default-file-input");
+  let cannotUploadMessage = document.querySelector(".cannot-upload-message");
+  let cancelAlertButton = document.querySelector(".cancel-alert-button");
+  let uploadedFile = document.querySelector(".file-block");
+  let fileName = document.querySelector(".file-name");
+  let fileSize = document.querySelector(".file-size");
+  let removeFileButton = document.querySelector(".remove-file-icon");
+  let uploadButton = document.querySelector(".upload-button");
+  let fileFlag = 0;
+
+  fileInput.addEventListener("click", () => { fileInput.value = null; });
+
+  fileInput.addEventListener("change", (e) => {
+    dragDropText.innerHTML = "File Dropped Successfully!";
+    uploadButton.innerHTML = `<i class="bi bi-cloud-upload-fill me-2"></i> Upload`;
+    fileName.innerHTML = fileInput.files[0].name;
+    fileSize.innerHTML = (fileInput.files[0].size / 1024).toFixed(1) + " KB";
+    uploadedFile.style.cssText = "display: flex;";
+    fileFlag = 0;
+  });
+
+  const BulkUploadDialog = new bootstrap.Modal('#BulkUploadDialog', { keyboard: false });
+
+  uploadButton.addEventListener("click", async () => {
+    let isFileUploaded = fileInput.value;
+    const Customer = document.getElementById('Customer').value;
+    const Program = document.getElementById('Program').value;
+    if (isFileUploaded != "" || fileInput.value == null) {
+      uploadButton.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div> Uploading...`;
+      const file = fileInput.files[0];
+      let fromData = new FormData();
+      fromData.append("Project", file)
+      await axios.post(`/api/uploadProject/${Customer}/${Program}`, fromData).then(res => {
+        if (res.status == 200) {
+          uploadButton.innerHTML = `<i class="bi bi-cloud-check-fill me-2"></i> Uploaded`;
+          const Responses = res.data;
+          Responses.forEach(response => { toasts.push(response); })
+          BulkUploadDialog.hide()
+        }
+      }).catch(e => {
+        console.log(e)
+        uploadButton.innerHTML = `<i class="bi bi-arrow-clockwise me-2"></i> Try Again..!`;
+      })
+    } else {
+      cannotUploadMessage.style.cssText = "display: flex; animation: fadeIn linear 1.5s;";
+    }
+  });
+
+  cancelAlertButton.addEventListener("click", () => { cannotUploadMessage.style.cssText = "display: none;"; });
+
+  if (isAdvancedUpload) {
+    ["drag","dragstart","dragend","dragover","dragenter","dragleave","drop"].forEach((evt) =>
+      draggableFileArea.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); })
+    );
+    ["dragover", "dragenter"].forEach((evt) => {
+      draggableFileArea.addEventListener(evt, (e) => {
+        e.preventDefault(); e.stopPropagation();
+        dragDropText.innerHTML = "Drop your file here!";
+      });
+    });
+    draggableFileArea.addEventListener("drop", (e) => {
+      dragDropText.innerHTML = "File Dropped Successfully!";
+      uploadButton.innerHTML = `Upload`;
+      let files = e.dataTransfer.files;
+      fileInput.files = files;
+      fileName.innerHTML = files[0].name;
+      fileSize.innerHTML = (files[0].size / 1024).toFixed(1) + " KB";
+      uploadedFile.style.cssText = "display: flex;";
+      fileFlag = 0;
+    });
+  }
+
+  removeFileButton.addEventListener("click", () => {
+    uploadedFile.style.cssText = "display: none;";
+    fileInput.value = null;
+    dragDropText.innerHTML = "Drag & drop any file here";
+    uploadButton.innerHTML = `Upload`;
+  });
+
+  function calculateCableLength() {
+    var arial3, arial4, ug3, ug4;
+    arial3 = parseInt(document.getElementById("Air_Fib_Est").value);
+    arial4 = parseInt(document.getElementById("Air_Fib_Act").value);
+    ug3 = parseInt(document.getElementById("UG_Fib_Est").value);
+    ug4 = parseInt(document.getElementById("UG_Fib_Act").value);
+    document.getElementById("Total_Fib_Act").value = arial4 + ug4;
+    document.getElementById("Total_Fib_Est").value = arial3 + ug3;
+  }
+
+  function getExtension(e) {
+    const fileInput = document.getElementById(e.id);
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('NoteRefDoc', file);
+    axios.post('/api/uploadNoteRefDoc', formData)
+      .then(response => {
+        document.getElementById(`attachmentLocation`).value = response.data;
+        document.getElementById(`attachmentType`).value = e.files[0].name.split('.').pop();
+      })
+      .catch(error => { console.error(error); alert(error.response.data) })
+  }
+
+  document.getElementById("uploadCommentBtn").addEventListener('click', (e) => {
+    let Comment = document.getElementById("CommentInput").value;
+    const attachmentName = document.getElementById('attachmentLocation').value;
+    const type = document.getElementById('attachmentType').value;
+    if (Comment.length > 2) {
+      var area = document.getElementById('NoteArea');
+      area.innerHTML += `
+      <div class="row p-1 m-1">
+        <div class="col-sm-1 align-self-center text-center">
+          <p class="m-0">1</p>
+          <input type="hidden" name="location" id="location" value="${attachmentName}">
+        </div>
+        <div class="col-sm-10">
+          <p class="m-0">${Comment.replace(/\r?\n/g, '<br/>')}</p>
+          <input type='hidden' class='border-0' value="${Comment.replace(/\r?\n/g, '<br/>')}" readonly>
+        </div>
+        ${(attachmentName !== null && attachmentName != undefined && attachmentName != "") ? `
+        <div class="col-sm-1 align-self-center text-start">
+          <a href="/public/uploads/ReferenceDoc/${attachmentName}" class="text-decoration-none btn btn-outline-secondary border-0"><span id="type" class="text-uppercase">${type}</span><i class="bi bi-download"></i></a>
+        </div>`: ``}
+        <div class="col-sm-1 position-absolute end-0 mx-2">
+          <button type="button" id="ProfileCardCloseBtn" class="btn-close position-absolute top-0 end-0 m-1 border-0 rounded-circle btn-sm" onclick=removeNote(this)></button>
+        </div>
+      </div>`
+      document.getElementById("CommentInput").value = '';
+      document.getElementById("dialog-form").reset();
+      updateSLNo();
+    } else {
+      document.getElementById("dialog-form").reset();
+    }
+  })
+
+  function removeNote(e) {
+    const container = document.getElementById('NoteArea');
+    e.closest('div .row').remove()
+    updateSLNo();
+  }
+
+  function updateSLNo() {
+    const container = document.getElementById('NoteArea');
+    const rows = container.querySelectorAll("div .row");
+    rows.forEach((row, index) => {
+      let cells = row.querySelectorAll('div')
+      cells[0].getElementsByTagName('p')[0].innerText = index + 1;
+      cells[0].getElementsByTagName('input')[0].id = `attachment${index + 1}Location`;
+      cells[0].getElementsByTagName('input')[0].name = `attachment${index + 1}Location`;
+      cells[1].getElementsByTagName('input')[0].id = `Note${index + 1}`;
+      cells[1].getElementsByTagName('input')[0].name = `Note${index + 1}`;
+    });
+  }
+
+  var receivedDate = document.getElementById('ReceivedDate');
+  var dueDate = document.getElementById('DueDate');
+  receivedDate.addEventListener('change', () => { validateDate(new Date(receivedDate.value), new Date(dueDate.value)); });
+  dueDate.addEventListener('change', () => { validateDate(new Date(receivedDate.value), new Date(dueDate.value)); });
+
+  function validateDate(rDate, dDate) {
+    if (rDate && dDate) {
+      if (dDate < rDate) {
+        dueDate.value = "";
+        receivedDate.value = "";
+        toasts.push({ title: "Error", content: "Due date should be greater than Received date", style: "error", dismissAfter: '10s' });
+      }
+    }
+  }
+
+  $("#No_Rolts").hide();
+  $("label[for='No_Rolts']").hide();
+  $("#ArialContainer").hide();
+  $("label[for='Arial']").hide();
+  $("#BuriedContainer").hide();
+  $("label[for='Buried']").hide();
+
+  $("#SOW").on("change", (e) => {
+    if (e.target.value == "Design-HLD" || e.target.value == "Design-LLD") {
+      $("#Total_Actives").hide();
+      $("label[for='Total_Actives']").hide();
+      $("label[for='Total_Est']").text("Total Footage (Est)")
+      $("#ArialContainer").show();
+      $("label[for='Arial']").show();
+      $("#BuriedContainer").show();
+      $("label[for='Buried']").show();
+    } else {
+      $("label[for='Total_Est']").text("Total Footage")
+      $("#Total_Actives").show();
+      $("label[for='Total_Actives']").show();
+      $("#ArialContainer").hide();
+      $("label[for='Arial']").hide();
+      $("#BuriedContainer").hide();
+      $("label[for='Buried']").hide();
+    }
+    if (e.target.value == "Design-LLD") {
+      $("#No_Rolts").show();
+      $("label[for='No_Rolts']").show();
+    } else {
+      $("#No_Rolts").hide();
+      $("label[for='No_Rolts']").hide();
+    }
+    if(e.target.value=="F2 E2E"){
+      $("#F2_CFAS_ID").attr("required","")
+      $("label[for='F2_CFAS_ID']").addClass("required")
+    }else{
+      $("#F2_CFAS_ID").removeAttr("required")
+      $("label[for='F2_CFAS_ID']").removeClass("required")
+    }
+  });
+</script>
+
+</html>

@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milestone</title>
+  <%- include('../partials/dependencies') %>
+</head>
+
+<% if (userData.Role=="Employee") { %>
+  <%- include('../partials/Employee-header',{userData:userData}) %>
+<% } else if(userData.Role=="Admin") { %>
+  <%- include('../partials/Admin-header',{userData:userData}) %>
+<% } else if(userData.Role=="PMO") { %>
+  <%- include('../partials/PMO-header',{userData:userData}) %>
+<% } if(userData.Role=="Manager") { %>
+  <%- include('../partials/Manager-header',{userData:userData}) %>
+<% } %>
+
+<style>
+  /* ══════════════════════════════════════
+     DESIGN SYSTEM — matches PMO palette
+  ══════════════════════════════════════ */
+  :root {
+    --navy-900: #0f1e36;
+    --navy-800: #152844;
+    --navy-700: #1b3258;
+    --blue-500: #2d7dd2;
+    --blue-400: #4a96e8;
+    --accent:   #00c6ff;
+    --page-bg:  #f0f4fa;
+    --card-bg:  #ffffff;
+    --border:   #e2e8f4;
+    --text:     #1e2d45;
+    --muted:    #7a8aaa;
+    --radius:   10px;
+    --shadow:   0 1px 4px rgba(15,30,80,0.06), 0 4px 16px rgba(15,30,80,0.07);
+    --tr:       all 0.18s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  html, body { background: var(--page-bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+  main { padding: 12px 18px 40px; min-height: calc(100vh - 52px); }
+
+  /* ══════════════════════════════════════
+     PAGE HEADER BAR — vibrant gradient
+  ══════════════════════════════════════ */
+  .vm-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 55%, var(--navy-700) 100%);
+    border: none;
+    border-radius: var(--radius); padding: 12px 18px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 18px rgba(15,30,80,0.18), 0 1px 0 rgba(255,255,255,0.04) inset;
+    position: relative; overflow: hidden;
+  }
+  .vm-header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-500), var(--accent), transparent);
+    opacity: 0.7;
+  }
+  .vm-header-left { display: flex; align-items: center; gap: 12px; }
+  .vm-header-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(45,125,210,0.25);
+    border: 1px solid rgba(45,125,210,0.3);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .vm-header-icon i { font-size: 18px; color: var(--accent); }
+  .vm-header-name {
+    font-size: 15px; font-weight: 800; color: #fff;
+    letter-spacing: 0.2px;
+  }
+  .vm-header-project {
+    font-size: 11.5px; color: rgba(255,255,255,0.55); font-weight: 500;
+    display: flex; align-items: center; gap: 5px; margin-top: 2px;
+  }
+  .vm-header-project a {
+    color: var(--accent); font-weight: 700; text-decoration: none;
+  }
+  .vm-header-project a:hover { text-decoration: underline; }
+  .vm-status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 700;
+    background: rgba(45,125,210,0.22);
+    color: #90c8ff;
+    border: 1px solid rgba(45,125,210,0.35);
+  }
+  .vm-status-pill::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); display: block;
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ══════════════════════════════════════
+     CONTROL TABS — same pill style, stronger
+  ══════════════════════════════════════ */
+  .vm-tabs-wrap {
+    display: flex; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .vm-tabs {
+    display: inline-flex; align-items: center;
+    background: var(--card-bg);
+    border: 1px solid #d0e4ff;
+    border-radius: 14px; padding: 4px; gap: 3px;
+    box-shadow: 0 2px 12px rgba(45,125,210,0.1), 0 1px 3px rgba(45,125,210,0.06);
+  }
+  .vm-tab {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 18px; border-radius: 10px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    border: none; background: transparent; color: var(--muted);
+    transition: var(--tr); white-space: nowrap; letter-spacing: 0.1px;
+  }
+  .vm-tab i { font-size: 12px; }
+  .vm-tab:hover {
+    background: linear-gradient(135deg, #eef5ff, #e4effe);
+    color: var(--blue-500);
+    box-shadow: 0 1px 6px rgba(45,125,210,0.12);
+  }
+  .vm-tab.active {
+    background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(45,125,210,0.35);
+  }
+
+  /* ══════════════════════════════════════
+     INFO GRID — vibrant, gradient, bold keys
+  ══════════════════════════════════════ */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .info-field {
+    display: flex; flex-direction: column; gap: 4px;
+    border-radius: 10px; padding: 11px 14px;
+    position: relative; overflow: hidden;
+    transition: var(--tr);
+    background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
+    border: 1px solid #dce8ff;
+    box-shadow: 0 1px 4px rgba(45,125,210,0.07);
+  }
+  /* Left accent bar */
+  .info-field::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--blue-400), var(--blue-500));
+    border-radius: 10px 0 0 10px;
+  }
+  .info-field:hover {
+    border-color: rgba(45,125,210,0.4);
+    box-shadow: 0 3px 14px rgba(45,125,210,0.14);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+  }
+  /* Key label — bold, uppercase, blue-tinted */
+  .info-field label {
+    font-size: 9px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 0.9px;
+    color: var(--blue-500);
+    display: flex; align-items: center; gap: 5px; margin: 0;
+    opacity: 0.85;
+  }
+  .info-field label i { font-size: 10px; }
+  /* Value — large, bold, dark */
+  .info-field .info-val {
+    font-size: 13.5px; font-weight: 800; color: var(--navy-700);
+    display: flex; align-items: center; gap: 6px;
+    min-height: 22px;
+    letter-spacing: -0.1px;
+  }
+  .info-field .info-val a {
+    color: var(--blue-500); text-decoration: none; font-weight: 800;
+  }
+  .info-field .info-val a:hover { text-decoration: underline; }
+  .info-field .info-val .edit-wrap {
+    display: flex; align-items: center; gap: 6px; width: 100%;
+  }
+  /* Editable inputs — compact */
+  .info-field select.select-list,
+  .info-field input.select-list {
+    font-size: 12.5px; font-weight: 700; color: var(--text);
+    border: 1px solid #c8daff; border-radius: 7px;
+    padding: 4px 9px; background: #f0f6ff;
+    flex: 1; min-width: 0; transition: var(--tr);
+  }
+  .info-field select.select-list:focus,
+  .info-field input.select-list:focus {
+    border-color: var(--blue-500); outline: none;
+    box-shadow: 0 0 0 3px rgba(45,125,210,0.18);
+    background: #fff;
+  }
+  .info-field .toggle-button {
+    color: var(--blue-500); cursor: pointer; font-size: 12px;
+    opacity: 0.55; transition: opacity 0.15s; flex-shrink: 0;
+  }
+  .info-field .toggle-button:hover { opacity: 1; }
+  .info-field .reset-btn {
+    color: var(--blue-500); cursor: pointer; font-size: 14px;
+    opacity: 0.65; transition: opacity 0.15s; flex-shrink: 0;
+  }
+  .info-field .reset-btn:hover { opacity: 1; }
+
+  /* Section headers inside card */
+  .vm-section {
+    background: var(--card-bg); border: 1px solid #dce8ff;
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: 0 2px 10px rgba(45,125,210,0.08), 0 1px 3px rgba(45,125,210,0.05);
+    margin-bottom: 10px;
+  }
+  .vm-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #eef5ff 0%, #e4effe 100%);
+    border-bottom: 1px solid #d0e4ff;
+    cursor: pointer; user-select: none;
+  }
+  .vm-section-header .sec-left { display: flex; align-items: center; gap: 9px; }
+  .vm-section-header .sec-title {
+    font-size: 12.5px; font-weight: 800; color: var(--navy-700);
+    letter-spacing: 0.2px;
+  }
+  .vm-section-header .sec-icon { font-size: 14px; color: var(--blue-500); }
+  .vm-section-header .sec-toggle { font-size: 11px; color: var(--blue-500); transition: transform 0.2s; }
+  .vm-section-header.collapsed .sec-toggle { transform: rotate(-90deg); }
+  .vm-section-body { padding: 14px; background: #fafcff; }
+
+  /* ══════════════════════════════════════
+     TWO-COLUMN LAYOUT
+  ══════════════════════════════════════ */
+  .vm-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 12px;
+    align-items: start;
+  }
+  .vm-left { min-width: 0; }
+  .vm-right { min-width: 0; }
+
+  /* ══════════════════════════════════════
+     ENHANCED TABLE (same as Milestone page)
+  ══════════════════════════════════════ */
+  .vm-table-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(15,30,80,0.05), 0 4px 14px rgba(15,30,80,0.06);
+    overflow: hidden;
+  }
+  .vm-table-wrap { overflow-x: auto; }
+  .vm-table-wrap::-webkit-scrollbar { height: 5px; }
+  .vm-table-wrap::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+
+  .vm-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px; margin: 0; table-layout: auto;
+  }
+  .vm-table thead th {
+    background: linear-gradient(135deg, #1a3060, #1e3a5f);
+    color: rgba(255,255,255,0.88);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+    text-transform: uppercase; padding: 9px 12px; white-space: nowrap;
+    border-bottom: 2px solid rgba(45,125,210,0.35);
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .vm-table thead th:last-child { border-right: none; }
+  .vm-table tbody tr {
+    border-bottom: 1px solid #edf1fa;
+    transition: background 0.12s, box-shadow 0.12s;
+  }
+  .vm-table tbody tr:nth-child(even) { background: #fafcff; }
+  .vm-table tbody tr:hover {
+    background: #f0f6ff !important;
+    box-shadow: inset 3px 0 0 var(--blue-500);
+  }
+  .vm-table tbody tr:last-child { border-bottom: none; }
+  .vm-table tbody td {
+    padding: 8px 12px; color: var(--text);
+    vertical-align: middle;
+    border-right: 1px solid #f0f4fc;
+  }
+  .vm-table tbody td:last-child { border-right: none; }
+  .vm-table a { color: var(--blue-500); text-decoration: none; font-weight: 600; }
+  .vm-table a:hover { text-decoration: underline; }
+
+  /* Table add button row */
+  .vm-table-toolbar {
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(45,125,210,0.02);
+  }
+  .vm-add-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 7px;
+    font-size: 11.5px; font-weight: 600; cursor: pointer;
+    border: 1px solid rgba(45,125,210,0.25);
+    background: rgba(45,125,210,0.06); color: var(--blue-500);
+    transition: var(--tr);
+  }
+  .vm-add-btn:hover {
+    background: rgba(45,125,210,0.14); border-color: rgba(45,125,210,0.4);
+    transform: translateY(-1px);
+  }
+
+  /* ── Delivery status badges ── */
+  .ds-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 9px; border-radius: 20px;
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+  }
+  .ds-badge::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor; display: block; flex-shrink: 0;
+  }
+  .ds-on-time    { background: #e8faf2; color: #0d9f6a; }
+  .ds-approach   { background: #fff8e6; color: #c07a00; }
+  .ds-today      { background: #eef4ff; color: #2d6ec0; }
+  .ds-delayed    { background: #fff0f2; color: #c02038; }
+  .ds-escalation { background: #fff0f2; color: #c02038; }
+  .ds-default    { background: #f4f4f8; color: var(--muted); }
+
+  /* Status badge */
+  .st-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .st-wip       { background: #eef4ff; color: #2d6ec0; }
+  .st-completed { background: #e8faf2; color: #0d9f6a; }
+  .st-pending   { background: #fff8e6; color: #c07a00; }
+  .st-yts       { background: #f4f4f8; color: var(--muted); }
+
+  /* ── Time badge ── */
+  .time-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 8px;
+    font-size: 11.5px; font-weight: 800;
+    background: linear-gradient(135deg, rgba(45,125,210,0.12), rgba(45,125,210,0.06));
+    color: var(--blue-500);
+    border: 1px solid rgba(45,125,210,0.2);
+  }
+  .time-badge i { color: var(--accent); font-size: 11px; }
+
+  /* Attachment section headers — gradient */
+  .vm-section .vm-section-header {
+    background: linear-gradient(135deg, #eef5ff, #e4effe);
+  }
+
+  /* Right panel attachment sections — slightly different tint */
+  .vm-right .vm-section {
+    border-color: #d0e4ff;
+  }
+  .vm-right .vm-section-header {
+    background: linear-gradient(135deg, #e8f2ff, #dceaff);
+    border-bottom-color: #c8dcff;
+  }
+
+  /* ══════════════════════════════════════
+     ATTACHMENT TABLE — compact
+  ══════════════════════════════════════ */
+  .att-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .att-table thead th {
+    background: linear-gradient(135deg, #1a3060, #1e3a5f);
+    color: rgba(255,255,255,0.85);
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; padding: 7px 10px; white-space: nowrap;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .att-table tbody tr { border-bottom: 1px solid #edf1fa; }
+  .att-table tbody tr:hover { background: #f4f8ff; }
+  .att-table tbody td { padding: 7px 10px; vertical-align: middle; }
+  .att-table a { color: var(--blue-500); text-decoration: none; font-weight: 600; font-size: 11.5px; }
+  .att-table a:hover { text-decoration: underline; }
+
+  /* ZIP download FAB */
+  #zipDownload {
+    position: fixed; bottom: 24px; right: 24px; z-index: 400;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
+    color: #fff; border: none; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(45,125,210,0.4);
+    transition: var(--tr); cursor: pointer;
+  }
+  #zipDownload:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45,125,210,0.5); }
+
+  /* Empty state */
+  .vm-empty { text-align: center; padding: 28px 16px; }
+  .vm-empty i { font-size: 24px; color: rgba(45,125,210,0.3); display: block; margin-bottom: 8px; }
+  .vm-empty p { font-size: 12px; color: var(--muted); margin: 0; font-weight: 500; }
+
+  /* Tab panes */
+  .vm-tab-pane { display: none; }
+  .vm-tab-pane.active { display: block; }
+
+  /* Hidden helper */
+  .hidden { display: none !important; }
+
+  /* Scrollable columns */
+  .vm-scroll-col {
+    height: calc(100vh - 148px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .vm-scroll-col::-webkit-scrollbar { width: 5px; }
+  .vm-scroll-col::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+
+  /* Info section — old accordion style removed, use vm-section instead */
+  .vm-section-body .info-grid { padding: 0; }
+</style>
+
+<body>
+<%
+  let bgColour = "";
+  let bgMap = {
+    "On Time":"on-time",
+    "Approaching Due Date":"approach",
+    "Due Today":"today",
+    "Delayed":"delayed",
+    "Escalation":"escalation"
+  };
+  function dsBadge(status) {
+    if (!status) return '<span class="ds-badge ds-default">—</span>';
+    const cls = bgMap[status] || 'default';
+    return '<span class="ds-badge ds-' + cls + '">' + status + '</span>';
+  }
+  function stBadge(s) {
+    if (!s) return '<span class="st-badge st-yts">—</span>';
+    const l = s.toLowerCase();
+    const c = l.includes('wip') ? 'st-wip' : l.includes('complet') ? 'st-completed' : l.includes('yts') ? 'st-yts' : 'st-pending';
+    return '<span class="st-badge ' + c + '">' + s + '</span>';
+  }
+  let MilestoneStatus = ['YTS','WIP','Completed','CQC-YTS','CQC-WIP','USQC-YTS','USQC-WIP','Submitted - Awaiting Approval','Approved','Short-Closed'];
+  let Billing_Category = ['Billable','Non-Billable'];
+%>
+
+<main>
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="vm-header">
+    <div class="vm-header-left">
+      <div class="vm-header-icon"><i class="bi bi-signpost-split-fill"></i></div>
+      <div>
+        <div class="vm-header-name"><%= Milestone_Info.Milestone_Name %></div>
+        <div class="vm-header-project">
+          <i class="bi bi-folder2-open"></i>
+          <a href="/Project/<%= Milestone_Info.Customer %>/<%= Milestone_Info.Project_ID %>/<%= Milestone_Info.idProjects %>">
+            <%= Milestone_Info.Project_ID %>
+          </a>
+          <span style="color:var(--border)">|</span>
+          <i class="bi bi-building"></i> <%= Milestone_Info.Customer %>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="vm-status-pill"><%= Milestone_Info.Milestone_Status %></span>
+      <span class="time-badge"><i class="bi bi-clock"></i> <%= secondsToMinutes(MilestoneTotalProductionTime + MilestoneTotalQCTime) %></span>
+    </div>
+  </div>
+
+  <!-- ── TABS ── -->
+  <div class="vm-tabs-wrap">
+    <div class="vm-tabs">
+      <button class="vm-tab active" onclick="vmTab('info',this)"><i class="bi bi-info-circle"></i> Info</button>
+      <button class="vm-tab" onclick="vmTab('prod',this)"><i class="bi bi-gear"></i> Production</button>
+      <button class="vm-tab" onclick="vmTab('qc',this)"><i class="bi bi-check-circle"></i> QC</button>
+      <button class="vm-tab" onclick="vmTab('subtask',this)"><i class="bi bi-diagram-3"></i> Subtask</button>
+      <button class="vm-tab" onclick="vmTab('markup',this)"><i class="bi bi-pencil"></i> Markup</button>
+      <button class="vm-tab" onclick="vmTab('active',this)"><i class="bi bi-activity"></i> Active Task</button>
+    </div>
+  </div>
+
+  <!-- ══════════ INFO TAB ══════════ -->
+  <div class="vm-tab-pane active" id="pane-info">
+    <div class="vm-layout">
+
+      <!-- LEFT — Info sections -->
+      <div class="vm-left vm-scroll-col">
+
+        <!-- General Information -->
+        <div class="vm-section">
+          <div class="vm-section-header" onclick="toggleSection(this)">
+            <div class="sec-left">
+              <i class="bi bi-card-list sec-icon"></i>
+              <span class="sec-title">General Information</span>
+            </div>
+            <i class="bi bi-chevron-down sec-toggle"></i>
+          </div>
+          <div class="vm-section-body">
+            <div class="info-grid">
+
+              <!-- Job ID -->
+              <div class="info-field">
+                <label><i class="bi bi-hash"></i> <%= Customer=="AT&T" ? "F2 CFAS-ID" : "Job ID" %></label>
+                <div class="info-val">
+                  <a href="/Project/<%= Milestone_Info.Customer %>/<%= Milestone_Info.Project_ID %>/<%= Milestone_Info.idProjects %>">
+                    <%= Milestone_Info.Project_ID %>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Owner -->
+              <div class="info-field">
+                <label><i class="bi bi-person"></i> Owner</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if (userData.Role=="PMO") { %>
+                      <select name="" class="select-list hidden" data-OwnerFor="Milestone" data-ID="<%= Milestone_Info.Milestone_Name %>">
+                        <% for(let i=0; i<Object.values(Owners).length; i++){ %>
+                          <% if(Owners[i].Role=="Manager"){ %>
+                            <option value="<%= Owners[i].Employee_ID %>" <%= Owners[i].Employee_ID==Milestone_Info.Milestone_Owner?"selected":"" %>>
+                              <%= Owners[i].Full_Name %> (<%= Owners[i].Employee_ID %>)
+                            </option>
+                          <% } %>
+                        <% } %>
+                      </select>
+                      <span class="Owner user-info" data-userID="<%= Milestone_Info.Milestone_Owner %>"><%= Milestone_Info.Full_Name %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span class="Owner" data-userID="<%= Milestone_Info.Milestone_Owner %>"><%= Milestone_Info.Full_Name %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SOW -->
+              <div class="info-field">
+                <label><i class="bi bi-file-text"></i> SOW</label>
+                <div class="info-val"><%= Milestone_Info.SOW || "—" %></div>
+              </div>
+
+              <!-- Status -->
+              <div class="info-field">
+                <label><i class="bi bi-activity"></i> Status</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <select name="Milestone_Status" class="select-list hidden" data-ID="<%= Milestone_Info.idmilestone %>" data-Target="Milestone">
+                        <% for(let i=0; i<MilestoneStatus.length; i++){ %>
+                          <option value="<%= MilestoneStatus[i] %>" <%= Milestone_Info.Milestone_Status==MilestoneStatus[i]?"selected":"" %>><%= MilestoneStatus[i] %></option>
+                        <% } %>
+                      </select>
+                      <span class="user-info"><%- stBadge(Milestone_Info.Milestone_Status) %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <%- stBadge(Milestone_Info.Milestone_Status) %>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Due Date -->
+              <div class="info-field">
+                <label><i class="bi bi-calendar-event"></i> Due Date</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <input type="date" class="select-list hidden w-auto today-date" name="Due_Date" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.n_Due_Date?formatDateString(Milestone_Info.n_Due_Date):null %>">
+                      <span class="user-info"><%= Milestone_Info.Due_Date || "N/A" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.Due_Date || "N/A" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Billing Category -->
+              <div class="info-field">
+                <label><i class="bi bi-cash"></i> Billing Category</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <select name="Billing_Category" class="select-list hidden" data-ID="<%= Milestone_Info.idmilestone %>" data-Target="Milestone">
+                        <% for(let i=0; i<Billing_Category.length; i++){ %>
+                          <option value="<%= Billing_Category[i] %>" <%= Milestone_Info.Billing_Category==Billing_Category[i]?"selected":"" %>><%= Billing_Category[i] %></option>
+                        <% } %>
+                      </select>
+                      <span class="user-info"><%= Milestone_Info.Billing_Category || "—" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.Billing_Category || "—" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submitted Date -->
+              <div class="info-field">
+                <label><i class="bi bi-send"></i> Submitted Date</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <input type="date" class="select-list hidden w-auto" name="Submitted_Date" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.n_Submitted_Date?formatDateString(Milestone_Info.n_Submitted_Date):null %>">
+                      <span class="user-info"><%= Milestone_Info.Submitted_Date || "—" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.Submitted_Date || "—" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Approved Date -->
+              <div class="info-field">
+                <label><i class="bi bi-patch-check"></i> Approved Date</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <input type="date" class="select-list hidden w-auto" name="Approved_Date" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.n_Approved_Date?formatDateString(Milestone_Info.n_Approved_Date):null %>">
+                      <span class="user-info"><%= Milestone_Info.Approved_Date || "—" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.Approved_Date || "—" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Region / State -->
+              <% if(Customer != "AT&T") { %>
+                <div class="info-field">
+                  <label><i class="bi bi-geo"></i> Region</label>
+                  <div class="info-val"><%= Milestone_Info.Region || "N/A" %></div>
+                </div>
+                <div class="info-field">
+                  <label><i class="bi bi-map"></i> County</label>
+                  <div class="info-val"><%= Milestone_Info.County || "N/A" %></div>
+                </div>
+              <% } else { %>
+                <div class="info-field">
+                  <label><i class="bi bi-map"></i> State</label>
+                  <div class="info-val"><%= Milestone_Info.State || "N/A" %></div>
+                </div>
+              <% } %>
+
+              <!-- Total Time -->
+              <div class="info-field">
+                <label><i class="bi bi-stopwatch"></i> Total Time</label>
+                <div class="info-val">
+                  <span class="time-badge"><i class="bi bi-clock"></i> <%= secondsToMinutes(MilestoneTotalProductionTime + MilestoneTotalQCTime) %></span>
+                </div>
+              </div>
+
+              <!-- Permit fields (AT&T only) -->
+              <% if(Milestone_Info.Milestone_Name.endsWith("Permit") && Customer=="AT&T") { %>
+                <div class="info-field">
+                  <label><i class="bi bi-buildings"></i> City</label>
+                  <div class="info-val">
+                    <div class="edit-wrap">
+                      <% if(userData.Role=="PMO" || userData.Role=="Manager"){ %>
+                        <input type="text" name="City" class="select-list hidden w-auto" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.City||null %>">
+                        <span class="user-info"><%= Milestone_Info.City || "—" %></span>
+                        <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                        <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                      <% } else { %>
+                        <span><%= Milestone_Info.City || "—" %></span>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <div class="info-field">
+                  <label><i class="bi bi-lightning"></i> Power</label>
+                  <div class="info-val">
+                    <div class="edit-wrap">
+                      <% if(userData.Role=="PMO" || userData.Role=="Manager"){ %>
+                        <input type="text" name="Power" class="select-list hidden w-auto" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.Power||null %>">
+                        <span class="user-info"><%= Milestone_Info.Power || "—" %></span>
+                        <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                        <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                      <% } else { %>
+                        <span><%= Milestone_Info.Power || "—" %></span>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <div class="info-field">
+                  <label><i class="bi bi-signpost"></i> DOT</label>
+                  <div class="info-val">
+                    <div class="edit-wrap">
+                      <% if(userData.Role=="PMO" || userData.Role=="Manager"){ %>
+                        <input type="text" name="Dot" class="select-list hidden w-auto" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.Dot||null %>">
+                        <span class="user-info"><%= Milestone_Info.Dot || "—" %></span>
+                        <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                        <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                      <% } else { %>
+                        <span><%= Milestone_Info.Dot || "—" %></span>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <div class="info-field">
+                  <label><i class="bi bi-map-fill"></i> County-1</label>
+                  <div class="info-val">
+                    <div class="edit-wrap">
+                      <% if(userData.Role=="PMO" || userData.Role=="Manager"){ %>
+                        <input type="text" name="County_1" class="select-list hidden w-auto" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.County_1||null %>">
+                        <span class="user-info"><%= Milestone_Info.County_1 || "—" %></span>
+                        <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                        <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                      <% } else { %>
+                        <span><%= Milestone_Info.County_1 || "—" %></span>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <div class="info-field">
+                  <label><i class="bi bi-map-fill"></i> County-2</label>
+                  <div class="info-val">
+                    <div class="edit-wrap">
+                      <% if(userData.Role=="PMO" || userData.Role=="Manager"){ %>
+                        <input type="text" name="County_2" class="select-list hidden w-auto" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.County_2||null %>">
+                        <span class="user-info"><%= Milestone_Info.County_2 || "—" %></span>
+                        <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                        <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                      <% } else { %>
+                        <span><%= Milestone_Info.County_2 || "—" %></span>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Production Dates -->
+        <div class="vm-section">
+          <div class="vm-section-header" onclick="toggleSection(this)">
+            <div class="sec-left">
+              <i class="bi bi-gear sec-icon"></i>
+              <span class="sec-title">Production</span>
+            </div>
+            <i class="bi bi-chevron-down sec-toggle"></i>
+          </div>
+          <div class="vm-section-body">
+            <div class="info-grid">
+              <div class="info-field">
+                <label><i class="bi bi-calendar-plus"></i> TGT Start Date</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <input type="date" class="select-list hidden w-auto today-date" name="Prod_TGT_Start_Date" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.n_Prod_TGT_Start_Date?formatDateString(Milestone_Info.n_Prod_TGT_Start_Date):null %>">
+                      <span class="user-info"><%= Milestone_Info.Prod_TGT_Start_Date || "—" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.Prod_TGT_Start_Date || "—" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-calendar-check"></i> TGT End Date</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <input type="date" class="select-list hidden w-auto today-date" name="Prod_TGT_End_Date" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.n_Prod_TGT_End_Date?formatDateString(Milestone_Info.n_Prod_TGT_End_Date):null %>">
+                      <span class="user-info"><%= Milestone_Info.Prod_TGT_End_Date || "—" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.Prod_TGT_End_Date || "—" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-play-circle"></i> ACT Start Date</label>
+                <div class="info-val"><%= Milestone_Info.Prod_ACT_Start_Date || "—" %></div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-stop-circle"></i> ACT End Date</label>
+                <div class="info-val"><%= Milestone_Info.Prod_ACT_End_Date || "—" %></div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-stopwatch"></i> Time Taken</label>
+                <div class="info-val">
+                  <span class="time-badge"><i class="bi bi-clock"></i> <%= secondsToMinutes(MilestoneTotalProductionTime) %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QC Dates -->
+        <div class="vm-section">
+          <div class="vm-section-header" onclick="toggleSection(this)">
+            <div class="sec-left">
+              <i class="bi bi-check-circle sec-icon"></i>
+              <span class="sec-title">QC</span>
+            </div>
+            <i class="bi bi-chevron-down sec-toggle"></i>
+          </div>
+          <div class="vm-section-body">
+            <div class="info-grid">
+              <div class="info-field">
+                <label><i class="bi bi-calendar-plus"></i> TGT Start Date</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <input type="date" class="select-list hidden w-auto today-date" name="QC_TGT_Start_Date" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.n_QC_TGT_Start_Date?formatDateString(Milestone_Info.n_QC_TGT_Start_Date):null %>">
+                      <span class="user-info"><%= Milestone_Info.QC_TGT_Start_Date || "—" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.QC_TGT_Start_Date || "—" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-calendar-check"></i> TGT End Date</label>
+                <div class="info-val">
+                  <div class="edit-wrap">
+                    <% if(userData.Role=="PMO"){ %>
+                      <input type="date" class="select-list hidden w-auto today-date" name="QC_TGT_End_Date" data-Target="Milestone" data-ID="<%= Milestone_Info.idmilestone %>" value="<%= Milestone_Info.n_QC_TGT_End_Date?formatDateString(Milestone_Info.n_QC_TGT_End_Date):null %>">
+                      <span class="user-info"><%= Milestone_Info.QC_TGT_End_Date || "—" %></span>
+                      <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                      <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill"></i></span>
+                    <% } else { %>
+                      <span><%= Milestone_Info.QC_TGT_End_Date || "—" %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-play-circle"></i> ACT Start Date</label>
+                <div class="info-val"><%= Milestone_Info.QC_ACT_Start_Date || "—" %></div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-stop-circle"></i> ACT End Date</label>
+                <div class="info-val"><%= Milestone_Info.QC_ACT_End_Date || "—" %></div>
+              </div>
+              <div class="info-field">
+                <label><i class="bi bi-stopwatch"></i> Time Taken</label>
+                <div class="info-val">
+                  <span class="time-badge"><i class="bi bi-clock"></i> <%= secondsToMinutes(MilestoneTotalQCTime) %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT — Attachments -->
+      <div class="vm-right vm-scroll-col">
+
+        <!-- Input Files -->
+        <div class="vm-section">
+          <div class="vm-section-header" onclick="toggleSection(this)">
+            <div class="sec-left">
+              <i class="bi bi-paperclip sec-icon"></i>
+              <span class="sec-title">Input Files</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <% if(Milestone_Info.Milestone_Owner==userData.Employee_ID || userData.Role=="PMO"){ %>
+                <span class="vm-add-btn" data-bs-toggle="modal" data-bs-target="#AttachmentDialog" data-bs-Category="Milestone-Input" onclick="event.stopPropagation()">
+                  <i class="bi bi-plus-lg"></i> Add
+                </span>
+              <% } %>
+              <i class="bi bi-chevron-down sec-toggle"></i>
+            </div>
+          </div>
+          <div class="vm-section-body p-0">
+            <div style="overflow-x:auto;">
+              <table class="att-table" id="AttachmentsTable">
+                <thead>
+                  <tr>
+                    <th>S.No</th><th>Name</th><th>Date</th><th>Size</th><th>Type</th><th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% let slNo=0; %>
+                  <% if(Object.values(attachments).length > 0) { %>
+                    <% for(let i=0; i<Object.values(attachments).length; i++) { %>
+                      <% if(attachments[i].Category=="Milestone-Input") { %>
+                        <tr>
+                          <td><div class="form-check"><input type="checkbox" class="record-checkbox form-check-input" value="<%= attachments[i].idattachments %>" id="ATT-<%= attachments[i].idattachments %>"><label for="ATT-<%= attachments[i].idattachments %>"><%= ++slNo %></label></div></td>
+                          <td title="<%= attachments[i].Name %>"><a href="../../..<%= attachments[i].path %>" target="_blank"><%= attachments[i].Name.substring(0,40) %></a></td>
+                          <td style="white-space:nowrap;"><%= attachments[i].Created_Date %></td>
+                          <td><%= attachments[i].Size %>MB</td>
+                          <td><img width="20" height="20" src="/static/icons/<%= attachments[i].Type.substring(1) %>.png" alt="<%= attachments[i].Type %>"/></td>
+                          <td><i class="bi bi-trash3-fill text-secondary fs-6 archive-btn <%= attachments[i].Owner!=userData.Employee_ID?"visually-hidden":"" %>" data-fileID="<%= attachments[i].idattachments %>" style="cursor:pointer;"></i></td>
+                        </tr>
+                      <% } %>
+                    <% } %>
+                  <% } %>
+                  <% if(slNo==0) { %>
+                    <tr><td colspan="6"><div class="vm-empty"><i class="bi bi-paperclip"></i><p>No input files</p></div></td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Final Deliverables -->
+        <div class="vm-section">
+          <div class="vm-section-header" onclick="toggleSection(this)">
+            <div class="sec-left">
+              <i class="bi bi-cloud-upload sec-icon"></i>
+              <span class="sec-title">Final Deliverables</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <% if(Milestone_Info.Milestone_Owner==userData.Employee_ID || userData.Role=="PMO"){ %>
+                <span class="vm-add-btn" data-bs-toggle="modal" data-bs-target="#FinalUploaderAttachmentDialog" data-bs-Category="Milestone-Final-Deliverables-R<%= FinalAttachmentCount %>" onclick="event.stopPropagation()">
+                  <i class="bi bi-plus-lg"></i> Add
+                </span>
+              <% } %>
+              <i class="bi bi-chevron-down sec-toggle"></i>
+            </div>
+          </div>
+          <div class="vm-section-body p-0">
+            <% for(let category in FinalDeliverables) { %>
+              <% if(category.startsWith("Milestone-Final-Deliverables")) { %>
+                <div style="border-bottom:1px solid var(--border);padding:6px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);background:rgba(45,125,210,0.03);display:flex;align-items:center;justify-content:space-between;">
+                  <span><i class="bi bi-folder2" style="margin-right:5px;color:var(--blue-500);"></i> <%= category.split("-")[3] %></span>
+                  <% if(Milestone_Info.Milestone_Owner==userData.Employee_ID || userData.Role=="PMO"){ %>
+                    <span class="vm-add-btn" data-bs-toggle="modal" data-bs-target="#FinalUploaderAttachmentDialog" data-bs-Category="<%= category %>">
+                      <i class="bi bi-plus-lg"></i> Add
+                    </span>
+                  <% } %>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table class="att-table">
+                    <thead>
+                      <tr><th>S.No</th><th>Name</th><th>Date</th><th>Size</th><th>Type</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      <% slNo=0; %>
+                      <% if(Object.values(FinalDeliverables[category]).length > 0) { %>
+                        <% for(let i=0; i<Object.values(FinalDeliverables[category]).length; i++) { %>
+                          <tr>
+                            <td><div class="form-check"><input type="checkbox" class="record-checkbox form-check-input" value="<%= FinalDeliverables[category][i].idattachments %>" id="ATT-<%= FinalDeliverables[category][i].idattachments %>"><label for="ATT-<%= FinalDeliverables[category][i].idattachments %>"><%= ++slNo %></label></div></td>
+                            <td title="<%= FinalDeliverables[category][i].Name %>"><a href="../../..<%= FinalDeliverables[category][i].path %>" target="_blank"><%= FinalDeliverables[category][i].Name.substring(0,40) %></a></td>
+                            <td style="white-space:nowrap;"><%= FinalDeliverables[category][i].Created_Date %></td>
+                            <td><%= FinalDeliverables[category][i].Size %>MB</td>
+                            <td><img width="20" height="20" src="/static/icons/<%= FinalDeliverables[category][i].Type.substring(1) %>.png" alt=""/></td>
+                            <td><i class="bi bi-trash3-fill text-secondary fs-6 archive-btn <%= FinalDeliverables[category][i].Owner!=userData.Employee_ID?"visually-hidden":"" %>" data-fileID="<%= FinalDeliverables[category][i].idattachments %>" style="cursor:pointer;"></i></td>
+                          </tr>
+                        <% } %>
+                      <% } else { %>
+                        <tr><td colspan="6" style="text-align:center;padding:12px;font-size:11px;color:var(--muted);">No files</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } %>
+            <% } %>
+          </div>
+        </div>
+
+      </div><!-- end vm-right -->
+    </div><!-- end vm-layout -->
+  </div><!-- end pane-info -->
+
+  <!-- ══════════ PRODUCTION TAB ══════════ -->
+  <div class="vm-tab-pane" id="pane-prod">
+    <div class="vm-table-card">
+      <% if(Milestone_Info.Milestone_Owner==userData.Employee_ID || userData.Role=='PMO' || userData.Role=='Admin'){ %>
+        <div class="vm-table-toolbar">
+          <button class="vm-add-btn" data-bs-toggle="modal" data-bs-target="#Create-Prod-Task-Modal">
+            <i class="bi bi-plus-lg"></i> Create Production Task
+          </button>
+        </div>
+      <% } %>
+      <div class="vm-table-wrap">
+        <table class="vm-table">
+          <thead>
+            <tr>
+              <th>S.No</th><th>Task ID</th><th>Task Name</th><th>Milestone</th>
+              <th>Owner</th><th>Start</th><th>End</th><th>Due Date</th>
+              <th>Status</th><th>Time</th><th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody id="productionBody">
+            <% let slNo2=1; %>
+            <% for(let i=0; i<Object.values(Task).length; i++) { %>
+              <% if(Task[i].Type=='Production') { %>
+                <%
+                  let dueDate=Task[i].ff_DueDate;
+                  let endDate=Task[i].ff_EndDate?Task[i].ff_EndDate:"";
+                  let ds=compareDates(dueDate,endDate,Task[i].Status);
+                %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= slNo2 %></td>
+                  <td class="text-nowrap">
+                    <img src="../../../static/icons/Gray-dot.png" width="12" height="12" alt="" id="TaskStatus-<%= Task[i].TaskName %>" class="me-1">
+                    <a href="/ViewTask/<%= Customer %>/<%= Task[i].Milestone_Name %>/<%= Task[i].TaskName %>"><%= Task[i].TaskName %></a>
+                  </td>
+                  <td><p class="text-truncate m-0" style="max-width:160px;" title="<%= Task[i].TaskLabel||'' %>"><%= Task[i].TaskLabel || "—" %></p></td>
+                  <td><a href="/ViewMilestone/<%= Customer %>/<%= Task[i].idProjects %>/<%= Task[i].Milestone_Name %>"><%= Task[i].Milestone_Name %></a></td>
+                  <td><p class="text-truncate m-0 Owner" style="max-width:120px;" data-UserID="<%= Task[i].Owner %>" title="<%= Task[i].Full_Name %>"><%= Task[i].Full_Name %></p></td>
+                  <td><%= Task[i].F_StartDate || "—" %></td>
+                  <td><%= Task[i].F_EndDate || "—" %></td>
+                  <td><%= Task[i].F_DueDate || "—" %></td>
+                  <td><%- stBadge(Task[i].Status) %></td>
+                  <td><span class="time-badge"><%= secondsToMinutes(Task[i].TotalTime) %></span></td>
+                  <td><%- dsBadge(ds) %></td>
+                </tr>
+                <% slNo2++; } %>
+            <% } %>
+            <% if(slNo2==1){ %>
+              <tr><td colspan="11"><div class="vm-empty"><i class="bi bi-gear"></i><p>No production tasks</p></div></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ QC TAB ══════════ -->
+  <div class="vm-tab-pane" id="pane-qc">
+    <div class="vm-table-card">
+      <% if(Milestone_Info.Milestone_Owner==userData.Employee_ID || userData.Role=='PMO' || userData.Role=='Admin'){ %>
+        <div class="vm-table-toolbar">
+          <button class="vm-add-btn" data-bs-toggle="modal" data-bs-target="#create-QC-Task-Modal">
+            <i class="bi bi-plus-lg"></i> Create QC Task
+          </button>
+        </div>
+      <% } %>
+      <div class="vm-table-wrap"> 
+        <table class="vm-table">
+          <thead>
+            <tr>
+              <th>S.No</th><th>Task ID</th><th>Task Name</th><th>Prod Name</th><th>Milestone</th>
+              <th>Owner</th><th>Start</th><th>End</th><th>Due Date</th>
+              <th>Status</th><th>Time</th><th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody id="qcBody">
+            <% let slNo3=1; %>
+            <% for(let i=0; i<Object.values(Task).length; i++) { %>
+              <% if(Task[i].Type=='IQC' || Task[i].Type=='RQC' || Task[i].Type=='CQC') { %>
+                <%
+                  let dueDate=Task[i].ff_DueDate;
+                  let endDate=Task[i].ff_EndDate?Task[i].ff_EndDate:"";
+                  let ds=compareDates(dueDate,endDate,Task[i].Status);
+                %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= slNo3 %></td>
+                  <td class="text-nowrap">
+                    <img src="../../../static/icons/Gray-dot.png" width="12" height="12" alt="" id="TaskStatus-<%= Task[i].TaskName %>" class="me-1">
+                    <a href="/ViewTask/<%= Customer %>/<%= Task[i].Milestone_Name %>/<%= Task[i].TaskName %>"><%= Task[i].TaskName %></a>
+                  </td>
+                  <td><p class="text-truncate m-0" style="max-width:140px;" title="<%= Task[i].TaskLabel||'' %>"><%= Task[i].TaskLabel || "—" %></p></td>
+                  <td><%= Task[i].Production_Name || "—" %></td>
+                  <td><a href="/ViewMilestone/<%= Customer %>/<%= Task[i].idProjects %>/<%= Task[i].Milestone_Name %>"><%= Task[i].Milestone_Name %></a></td>
+                  <td><p class="text-truncate m-0 Owner" style="max-width:110px;" data-UserID="<%= Task[i].Owner %>" title="<%= Task[i].Full_Name %>"><%= Task[i].Full_Name %></p></td>
+                  <td><%= Task[i].F_StartDate || "—" %></td>
+                  <td><%= Task[i].F_EndDate || "—" %></td>
+                  <td><%= Task[i].F_DueDate || "—" %></td>
+                  <td><%- stBadge(Task[i].Status) %></td>
+                  <td><span class="time-badge"><%= secondsToMinutes(Task[i].TotalTime) %></span></td>
+                  <td><%- dsBadge(ds) %></td>
+                </tr>
+                <% slNo3++; } %>
+            <% } %>
+            <% if(slNo3==1){ %>
+              <tr><td colspan="12"><div class="vm-empty"><i class="bi bi-check-circle"></i><p>No QC tasks</p></div></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SUBTASK TAB ══════════ -->
+  <div class="vm-tab-pane" id="pane-subtask">
+    <div class="vm-table-card">
+      <div class="vm-table-wrap">
+        <table class="vm-table">
+          <thead>
+            <tr>
+              <th>S.No</th><th>Subtask ID</th><th>Subtask Name</th><th>Task ID</th>
+              <th>Owner</th><th>Start</th><th>End</th><th>Due Date</th>
+              <th>Status</th><th>Time</th><th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(Object.values(subtask).length > 0) { %>
+              <% for(let i=0; i<Object.values(subtask).length; i++) { %>
+                <%
+                  let dueDate=subtask[i].f_DueDate;
+                  let endDate=subtask[i].f_EndDate?subtask[i].f_EndDate:"";
+                  let ds=compareDates(dueDate,endDate,subtask[i].Status);
+                %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= i+1 %></td>
+                  <td>
+                    <img src="../../../static/icons/Gray-dot.png" width="12" height="12" alt="" id="TaskStatus-<%= subtask[i].SubTaskName %>" class="me-1">
+                    <a href="/SubTask/<%= subtask[i].SubTaskName %>"><%= subtask[i].SubTaskName %></a>
+                  </td>
+                  <td><p class="text-truncate m-0 Owner" style="max-width:140px;" title="<%= subtask[i].SubTaskLabel||'' %>"><%= subtask[i].SubTaskLabel || "—" %></p></td>
+                  <td><a href="/ViewTask/<%= subtask[i].Customer %>/<%= subtask[i].Milestone_Name %>/<%= subtask[i].Task_Name %>"><%= subtask[i].Task_Name %></a></td>
+                  <td><p class="text-truncate m-0 Owner" style="max-width:110px;" data-UserID="<%= subtask[i].Owner %>" title="<%= subtask[i].Full_Name %>"><%= subtask[i].Full_Name %></p></td>
+                  <td><%= subtask[i].StartDate || "—" %></td>
+                  <td><%= subtask[i].EndDate || "—" %></td>
+                  <td><%= subtask[i].DueDate || "—" %></td>
+                  <td><%- stBadge(subtask[i].Status) %></td>
+                  <td><span class="time-badge"><%= secondsToMinutes(subtask[i].TotalTime) %></span></td>
+                  <td><%- dsBadge(ds) %></td>
+                </tr>
+              <% } %>
+            <% } else { %>
+              <tr><td colspan="11"><div class="vm-empty"><i class="bi bi-diagram-3"></i><p>No subtasks</p></div></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ MARKUP TAB ══════════ -->
+  <div class="vm-tab-pane" id="pane-markup">
+    <div class="vm-table-card">
+      <div class="vm-table-wrap">
+        <table class="vm-table">
+          <thead>
+            <tr>
+              <th>S.No</th><th>Markup Name</th><th>Task/Subtask ID</th>
+              <th>Owner</th><th>Start</th><th>End</th><th>Due Date</th>
+              <th>Status</th><th>Time</th><th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(Object.values(Markup).length > 0) { %>
+              <% for(let i=0; i<Object.values(Markup).length; i++) { %>
+                <%
+                  let dueDate=Markup[i].f_DueDate;
+                  let endDate=Markup[i].f_EndDate?Markup[i].f_EndDate:"";
+                  let ds=compareDates(dueDate,endDate,Markup[i].Status);
+                %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:11px;"><%= i+1 %></td>
+                  <td>
+                    <img src="../../../static/icons/Gray-dot.png" width="12" height="12" alt="" id="TaskStatus-<%= Markup[i].Sub_Task_Name %>" class="me-1">
+                    <a href="/Markup/<%= Markup[i].Sub_Task_Name %>"><%= Markup[i].Sub_Task_Name %></a>
+                  </td>
+                  <td><%= Markup[i].Task_Name %></td>
+                  <td><p class="text-truncate m-0 Owner" style="max-width:110px;" data-UserID="<%= Markup[i].Owner %>" title="<%= Markup[i].Full_Name %>"><%= Markup[i].Full_Name %></p></td>
+                  <td><%= Markup[i].StartDate || "—" %></td>
+                  <td><%= Markup[i].EndDate || "—" %></td>
+                  <td><%= Markup[i].DueDate || "—" %></td>
+                  <td><%- stBadge(Markup[i].Status) %></td>
+                  <td><span class="time-badge"><%= secondsToMinutes(Markup[i].TotalTime) %></span></td>
+                  <td><%- dsBadge(ds) %></td>
+                </tr>
+              <% } %>
+            <% } else { %>
+              <tr><td colspan="10"><div class="vm-empty"><i class="bi bi-pencil"></i><p>No markups</p></div></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ACTIVE TASK TAB ══════════ -->
+  <div class="vm-tab-pane" id="pane-active">
+    <div class="vm-table-card">
+      <div class="vm-table-wrap">
+        <table class="vm-table" id="activeTaskTable">
+          <thead>
+            <tr>
+              <th>S.No</th><th>User Name</th><th>Task ID</th><th>Task Name</th>
+              <th>Milestone</th><th>Start Time</th><th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7"><div class="vm-empty"><i class="bi bi-activity"></i><p>No active tasks</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZIP Download FAB -->
+  <button type="button" class="visually-hidden" id="zipDownload" data-FileName="<%= Milestone_Info.Milestone_Name %>">
+    <i class="bi bi-cloud-arrow-down-fill"></i>
+  </button>
+
+</main>
+</body>
+
+<!-- ══ MODALS (UNCHANGED) ══ -->
+<div class="modal fade" tabindex="-1" id="AttachmentDialog" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Input Files <i class="bi bi-paperclip"></i></h5>
+        <button type="button" class="btn-close modal-close-btn" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush p-0 m-0">
+          <li class="list-group-item text-center p-0"><div class="d-flex justify-content-between bg-primary text-light bg-opacity-50 bg-gradient p-2 rounded"><div class="m-0 p-0 w-50">File Name</div><div class="m-0 p-0 w-25">Size</div><div class="m-0 p-0 w-25 text-start">Progress</div></div></li>
+        </ul>
+        <ul id="filelist" class="list-group list-group-flush mb-2"><li class="list-group-item text-center">No Files Selected</li></ul>
+        <div id="container" style="text-align:center;"></div>
+      </div>
+      <div class="modal-footer">
+        <input type="file" id="fileInput" class="form-control form-control-sm w-50" name="file" multiple>
+        <input type="button" value="Upload" class="btn btn-outline-primary btn-sm" id="startUpload">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="FinalUploaderAttachmentDialog" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Final Deliverables (<span class="rounded-pill px-2" id="revision-counter">R</span>)</h5>
+        <button type="button" class="btn-close modal-close-btn" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush p-0 m-0">
+          <li class="list-group-item text-center p-0"><div class="d-flex justify-content-between bg-primary text-light bg-opacity-50 bg-gradient p-2 rounded"><div class="m-0 p-0 w-50">File Name</div><div class="m-0 p-0 w-25">Size</div><div class="m-0 p-0 w-25 text-start">Progress</div></div></li>
+        </ul>
+        <ul id="Final_filelist" class="list-group list-group-flush mb-2"><li class="list-group-item text-center">No Files Selected</li></ul>
+        <div id="container" style="text-align:center;"></div>
+      </div>
+      <div class="modal-footer">
+        <input type="file" id="fileInput2" class="form-control form-control-sm w-50" name="file" multiple>
+        <input type="button" value="Upload" class="btn btn-outline-primary btn-sm" id="startUpload2">
+      </div>
+    </div>
+  </div>
+</div>
+
+<% let Checklist=GetChecklist(Customer,Milestone_Info.SOW) %>
+
+<!-- Create Production Task Modal (UNCHANGED) -->
+<div class="modal fade" id="Create-Prod-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-xl"><div class="modal-content">
+    <div class="modal-header"><h1 class="modal-title fs-5">Create Production Task</h1>
+      </div>
+    <form action="/CreateTask" method="post" id="createMilestoneForm" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+      <div class="modal-body">
+        <div class="col p-1 gap-3">
+          <input type="hidden" id="ID" name="ID" value="<%= Milestone_Info.idProjects %>" readonly required>
+          <input type="hidden" id="Milestone_Name" name="Milestone_Name" value="<%= Milestone_Info.Milestone_Name %>" readonly required>
+          <input type="hidden" name="Type" id="Type" value="Production">
+          <input type="hidden" id="Project_ID" name="Project_ID" value="<%= Milestone_Info.Project_ID %>" readonly required>
+          <div class="row gap-3">
+            <div class="col"><div class="form-floating"><input type="text" class="form-control" id="TaskLabel" name="TaskLabel" placeholder="" required minlength="2"><label>Task Name</label></div></div>
+            <div class="col"><div class="form-floating"><input type="date" class="today-date form-control border" id="ProdDueDate" name="DueDate" required><label>Task Due Date</label></div></div>
+            <div class="col"><div class="form-floating"><select name="QC_Name" id="QC_Name" class="form-select" required><option value="">Select QC-Checklist</option><% for(let i=0;i<Object.keys(QC_List).length;i++){%><option value="<%= QC_List[i].Checklist_Name %>" <%if(Checklist==QC_List[i].Checklist_Name){%>selected<%}%>><%= QC_List[i].Checklist_Name %></option><%}%></select><label>QC-Checklist</label></div></div>
+            <div class="col"><div class="form-floating"><select name="Owner" id="milestone_owner" class="form-select" required><option value="">Choose Owner</option><optgroup label="PMO"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="PMO"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Manager"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Manager"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Engineers"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Employee"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup></select><label>Owner</label></div></div>
+          </div>
+          <div class="row gap-3">
+            <div class="col mt-2"><div class="form-floating"><input type="text" class="form-control" id="Remark" name="Remark" placeholder=""><label>Note/Remarks</label></div></div>
+            <div class="col QC_Due_Date_Container"><div class="form-floating"><input type="date" class="today-date form-control border" id="QC_Due_Date" name="QC_Due_Date"><label>QC-Due Date</label></div></div>
+            <div class="col text-center align-content-center">
+              <p class="from-label d-inline m-0 p-0">Auto QC</p>
+              <input type="radio" class="btn-check" name="autoQC" id="autoQC1" value="1" required>
+              <label class="btn btn-outline-success btn-sm" for="autoQC1">Yes</label>
+              <input type="radio" class="btn-check" name="autoQC" id="autoQC2" value="0">
+              <label class="btn btn-outline-danger btn-sm" for="autoQC2">No</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="col-md"><div class="form-check form-switch"><label class="form-check-label" for="requiredQC">Need a checklist?</label><input class="form-check-input" type="checkbox" role="switch" id="requiredQC" name="requiredQC" value="1" checked></div></div>
+        <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Create</button>
+      </div>
+    </form>
+  </div></div>
+</div>
+
+<!-- Create QC Task Modal (UNCHANGED) -->
+<div class="modal fade" id="create-QC-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-xl"><div class="modal-content">
+    <div class="modal-header"><h1 class="modal-title fs-5">Create QC Task</h1>
+      </div>
+    <form action="/CreateTask" method="post" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+      <div class="modal-body">
+        <div class="col"><div class="row gap-3">
+          <div class="row">
+            <div class="col-md visually-hidden"><input type="hidden" name="Project_ID" value="<%= Milestone_Info.Project_ID %>" required><input type="hidden" name="ID" value="<%= Milestone_Info.idProjects %>" required><input type="hidden" name="Milestone_Name" value="<%= Milestone_Info.Milestone_Name %>" required></div>
+            <div class="col-md"><div class="form-floating"><select name="Prod_Task" id="Prod_Task" class="form-select" required><option value="">Select Prod Task</option><%for(let i=0;i<Object.values(Task).length;i++){%><%if(Task[i].Type=='Production'&&(Task[i].Status=="Completed"||Task[i].Status=="Ready for QC")){%><option value="<%= Task[i].TaskName %>"><%= Task[i].TaskName %></option><%}%><%}%></select><label>Production Task</label></div></div>
+            <div class="col-md"><div class="form-floating"><select name="Type" id="Type" class="form-select" required><option value="">Select type</option><option value="IQC">IQC</option><option value="RQC">RQC</option></select><label>Type</label></div></div>
+            <div class="col-md"><div class="form-floating"><input type="text" class="form-control" id="TaskLabel" name="TaskLabel" placeholder="" required minlength="2"><label>Task Name</label></div></div>
+          </div>
+          <div class="row">
+            <div class="col-md"><div class="form-floating"><select name="Owner" id="milestone_owner" class="form-select" required><option value="">Choose Owner</option><optgroup label="PMO"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="PMO"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Manager"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Manager"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Engineers"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Employee"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup></select><label>Owner</label></div></div>
+            <div class="col-md"><div class="form-floating"><select name="QC_Name" id="QC_Name" class="form-select" required><option value="">Select QC-Checklist</option><%for(let i=0;i<Object.keys(QC_List).length;i++){%><option value="<%= QC_List[i].Checklist_Name %>" <%if(Checklist==QC_List[i].Checklist_Name){%>selected<%}%>><%= QC_List[i].Checklist_Name %></option><%}%></select><label>QC-Checklist</label></div></div>
+            <div class="col-md"><div class="form-floating"><input type="date" class="today-date form-control border" id="ProdDueDate" name="DueDate" required><label>Task Due Date</label></div></div>
+          </div>
+        </div></div>
+        <div class="modal-footer border-0">
+          <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </div>
+    </form>
+  </div></div>
+</div>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+
+<script>
+/* ── Tab switching ── */
+function vmTab(name, btn) {
+  document.querySelectorAll('.vm-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.vm-tab-pane').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('pane-' + name).classList.add('active');
+}
+
+/* ── Section collapse/expand ── */
+function toggleSection(header) {
+  var body = header.nextElementSibling;
+  var toggle = header.querySelector('.sec-toggle');
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  header.classList.toggle('collapsed', isOpen);
+}
+
+/* ── Modal events (UNCHANGED) ── */
+const Input_Modal = document.getElementById('AttachmentDialog');
+if (Input_Modal) {
+  Input_Modal.addEventListener('show.bs.modal', function(event) {
+    fileList = document.getElementById("filelist");
+    const recipient = event.relatedTarget.getAttribute('data-bs-Category');
+    axios.post("/api/updateSessionDetails",{
+      "Project_ID":"<%- Milestone_Info.Project_ID %>",
+      "Customer":"<%- Customer %>",
+      "Category":recipient,
+      "Milestone":"<%= Milestone_Info.Milestone_Name %>",
+      "Type":"Inputs"
+    });
+  });
+}
+
+const Deliverables_Modal = document.getElementById('FinalUploaderAttachmentDialog');
+if (Deliverables_Modal) {
+  Deliverables_Modal.addEventListener('show.bs.modal', function(event) {
+    fileList = document.getElementById("Final_filelist");
+    const recipient = event.relatedTarget.getAttribute('data-bs-Category');
+    document.getElementById("revision-counter").innerText = recipient.split("-")[3];
+    axios.post("/api/updateSessionDetails",{
+      "Project_ID":"<%- Milestone_Info.Project_ID %>",
+      "Customer":"<%- Customer %>",
+      "Category":recipient,
+      "Milestone":"<%= Milestone_Info.Milestone_Name %>",
+      "Type":"Final Deliverables"
+    });
+  });
+  Deliverables_Modal.addEventListener('hidden.bs.modal', function() {
+    document.getElementById("fileInput2").value = "";
+    filesQueue.length = 0;
+    successLength = 0;
+    $("#startUpload2").attr("disabled", false);
+  });
+}
+
+$(".QC_Due_Date_Container").hide();
+$('input[type="radio"][name="autoQC"]').on('click', function() {
+  if ($(this).val() === '1') {
+    $('.QC_Due_Date_Container').show();
+    $('#QC_Due_Date').attr('required', true);
+  } else {
+    $('.QC_Due_Date_Container').hide();
+    $('#QC_Due_Date').attr('required', false);
+  }
+});
+
+let Customer = "<%- Customer %>";
+let Milestone_Name = '<%= Milestone_Info.Milestone_Name %>';
+setInterval(function() {
+  socket.emit("getAllActiveStatus", { Milestone_Name: Milestone_Name, Customer: Customer, ResponseFor: "Milestone" });
+}, 2000);
+
+$("#QC_Due_Date").change(function() {
+  if ($("#ProdDueDate").val() && $(this).val() <= $("#ProdDueDate").val()) {
+    $(this).val(""); $("#ProdDueDate").val("");
+    alert("QC Due Date cannot be less than production deadline.");
+  }
+});
+$("#ProdDueDate").change(function() {
+  if ($("#QC_Due_Date").val() && $(this).val() <= $("#QC_Due_Date").val()) {
+    $(this).val(""); $("#QC_Due_Date").val("");
+    alert("QC Due Date cannot be less than production deadline.");
+  }
+});
+
+$("#requiredQC").change(function() {
+  const qcNameEl = document.getElementById("Create-Prod-Task-Modal").querySelector("#QC_Name");
+  if (!$(this).is(":checked")) {
+    qcNameEl.removeAttribute("required"); qcNameEl.value = null;
+    qcNameEl.parentElement.parentElement.classList.add("visually-hidden");
+    document.getElementsByName("autoQC").forEach(function(e){ e.setAttribute("disabled",""); });
+    document.getElementById("autoQC2").setAttribute("checked","checked");
+    document.getElementById("Create-Prod-Task-Modal").querySelector("#QC_Due_Date").parentElement.parentElement.classList.add("visually-hidden");
+    $('#QC_Due_Date').attr('required', false);
+  } else {
+    qcNameEl.setAttribute("required","");
+    document.getElementById("autoQC2").removeAttribute("checked");
+    qcNameEl.parentElement.parentElement.classList.remove("visually-hidden");
+    document.getElementsByName("autoQC").forEach(function(e){ e.removeAttribute("disabled"); });
+    document.getElementById("Create-Prod-Task-Modal").querySelector("#QC_Due_Date").parentElement.parentElement.classList.remove("visually-hidden");
+  }
+});
+</script>

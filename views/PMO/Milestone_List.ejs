@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milestone</title>
+  <%- include('../partials/dependencies') %>
+</head>
+
+<% if (userData.Role=="Employee") { %>
+  <%- include('../partials/Employee-header',{userData:userData}) %>
+<% } else if(userData.Role=="Admin") { %>
+  <%- include('../partials/Admin-header',{userData:userData}) %>
+<% } else if(userData.Role=="PMO") { %>
+  <%- include('../partials/PMO-header',{userData:userData}) %>
+<% } if(userData.Role=="Manager") { %>
+  <%- include('../partials/Manager-header',{userData:userData}) %>
+<% } %>
+
+<style>
+  /* ══════════════════════════════════════
+     PAGE VARIABLES
+  ══════════════════════════════════════ */
+  :root {
+    --ms-navy:    #0f1e36;
+    --ms-blue:    #2d7dd2;
+    --ms-cyan:    #00c6ff;
+    --ms-light:   #f4f7fc;
+    --ms-border:  #e2e8f4;
+    --ms-text:    #1e2d45;
+    --ms-muted:   #7a8aaa;
+    --ms-radius:  10px;
+    --ms-shadow:  0 2px 12px rgba(15,30,80,0.08), 0 8px 28px rgba(15,30,80,0.06);
+    --ms-tr:      all 0.18s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  body { background: #f0f4fa; }
+
+  /* ── Page wrapper ── */
+  .ms-page { padding: 14px 18px 60px; }
+
+  /* ══════════════════════════════════════
+     TOP TOOLBAR
+  ══════════════════════════════════════ */
+  .ms-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .ms-toolbar-left  { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .ms-toolbar-right { display: flex; align-items: center; gap: 8px; }
+
+  /* Page title */
+  .ms-page-title {
+    font-size: 15px; font-weight: 700; color: var(--ms-text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ms-page-title i { color: var(--ms-blue); font-size: 16px; }
+
+  /* Export button */
+  .ms-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: none; transition: var(--ms-tr); text-decoration: none;
+  }
+  .ms-btn-primary {
+    background: linear-gradient(135deg, var(--ms-blue), #1a60b8);
+    color: #fff; box-shadow: 0 2px 8px rgba(45,125,210,0.3);
+  }
+  .ms-btn-primary:hover {
+    background: linear-gradient(135deg, #3a8ae0, #2266cc);
+    box-shadow: 0 4px 14px rgba(45,125,210,0.4);
+    transform: translateY(-1px); color: #fff;
+  }
+  .ms-btn-outline {
+    background: #fff; color: var(--ms-blue);
+    border: 1px solid var(--ms-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .ms-btn-outline:hover {
+    background: #eef5ff; border-color: var(--ms-blue);
+  }
+
+  /* ── Field selector dropdown ── */
+  .ms-field-selector {
+    position: relative;
+  }
+  .ms-field-selector .ms-field-trigger {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 13px; border-radius: 8px;
+    background: #fff; border: 1px solid var(--ms-border);
+    font-size: 12px; font-weight: 600; color: var(--ms-text);
+    cursor: pointer; transition: var(--ms-tr);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    user-select: none;
+  }
+  .ms-field-selector .ms-field-trigger:hover { border-color: var(--ms-blue); background: #eef5ff; }
+  .ms-field-selector .ms-field-trigger i { color: var(--ms-blue); }
+
+  .ms-field-panel {
+    position: absolute; top: calc(100% + 8px); left: 0;
+    background: #fff; border: 1px solid var(--ms-border);
+    border-radius: var(--ms-radius);
+    box-shadow: 0 8px 32px rgba(15,30,80,0.14);
+    z-index: 999; min-width: 240px;
+    padding: 10px;
+    display: none;
+    animation: dropIn 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .ms-field-panel.open { display: block; }
+  @keyframes dropIn {
+    from { opacity:0; transform: translateY(-6px) scale(0.98); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .ms-field-panel-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 8px; border-bottom: 1px solid var(--ms-border);
+    margin-bottom: 8px;
+  }
+  .ms-field-panel-header span { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ms-muted); }
+  .ms-field-panel-header button { font-size: 10px; color: var(--ms-blue); background: none; border: none; cursor: pointer; font-weight: 600; padding: 0; }
+  .ms-field-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 4px; border-radius: 6px;
+    font-size: 12px; color: var(--ms-text); cursor: pointer;
+    transition: background 0.12s;
+  }
+  .ms-field-item:hover { background: #f0f6ff; }
+  .ms-field-item input[type="checkbox"] { accent-color: var(--ms-blue); width: 14px; height: 14px; }
+
+  /* ══════════════════════════════════════
+     CONTROL TABS — matches other pages
+  ══════════════════════════════════════ */
+  .ms-tabs-wrap {
+    display: flex; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .ms-tabs {
+    display: inline-flex; align-items: center;
+    background: #fff; border: 1px solid var(--ms-border);
+    border-radius: 12px; padding: 4px; gap: 3px;
+    box-shadow: var(--ms-shadow);
+  }
+  .ms-tab {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 18px; border-radius: 9px;
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
+    border: none; background: transparent; color: var(--ms-muted);
+    transition: var(--ms-tr); white-space: nowrap;
+  }
+  .ms-tab i { font-size: 13px; }
+  .ms-tab:hover { background: #f0f6ff; color: var(--ms-blue); }
+  .ms-tab.active {
+    background: linear-gradient(135deg, var(--ms-blue), #1a60b8);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(45,125,210,0.3);
+  }
+  .ms-tab .ms-tab-count {
+    background: rgba(255,255,255,0.25);
+    border-radius: 20px; padding: 1px 7px;
+    font-size: 10px; font-weight: 700;
+  }
+  .ms-tab:not(.active) .ms-tab-count {
+    background: rgba(45,125,210,0.1); color: var(--ms-blue);
+  }
+
+  /* ══════════════════════════════════════
+     TABLE CARD — tight, professional
+  ══════════════════════════════════════ */
+  .ms-table-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--ms-border);
+    box-shadow: 0 1px 4px rgba(15,30,80,0.06), 0 6px 20px rgba(15,30,80,0.07);
+    overflow: hidden;
+  }
+
+  /* Excel-like table — auto width so it shrinks when columns hidden */
+  .ms-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12.5px;
+    table-layout: auto;
+  }
+
+  /* Group header row */
+  .ms-table thead tr:first-child th {
+    background: linear-gradient(135deg, #0d1c34, #152844);
+    color: rgba(255,255,255,0.5);
+    font-size: 9px; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; padding: 6px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    text-align: center; white-space: nowrap;
+  }
+
+  /* Column header row */
+  .ms-table thead tr:last-child th {
+    background: linear-gradient(135deg, #1a3060, #1e3a5f);
+    color: rgba(255,255,255,0.9);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+    padding: 9px 12px; white-space: nowrap;
+    border-bottom: 2px solid rgba(45,125,210,0.4);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .ms-table thead tr:last-child th:last-child { border-right: none; }
+
+  /* Sort arrow */
+  .ms-table thead tr:last-child th[data-sort="asc"]::after  { content: ' ↑'; opacity: 0.8; font-size: 10px; }
+  .ms-table thead tr:last-child th[data-sort="desc"]::after { content: ' ↓'; opacity: 0.8; font-size: 10px; }
+  .ms-table thead tr:last-child th:hover { background: linear-gradient(135deg, #1e3a6e, #244480); }
+
+  /* Column resize handle */
+  .ms-table thead th { position: relative; }
+  .col-resize-handle {
+    position: absolute; right: 0; top: 0; bottom: 0;
+    width: 4px; cursor: col-resize;
+    background: transparent; transition: background 0.15s;
+  }
+  .col-resize-handle:hover { background: rgba(0,198,255,0.6); }
+
+  /* Prod TGT group header */
+  .ms-table thead .th-group-prod {
+    background: linear-gradient(135deg, #0a1e38, #102030) !important;
+    border-left: 2px solid rgba(45,125,210,0.25);
+    border-right: 2px solid rgba(45,125,210,0.25);
+  }
+  .ms-table thead tr:last-child .th-prod {
+    background: linear-gradient(135deg, #122040, #172850) !important;
+    border-left: 1px solid rgba(45,125,210,0.25);
+    border-right: 1px solid rgba(45,125,210,0.25);
+  }
+
+  /* Data rows */
+  .ms-table tbody tr.ms-data-row {
+    border-bottom: 1px solid #edf1fa;
+    transition: background 0.12s, box-shadow 0.12s;
+  }
+  .ms-table tbody tr.ms-data-row:hover {
+    background: #f0f6ff !important;
+    box-shadow: inset 3px 0 0 var(--ms-blue);
+  }
+  .ms-table tbody tr.ms-data-row:nth-child(4n+1) { background: #fff; }
+  .ms-table tbody tr.ms-data-row:nth-child(4n+3) { background: #fafcff; }
+  .ms-table tbody td {
+    padding: 9px 12px; color: var(--ms-text);
+    vertical-align: middle;
+    border-right: 1px solid #f0f4fc;
+  }
+  .ms-table tbody td:last-child { border-right: none; }
+
+  /* Detail expand rows — no border, no bg interference */
+  .ms-table tbody tr.ms-detail-row td {
+    background: #f4f8ff !important;
+    padding: 12px 18px !important;
+    border-top: none !important;
+    border-bottom: 2px solid #d8e4f8 !important;
+  }
+
+  /* Row expand toggle */
+  .ms-row-toggle {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: #eef4ff; border: 1px solid #d0e0f8;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: var(--ms-tr); flex-shrink: 0;
+    color: var(--ms-blue); font-size: 10px;
+  }
+  .ms-row-toggle:hover { background: var(--ms-blue); color: #fff; }
+
+  /* ── S.No cell ── */
+  .ms-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .ms-detail-item { display: flex; flex-direction: column; gap: 2px; }
+  .ms-detail-item label { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; color: var(--ms-muted); }
+  .ms-detail-item span { font-size: 12.5px; font-weight: 500; color: var(--ms-text); }
+
+  /* ── S.No cell ── */
+  .td-sno {
+    font-weight: 700; color: var(--ms-muted);
+    font-size: 11px; text-align: center;
+    width: 54px; padding-left: 14px !important;
+  }
+
+  /* ── Milestone name link ── */
+  .ms-table a { color: var(--ms-blue); text-decoration: none; font-weight: 600; }
+  .ms-table a:hover { text-decoration: underline; }
+
+  /* ── Status badges ── */
+  .ms-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 10.5px; font-weight: 700; white-space: nowrap;
+  }
+  .ms-badge::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; display: block; flex-shrink: 0;
+  }
+  .ms-badge-yts       { background: #eef3ff; color: #3a6ec0; }
+  .ms-badge-ongoing   { background: #fff8e6; color: #c07a00; }
+  .ms-badge-completed { background: #e8faf2; color: #0d9f6a; }
+  .ms-badge-approved  { background: #e6f4ff; color: #0077cc; }
+  .ms-badge-closed    { background: #f4f4f4; color: #666; }
+
+  /* ── Delivery status badges ── */
+  .ms-delivery {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 10.5px; font-weight: 700; white-space: nowrap;
+  }
+  .ms-delivery i { font-size: 9px; }
+  .text-success .ms-delivery, .ms-delivery.on-time    { background: #e8faf2; color: #0d9f6a; }
+  .ms-delivery.approaching  { background: #fff8e6; color: #c07a00; }
+  .ms-delivery.due-today    { background: #eef4ff; color: #2d6ec0; }
+  .ms-delivery.delayed      { background: #fff0f2; color: #c02038; }
+  .ms-delivery.escalation   { background: #fff0f2; color: #c02038; }
+
+  /* ── Truncated text ── */
+  .ms-truncate { max-width: 180px; }
+  .ms-text-cell { display: block; overflow: hidden; }
+  .ms-text-cell.collapsed {
+    white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 180px;
+  }
+  .ms-show-more {
+    color: var(--ms-blue); font-size: 10.5px; font-weight: 600;
+    cursor: pointer; background: none; border: none; padding: 0;
+    display: block; margin-top: 2px;
+  }
+  .ms-show-more:hover { text-decoration: underline; }
+
+  /* ══════════════════════════════════════
+     EMPTY STATE
+  ══════════════════════════════════════ */
+  .ms-empty {
+    text-align: center; padding: 52px 20px;
+  }
+  .ms-empty .ms-empty-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(45,125,210,0.1), rgba(45,125,210,0.05));
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; font-size: 22px; color: rgba(45,125,210,0.4);
+  }
+  .ms-empty p { font-size: 13px; color: var(--ms-muted); font-weight: 500; margin: 0; }
+
+  /* ══════════════════════════════════════
+     FILTER FLOATING PANEL
+  ══════════════════════════════════════ */
+  .ms-filter-fab {
+    position: fixed; bottom: 28px; right: 24px; z-index: 400;
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 30px;
+    background: linear-gradient(135deg, var(--ms-blue), #1a60b8);
+    color: #fff; font-size: 12.5px; font-weight: 700;
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 18px rgba(45,125,210,0.45);
+    transition: var(--ms-tr);
+  }
+  .ms-filter-fab:hover {
+    background: linear-gradient(135deg, #3a8ae0, #2266cc);
+    box-shadow: 0 6px 24px rgba(45,125,210,0.55);
+    transform: translateY(-2px);
+  }
+
+  .ms-filter-panel {
+    position: fixed; bottom: 80px; right: 24px; z-index: 410;
+    background: #fff; border: 1px solid var(--ms-border);
+    border-radius: 14px; padding: 16px;
+    box-shadow: 0 12px 40px rgba(15,30,80,0.18);
+    width: 260px;
+    display: none;
+    animation: dropIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .ms-filter-panel.open { display: block; }
+  .ms-filter-panel label { font-size: 11px; font-weight: 700; color: var(--ms-muted); display: block; margin-bottom: 4px; }
+  .ms-filter-panel input,
+  .ms-filter-panel select {
+    width: 100%; font-size: 12px; border: 1px solid var(--ms-border);
+    border-radius: 7px; padding: 6px 10px; color: var(--ms-text);
+    transition: var(--ms-tr); margin-bottom: 10px;
+  }
+  .ms-filter-panel input:focus,
+  .ms-filter-panel select:focus {
+    border-color: var(--ms-blue); outline: none;
+    box-shadow: 0 0 0 3px rgba(45,125,210,0.12);
+  }
+  .ms-filter-panel-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .ms-filter-panel-header span { font-size: 12px; font-weight: 800; color: var(--ms-text); }
+  .ms-filter-panel-header button { background: none; border: none; cursor: pointer; color: var(--ms-muted); font-size: 15px; padding: 0; }
+  .ms-filter-panel-header button:hover { color: var(--ms-text); }
+
+  /* ══════════════════════════════════════
+     BULK ACTION BAR
+  ══════════════════════════════════════ */
+  .ms-bulk-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    background: #fff; border: 1px solid var(--ms-border);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 24px rgba(15,30,80,0.12);
+    padding: 10px 20px; display: flex; align-items: center; gap: 10px;
+    z-index: 400; transition: var(--ms-tr);
+  }
+  .ms-bulk-bar.hidden { display: none; }
+  .ms-bulk-count {
+    background: var(--ms-blue); color: #fff;
+    border-radius: 20px; padding: 2px 9px;
+    font-size: 11px; font-weight: 700;
+  }
+
+  /* ══════════════════════════════════════
+     SCROLL BUTTONS
+  ══════════════════════════════════════ */
+  .ms-scroll-btns {
+    position: fixed; right: 90px; bottom: 28px; z-index: 400;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .ms-scroll-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #fff; border: 1px solid var(--ms-border);
+    color: var(--ms-blue); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: var(--ms-tr);
+    box-shadow: 0 2px 8px rgba(15,30,80,0.1);
+  }
+  .ms-scroll-btn:hover { background: var(--ms-blue); color: #fff; border-color: var(--ms-blue); }
+
+  /* ══════════════════════════════════════
+     SCROLLABLE TABLE CONTAINER
+  ══════════════════════════════════════ */
+  .ms-table-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+  .ms-table-scroll::-webkit-scrollbar { height: 5px; }
+  .ms-table-scroll::-webkit-scrollbar-track { background: #f0f4fc; }
+  .ms-table-scroll::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+  .ms-table-scroll::-webkit-scrollbar-thumb:hover { background: var(--ms-blue); }
+</style>
+
+<body>
+<main class="ms-page">
+
+  <%
+    let bgColour = "";
+    let bgMap = {
+      "On Time":              "on-time",
+      "Approaching Due Date": "approaching",
+      "Due Today":            "due-today",
+      "Delayed":              "delayed",
+      "Escalation":           "escalation",
+    };
+    let CompletedStatus = ['IQC - Comp','Completed','Submitted - Awaiting Approval','Short-Closed','Approved'];
+    let OngoingStatus   = ['YTS','IQC - Comp','Completed','Submitted - Awaiting Approval','Short-Closed','Approved'];
+    let ytsCount = 0, ongoingCount = 0, completedCount = 0;
+    if(Object.values(Milestone).length > 0){
+      for(let i=0; i < Object.values(Milestone).length; i++){
+        if(Milestone[i].Milestone_Status === "YTS") ytsCount++;
+        else if(!OngoingStatus.includes(Milestone[i].Milestone_Status)) ongoingCount++;
+        else if(CompletedStatus.includes(Milestone[i].Milestone_Status)) completedCount++;
+      }
+    }
+  %>
+
+  <!-- ── TOOLBAR ── -->
+  <div class="ms-toolbar">
+    <div class="ms-toolbar-left">
+      <div class="ms-page-title">
+        <i class="bi bi-signpost-split-fill"></i>
+        Milestone List
+      </div>
+
+      <!-- Field Selector -->
+      <div class="ms-field-selector" id="fieldSelector">
+        <div class="ms-field-trigger" id="fieldTrigger">
+          <i class="bi bi-layout-three-columns"></i>
+          Columns
+          <i class="bi bi-chevron-down" style="font-size:9px;"></i>
+        </div>
+        <div class="ms-field-panel" id="fieldPanel">
+          <div class="ms-field-panel-header">
+          <span>Show / Hide Columns</span>
+          <div style="display:flex;gap:6px;"><button onclick="selectAllColumns()">Select All</button><button onclick="unselectAllColumns()" style="color:#e53e3e;">Unselect All</button></div>
+        </div>
+          <div id="columnCheckboxes">
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="0" checked> S.No</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="1" checked> Milestone Name</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="2" checked> Project</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="3" checked> Created Date</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="4" checked> Prod Start Date</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="5" checked> Prod End Date</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="6" checked> QC Start Date</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="7" checked> QC End Date</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="8" checked> Due Date</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="9" checked> Status</label>
+            <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="10" checked> Delivery Status</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ms-toolbar-right">
+      <!-- Export -->
+      <div class="dropdown">
+        <button class="ms-btn ms-btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+          <i class="bi bi-cloud-download"></i> Export
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1">
+          <li>
+            <a href="/api/downloadMilestones" id="ExportLink" class="dropdown-item rounded-2" style="font-size:12.5px;">
+              <i class="bi bi-filetype-xlsx text-success me-2"></i> Excel
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTROL TABS ── -->
+  <div class="ms-tabs-wrap">
+    <div class="ms-tabs" id="msTabs">
+      <button class="ms-tab active" data-tab="yts" onclick="switchTab('yts', this)">
+        <i class="bi bi-hourglass-split"></i> YTS
+        <span class="ms-tab-count" id="count-yts"><%= ytsCount %></span>
+      </button>
+      <button class="ms-tab" data-tab="ongoing" onclick="switchTab('ongoing', this)">
+        <i class="bi bi-play-circle"></i> Ongoing
+        <span class="ms-tab-count" id="count-ongoing"><%= ongoingCount %></span>
+      </button>
+      <button class="ms-tab" data-tab="completed" onclick="switchTab('completed', this)">
+        <i class="bi bi-check-circle"></i> Completed
+        <span class="ms-tab-count" id="count-completed"><%= completedCount %></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════ YTS TAB ══════════════ -->
+  <div class="ms-tab-pane" id="pane-yts">
+    <div class="ms-table-card">
+      <div class="ms-table-scroll">
+        <table class="ms-table" id="table-yts">
+          <thead>
+            <tr>
+              <th colspan="4"></th>
+              <th colspan="2" class="th-group-prod text-center">Prod TGT</th>
+              <th colspan="2" class="text-center">QC TGT</th>
+              <th colspan="3"></th>
+            </tr>
+            <tr>
+              <th style="width:54px;">
+                <input type="checkbox" id="selectAllYTS" class="form-check-input me-1">S.No
+              </th>
+              <th>Milestone Name <div class="col-resize-handle"></div></th>
+              <th>Project <div class="col-resize-handle"></div></th>
+              <th>Created Date <div class="col-resize-handle"></div></th>
+              <th class="th-prod">Start Date <div class="col-resize-handle"></div></th>
+              <th class="th-prod">End Date <div class="col-resize-handle"></div></th>
+              <th>Start Date <div class="col-resize-handle"></div></th>
+              <th>End Date <div class="col-resize-handle"></div></th>
+              <th>Due Date <div class="col-resize-handle"></div></th>
+              <th>Status <div class="col-resize-handle"></div></th>
+              <th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(Object.values(Milestone).length > 0){ let slNo=1; %>
+              <% for(let i=0; i < Object.values(Milestone).length; i++){ %>
+                <% if(Milestone[i].Milestone_Status === "YTS"){ %>
+                  <%
+                    let dueDate = Milestone[i].f_Due_Date ? Milestone[i].f_Due_Date : Milestone[i].f_QC_TGT_End_Date;
+                    let temp    = compareDates(dueDate,"",Milestone[i].Milestone_Status);
+                    let dlvCls  = temp ? bgMap[temp] : '';
+                  %>
+                  <tr class="ms-data-row" data-status="<%= Milestone[i].Milestone_Status %>">
+                    <td class="td-sno">
+                      <div class="d-flex align-items-center gap-1">
+                        <div class="ms-row-toggle" onclick="toggleDetail(this)">
+                          <i class="bi bi-plus-lg"></i>
+                        </div>
+                        <input type="checkbox" class="record-checkbox form-check-input"
+                          data-ID="<%= Milestone[i].idProjects %>"
+                          value="<%= Milestone[i].Milestone_Name %>">
+                        <%= slNo %>
+                      </div>
+                    </td>
+                    <td>
+                      <img src="../../../static/icons/Gray-dot.png" width="12" height="12" alt="" id="MilestoneStatus-<%= Milestone[i].Milestone_Name %>" class="me-1">
+                      <a href="/ViewMilestone/<%= Milestone[i].Customer %>/<%= Milestone[i].idProjects %>/<%= Milestone[i].Milestone_Name %>">
+                        <%= Milestone[i].Milestone_Name %>
+                      </a>
+                    </td>
+                    <td><a href="/Project/<%= Milestone[i].Customer %>/<%= Milestone[i].Project_ID %>/<%= Milestone[i].idProjects %>"><%= Milestone[i].Project_ID %></a></td>
+                    <td><%= Milestone[i].Created_Date %></td>
+                    <td><%= Milestone[i].Prod_TGT_Start_Date %></td>
+                    <td><%= Milestone[i].Prod_TGT_End_Date %></td>
+                    <td><%= Milestone[i].QC_TGT_Start_Date %></td>
+                    <td><%= Milestone[i].QC_TGT_End_Date %></td>
+                    <td><%= Milestone[i].Due_Date ? Milestone[i].Due_Date : "-" %></td>
+                    <td><span class="ms-badge ms-badge-yts"><%= Milestone[i].Milestone_Status %></span></td>
+                    <td>
+                      <% if(temp){ %>
+                        <span class="ms-delivery <%= dlvCls %>">
+                          <i class="bi bi-circle-fill"></i><%= temp %>
+                        </span>
+                      <% } else { %> — <% } %>
+                    </td>
+                  </tr>
+                  <!-- Detail expand row -->
+                  <tr class="ms-detail-row" style="display:none;">
+                    <td colspan="11">
+                      <div class="ms-detail-grid">
+                        <div class="ms-detail-item"><label>Milestone</label><span><%= Milestone[i].Milestone_Name %></span></div>
+                        <div class="ms-detail-item"><label>Project ID</label><span><%= Milestone[i].Project_ID %></span></div>
+                        <div class="ms-detail-item"><label>Customer</label><span><%= Milestone[i].Customer %></span></div>
+                        <div class="ms-detail-item"><label>Status</label><span><%= Milestone[i].Milestone_Status %></span></div>
+                        <div class="ms-detail-item"><label>Created</label><span><%= Milestone[i].Created_Date %></span></div>
+                        <div class="ms-detail-item"><label>Due Date</label><span><%= Milestone[i].Due_Date || "-" %></span></div>
+                        <div class="ms-detail-item"><label>Prod Start</label><span><%= Milestone[i].Prod_TGT_Start_Date %></span></div>
+                        <div class="ms-detail-item"><label>Prod End</label><span><%= Milestone[i].Prod_TGT_End_Date %></span></div>
+                        <div class="ms-detail-item"><label>QC Start</label><span><%= Milestone[i].QC_TGT_Start_Date %></span></div>
+                        <div class="ms-detail-item"><label>QC End</label><span><%= Milestone[i].QC_TGT_End_Date %></span></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <% slNo++; } %>
+              <% } %>
+            <% } %>
+            <% if(ytsCount === 0){ %>
+              <tr><td colspan="11">
+                <div class="ms-empty">
+                  <div class="ms-empty-icon"><i class="bi bi-inbox"></i></div>
+                  <p>No YTS milestones found</p>
+                </div>
+              </td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ ONGOING TAB ══════════════ -->
+  <div class="ms-tab-pane" id="pane-ongoing" style="display:none;">
+    <div class="ms-table-card">
+      <div class="ms-table-scroll">
+        <table class="ms-table" id="table-ongoing">
+          <thead>
+            <tr>
+              <th colspan="4"></th>
+              <th colspan="2" class="th-group-prod text-center">Prod TGT</th>
+              <th colspan="2" class="text-center">QC TGT</th>
+              <th colspan="3"></th>
+            </tr>
+            <tr>
+              <th style="width:54px;">
+                <input type="checkbox" id="selectAllOngoing" class="form-check-input me-1">S.No
+              </th>
+              <th>Milestone Name <div class="col-resize-handle"></div></th>
+              <th>Project <div class="col-resize-handle"></div></th>
+              <th>Created Date <div class="col-resize-handle"></div></th>
+              <th class="th-prod">Start Date <div class="col-resize-handle"></div></th>
+              <th class="th-prod">End Date <div class="col-resize-handle"></div></th>
+              <th>Start Date <div class="col-resize-handle"></div></th>
+              <th>End Date <div class="col-resize-handle"></div></th>
+              <th>Due Date <div class="col-resize-handle"></div></th>
+              <th>Status <div class="col-resize-handle"></div></th>
+              <th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(Object.values(Milestone).length > 0){ let slNo=1; %>
+              <% for(let i=0; i < Object.values(Milestone).length; i++){ %>
+                <% if(!OngoingStatus.includes(Milestone[i].Milestone_Status)){ %>
+                  <%
+                    let dueDate = Milestone[i].f_Due_Date ? Milestone[i].f_Due_Date : Milestone[i].f_QC_TGT_End_Date;
+                    let temp    = compareDates(dueDate,"",Milestone[i].Milestone_Status);
+                    let dlvCls  = temp ? bgMap[temp] : '';
+                  %>
+                  <tr class="ms-data-row">
+                    <td class="td-sno">
+                      <div class="d-flex align-items-center gap-1">
+                        <div class="ms-row-toggle" onclick="toggleDetail(this)">
+                          <i class="bi bi-plus-lg"></i>
+                        </div>
+                        <input type="checkbox" class="record-checkbox-ongoing form-check-input"
+                          data-ID="<%= Milestone[i].idProjects %>"
+                          value="<%= Milestone[i].Milestone_Name %>">
+                        <%= slNo %>
+                      </div>
+                    </td>
+                    <td>
+                      <img src="../../../static/icons/Gray-dot.png" width="12" height="12" alt="" id="MilestoneStatus-<%= Milestone[i].Milestone_Name %>" class="me-1">
+                      <a href="/ViewMilestone/<%= Milestone[i].Customer %>/<%= Milestone[i].idProjects %>/<%= Milestone[i].Milestone_Name %>">
+                        <%= Milestone[i].Milestone_Name %>
+                      </a>
+                    </td>
+                    <td><a href="/Project/<%= Milestone[i].Customer %>/<%= Milestone[i].Project_ID %>/<%= Milestone[i].idProjects %>"><%= Milestone[i].Project_ID %></a></td>
+                    <td><%= Milestone[i].Created_Date %></td>
+                    <td><%= Milestone[i].Prod_TGT_Start_Date %></td>
+                    <td><%= Milestone[i].Prod_TGT_End_Date %></td>
+                    <td><%= Milestone[i].QC_TGT_Start_Date %></td>
+                    <td><%= Milestone[i].QC_TGT_End_Date %></td>
+                    <td><%= Milestone[i].Due_Date ? Milestone[i].Due_Date : "-" %></td>
+                    <td><span class="ms-badge ms-badge-ongoing"><%= Milestone[i].Milestone_Status %></span></td>
+                    <td>
+                      <% if(temp){ %>
+                        <span class="ms-delivery <%= dlvCls %>">
+                          <i class="bi bi-circle-fill"></i><%= temp %>
+                        </span>
+                      <% } else { %> — <% } %>
+                    </td>
+                  </tr>
+                  <tr class="ms-detail-row" style="display:none;">
+                    <td colspan="11">
+                      <div class="ms-detail-grid">
+                        <div class="ms-detail-item"><label>Milestone</label><span><%= Milestone[i].Milestone_Name %></span></div>
+                        <div class="ms-detail-item"><label>Project ID</label><span><%= Milestone[i].Project_ID %></span></div>
+                        <div class="ms-detail-item"><label>Customer</label><span><%= Milestone[i].Customer %></span></div>
+                        <div class="ms-detail-item"><label>Status</label><span><%= Milestone[i].Milestone_Status %></span></div>
+                        <div class="ms-detail-item"><label>Created</label><span><%= Milestone[i].Created_Date %></span></div>
+                        <div class="ms-detail-item"><label>Due Date</label><span><%= Milestone[i].Due_Date || "-" %></span></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <% slNo++; } %>
+              <% } %>
+            <% } %>
+            <% if(ongoingCount === 0){ %>
+              <tr><td colspan="11">
+                <div class="ms-empty">
+                  <div class="ms-empty-icon"><i class="bi bi-inbox"></i></div>
+                  <p>No ongoing milestones found</p>
+                </div>
+              </td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ COMPLETED TAB ══════════════ -->
+  <div class="ms-tab-pane" id="pane-completed" style="display:none;">
+    <div class="ms-table-card">
+      <div class="ms-table-scroll">
+        <table class="ms-table" id="table-completed">
+          <thead>
+            <tr>
+              <th colspan="4"></th>
+              <th colspan="2" class="th-group-prod text-center">Prod TGT</th>
+              <th colspan="2" class="text-center">QC TGT</th>
+              <th colspan="3"></th>
+            </tr>
+            <tr>
+              <th style="width:54px;">S.No</th>
+              <th>Milestone Name <div class="col-resize-handle"></div></th>
+              <th>Project <div class="col-resize-handle"></div></th>
+              <th>Created Date <div class="col-resize-handle"></div></th>
+              <th class="th-prod">Start Date <div class="col-resize-handle"></div></th>
+              <th class="th-prod">End Date <div class="col-resize-handle"></div></th>
+              <th>Start Date <div class="col-resize-handle"></div></th>
+              <th>End Date <div class="col-resize-handle"></div></th>
+              <th>Due Date <div class="col-resize-handle"></div></th>
+              <th>Status <div class="col-resize-handle"></div></th>
+              <th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(Object.values(Milestone).length > 0){ let slNo=1; %>
+              <% for(let i=0; i < Object.values(Milestone).length; i++){ %>
+                <% if(CompletedStatus.includes(Milestone[i].Milestone_Status)){ %>
+                  <%
+                    let dueDate = Milestone[i].f_Due_Date ? Milestone[i].f_Due_Date : Milestone[i].f_QC_TGT_End_Date;
+                    let temp    = compareDates(dueDate, Milestone[i].f_QC_ACT_End_Date, Milestone[i].Milestone_Status);
+                    let dlvCls  = temp ? bgMap[temp] : '';
+                  %>
+                  <tr class="ms-data-row">
+                    <td class="td-sno">
+                      <div class="d-flex align-items-center gap-1">
+                        <div class="ms-row-toggle" onclick="toggleDetail(this)">
+                          <i class="bi bi-plus-lg"></i>
+                        </div>
+                        <%= slNo %>
+                      </div>
+                    </td>
+                    <td>
+                      <img src="../../../static/icons/Gray-dot.png" width="12" height="12" alt="" id="MilestoneStatus-<%= Milestone[i].Milestone_Name %>" class="me-1">
+                      <a href="/ViewMilestone/<%= Milestone[i].Customer %>/<%= Milestone[i].idProjects %>/<%= Milestone[i].Milestone_Name %>">
+                        <%= Milestone[i].Milestone_Name %>
+                      </a>
+                    </td>
+                    <td><a href="/Project/<%= Milestone[i].Customer %>/<%= Milestone[i].Project_ID %>/<%= Milestone[i].idProjects %>"><%= Milestone[i].Project_ID %></a></td>
+                    <td><%= Milestone[i].Created_Date %></td>
+                    <td><%= Milestone[i].Prod_TGT_Start_Date %></td>
+                    <td><%= Milestone[i].Prod_TGT_End_Date %></td>
+                    <td><%= Milestone[i].QC_TGT_Start_Date %></td>
+                    <td><%= Milestone[i].QC_TGT_End_Date %></td>
+                    <td><%= Milestone[i].Due_Date ? Milestone[i].Due_Date : "-" %></td>
+                    <td>
+                      <%
+                        let badgeCls = 'ms-badge-completed';
+                        if(Milestone[i].Milestone_Status==='Approved') badgeCls='ms-badge-approved';
+                        else if(Milestone[i].Milestone_Status==='Short-Closed') badgeCls='ms-badge-closed';
+                      %>
+                      <span class="ms-badge <%= badgeCls %>"><%= Milestone[i].Milestone_Status %></span>
+                    </td>
+                    <td>
+                      <% if(temp){ %>
+                        <span class="ms-delivery <%= dlvCls %>">
+                          <i class="bi bi-circle-fill"></i><%= temp %>
+                        </span>
+                      <% } else { %> — <% } %>
+                    </td>
+                  </tr>
+                  <tr class="ms-detail-row" style="display:none;">
+                    <td colspan="11">
+                      <div class="ms-detail-grid">
+                        <div class="ms-detail-item"><label>Milestone</label><span><%= Milestone[i].Milestone_Name %></span></div>
+                        <div class="ms-detail-item"><label>Project ID</label><span><%= Milestone[i].Project_ID %></span></div>
+                        <div class="ms-detail-item"><label>Customer</label><span><%= Milestone[i].Customer %></span></div>
+                        <div class="ms-detail-item"><label>Status</label><span><%= Milestone[i].Milestone_Status %></span></div>
+                        <div class="ms-detail-item"><label>Created</label><span><%= Milestone[i].Created_Date %></span></div>
+                        <div class="ms-detail-item"><label>Due Date</label><span><%= Milestone[i].Due_Date || "-" %></span></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <% slNo++; } %>
+              <% } %>
+            <% } %>
+            <% if(completedCount === 0){ %>
+              <tr><td colspan="11">
+                <div class="ms-empty">
+                  <div class="ms-empty-icon"><i class="bi bi-inbox"></i></div>
+                  <p>No completed milestones found</p>
+                </div>
+              </td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bulk action bar ── -->
+  <div class="ms-bulk-bar hidden" id="bulkBar">
+    <span class="ms-bulk-count" id="bulkCount">0</span>
+    <span style="font-size:12px;font-weight:600;color:#1e2d45;">selected</span>
+    <button type="button" class="ms-btn ms-btn-primary"
+      data-bs-toggle="modal" data-bs-target="#Create-Prod-Task-Modal">
+      <i class="bi bi-plus-lg"></i> Create Production Task
+    </button>
+    <% if(userData.Role=="Manager"){ %>
+    <button type="button" class="ms-btn ms-btn-outline"
+      data-bs-toggle="modal" data-bs-target="#Notify-PMO-Modal">
+      <i class="bi bi-send"></i> Notify PMO
+    </button>
+    <% } %>
+  </div>
+
+  <!-- ── Scroll buttons ── 
+  <div class="ms-scroll-btns">
+    <button class="ms-scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <i class="bi bi-arrow-up"></i>
+    </button>
+    <button class="ms-scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})">
+      <i class="bi bi-arrow-down"></i>
+    </button>
+  </div>
+  -->
+
+  <!-- ── Filter FAB + Panel ── -->
+  <button class="ms-filter-fab" id="filterFab">
+    <i class="bi bi-funnel-fill"></i> Filter
+  </button>
+  <form action="/<%= userData.Role %>/Milestone_List" method="get" id="filterForm">
+    <div class="ms-filter-panel" id="filterPanel">
+      <div class="ms-filter-panel-header">
+        <span><i class="bi bi-funnel me-1"></i> Filters</span>
+        <button type="button" id="filterClose"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <label>Project ID</label>
+      <input type="search" name="Project_ID" id="Project_ID" placeholder="Last 4 digits…">
+      <label>Status</label>
+      <select name="Milestone_Status" id="Milestone_Status">
+        <option value="" selected>All</option>
+        <% const Status = FilterData.Status %>
+        <% for(let i=0; i < Status.length; i++){ %>
+          <option value="<%= Status[i] %>"><%= Status[i] %></option>
+        <% } %>
+      </select>
+      <label>Owner</label>
+      <select name="Owner" id="Owner">
+        <option value="" selected>All</option>
+        <% for(let i=0; i < Owners.length; i++){ %>
+          <option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option>
+        <% } %>
+      </select>
+      <button type="submit" class="ms-btn ms-btn-primary w-100 justify-content-center mt-1">
+        <i class="bi bi-check2"></i> Apply Filters
+      </button>
+    </div>
+  </form>
+
+</main>
+</body>
+
+<!-- ══════════════ MODALS (UNCHANGED) ══════════════ -->
+<% if(userData.Role=="Manager"){ %>
+<div class="modal fade" id="Notify-PMO-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Send Notification to PMO</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/Manager/PushJobToPMO" method="post" id="PushJobToPMO">
+        <div class="modal-body">
+          <div class="col"><div class="row g-2">
+            <div class="col-md">
+              <label>Milestone Name</label>
+              <div class="form-floating milestone-container">
+                <input type="text" class="form-control" id="Milestone_Name" name="Milestone_Name" placeholder="Enter Job ID" value="" readonly required>
+              </div>
+            </div>
+            <div class="col-md"><div class="col-md"><div class="form-floating">
+              <select name="PMO" id="PMO" class="form-select" required>
+                <option value="" selected>Choose PMO</option>
+                <optgroup label="PMO">
+                  <% for(let i=0; i < Object.values(Owners).length; i++){ %>
+                    <% if(Owners[i].Role=="PMO"){ %>
+                      <option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option>
+                    <% } %>
+                  <% } %>
+                </optgroup>
+              </select>
+              <label>PMO</label>
+            </div></div></div>
+          </div></div>
+          <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+            <p>This action will prompt an email notification to the designated PMO regarding the status of the chosen milestone(s).</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Send <i class="bi bi-send"></i></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<div class="modal fade" id="Create-Prod-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Create Production Task</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/CreateTask" method="post" id="createMilestoneForm">
+        <div class="modal-body">
+          <div class="col"><div class="row g-2">
+            <div class="col-md bg-body-tertiary rounded shadow-sm">
+              <label>Selected Milestone Name</label>
+              <div class="form-floating milestone-container">
+                <input type="text" class="form-control" id="Milestone_Name" name="Milestone_Name" placeholder="Enter Job ID" value="" readonly required>
+              </div>
+            </div>
+            <div class="col-md">
+              <div class="d-flex col-md">
+                <div class="m-2 w-50"><div class="form-floating">
+                  <select name="Owner" id="milestone_owner" class="form-select" required>
+                    <option value="" selected>Choose Owner</option>
+                    <optgroup label="PMO">
+                      <% for(let i=0; i < Object.values(Owners).length; i++){ %>
+                        <% if(Owners[i].Role=="PMO"){ %>
+                          <option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option>
+                        <% } %>
+                      <% } %>
+                    </optgroup>
+                    <optgroup label="Manager">
+                      <% for(let i=0; i < Object.values(Owners).length; i++){ %>
+                        <% if(Owners[i].Role=="Manager"){ %>
+                          <option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option>
+                        <% } %>
+                      <% } %>
+                    </optgroup>
+                    <optgroup label="Engineers">
+                      <% for(let i=0; i < Object.values(Owners).length; i++){ %>
+                        <% if(Owners[i].Role=="Employee"){ %>
+                          <option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option>
+                        <% } %>
+                      <% } %>
+                    </optgroup>
+                  </select>
+                  <label>Owner</label>
+                </div></div>
+                <div class="m-2 w-50"><div class="form-floating">
+                  <select name="QC_Name" id="QC_Name" class="form-select" required>
+                    <option value="" selected>Select QC-Checklist</option>
+                    <% for(let i=0; i < Object.keys(QC_List).length; i++){ %>
+                      <option value="<%= QC_List[i].Checklist_Name %>"><%= QC_List[i].Checklist_Name %></option>
+                    <% } %>
+                  </select>
+                  <label>QC-Checklist</label>
+                </div></div>
+              </div>
+              <div class="d-flex col-md">
+                <div class="form-floating w-50 m-2">
+                  <input type="text" class="form-control" id="TaskLabel" name="TaskLabel" placeholder="" required minlength="2">
+                  <label>Task Name</label>
+                </div>
+                <div class="form-floating w-50 m-2">
+                  <input type="date" class="today-date form-control border" id="DueDate" name="DueDate" required>
+                  <label>Task Due Date</label>
+                </div>
+              </div>
+              <div class="col-md m-2">
+                <input type="hidden" name="Type" id="Type" value="Production" required>
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="Remark" name="Remark" placeholder="">
+                  <label>Note/Remarks (If Applicable)</label>
+                </div>
+              </div>
+              <div class="col-md text-center">
+                <p class="from-label">Allow system to auto-create QC-Task when this production task completes?</p>
+                <input type="radio" class="btn-check" name="autoQC" id="autoQC1" value="1" required>
+                <label class="btn btn-outline-success" for="autoQC1">Yes</label>
+                <input type="radio" class="btn-check" name="autoQC" id="autoQC2" value="0">
+                <label class="btn btn-outline-danger" for="autoQC2">No</label>
+              </div>
+              <div class="QC_Due_Date_Container m-2">
+                <div class="form-floating">
+                  <input type="date" class="today-date form-control border" id="QC_Due_Date" name="QC_Due_Date">
+                  <label>QC-Due Date</label>
+                </div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+        <div class="modal-footer">
+          <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+
+<script>
+/* ══════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════ */
+/* Prevent milestone page clicks from closing header cards */
+(function(){
+  var mainEl = document.querySelector('main.ms-page');
+  if(mainEl){
+    mainEl.addEventListener('mousedown', function(e){
+      /* Don't stop propagation for links/buttons that need it */
+      /* Only stop if the target is a general page area */
+      var tag = e.target.tagName.toLowerCase();
+      if(['a','button','input','select'].indexOf(tag) === -1){
+        e.stopPropagation();
+      }
+    });
+  }
+})();
+function switchTab(name, btn) {
+  document.querySelectorAll('.ms-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.ms-tab-pane').forEach(p => p.style.display = 'none');
+  btn.classList.add('active');
+  document.getElementById('pane-' + name).style.display = '';
+}
+
+/* ══════════════════════════════════════
+   ROW EXPAND / COLLAPSE
+══════════════════════════════════════ */
+function toggleDetail(toggleEl) {
+  var dataRow   = toggleEl.closest('tr');
+  var detailRow = dataRow.nextElementSibling;
+  var icon      = toggleEl.querySelector('i');
+  if (!detailRow || !detailRow.classList.contains('ms-detail-row')) return;
+
+  var isHidden = (detailRow.style.display === 'none' || detailRow.style.display === '');
+  detailRow.style.display = isHidden ? 'table-row' : 'none';
+
+  /* On open: ensure td is visible and spans all visible columns */
+  if (isHidden) {
+    var td = detailRow.querySelector('td');
+    if (td) {
+      td.style.display = '';
+      var visibleCount = 0;
+      document.querySelectorAll('.col-toggle').forEach(function(cb){ if(cb.checked) visibleCount++; });
+      td.colSpan = visibleCount || 11;
+    }
+  }
+
+  icon.className = isHidden ? 'bi bi-dash-lg' : 'bi bi-plus-lg';
+  toggleEl.style.background = isHidden ? 'var(--ms-blue)' : '';
+  toggleEl.style.color      = isHidden ? '#fff' : '';
+}
+
+/* ══════════════════════════════════════
+   COLUMN SHOW / HIDE — proper reflow
+   Uses colgroup visibility so the table
+   shrinks/expands naturally when fields
+   are toggled on or off.
+══════════════════════════════════════ */
+(function(){
+  /* Build a colgroup for every table once */
+  document.querySelectorAll('.ms-table').forEach(function(tbl){
+    var colCount = tbl.querySelector('thead tr:last-child').querySelectorAll('th').length;
+    var cg = document.createElement('colgroup');
+    for(var i = 0; i < colCount; i++){
+      var col = document.createElement('col');
+      col.setAttribute('data-colidx', i);
+      cg.appendChild(col);
+    }
+    tbl.insertBefore(cg, tbl.firstChild);
+  });
+
+  function applyColVisibility(){
+    /* Build a set of hidden column indexes */
+    var hidden = {};
+    document.querySelectorAll('.col-toggle').forEach(function(cb){
+      if(!cb.checked) hidden[parseInt(cb.getAttribute('data-col'))] = true;
+    });
+
+    document.querySelectorAll('.ms-table').forEach(function(tbl){
+      /* 1. Hide/show every cell in every row by column index */
+      tbl.querySelectorAll('tr').forEach(function(row){
+      /* Skip detail rows — only update colspan, never touch display */
+        if(row.classList.contains('ms-detail-row')){
+          var tdDetail = row.querySelector('td');
+          if(tdDetail){
+            var visibleCount = 0;
+            document.querySelectorAll('.col-toggle').forEach(function(cb){ if(cb.checked) visibleCount++; });
+            tdDetail.colSpan = visibleCount || 1;
+          }
+          return;
+        }
+
+        var cells = row.querySelectorAll('th, td');
+
+        /* Header group row (first thead row) uses colspans — skip cell-by-cell */
+        if(row.parentElement.tagName === 'THEAD' && row.rowIndex === 0) return;
+
+        cells.forEach(function(cell, idx){
+          cell.style.display = hidden[idx] ? 'none' : '';
+        });
+      });
+
+      /* 2. Update header group row colspans dynamically */
+      var groupRow = tbl.querySelector('thead tr:first-child');
+      if(groupRow){
+        var groupCells = groupRow.querySelectorAll('th');
+        /* Groups: [0-3]=empty(4), [4-5]=ProdTGT(2), [6-7]=QCTGT(2), [8-10]=empty(3) */
+        var groups = [
+          { start:0, end:3 },  // S.No, Name, Project, Created
+          { start:4, end:5 },  // Prod TGT
+          { start:6, end:7 },  // QC TGT
+          { start:8, end:10 }  // Due Date, Status, Delivery
+        ];
+        groups.forEach(function(g, gi){
+          var visible = 0;
+          for(var c = g.start; c <= g.end; c++){
+            if(!hidden[c]) visible++;
+          }
+          if(groupCells[gi]){
+            if(visible === 0){
+              groupCells[gi].style.display = 'none';
+            } else {
+              groupCells[gi].style.display = '';
+              groupCells[gi].colSpan = visible;
+            }
+          }
+        });
+      }
+    });
+  }
+
+  /* Wire up all checkboxes */
+  document.querySelectorAll('.col-toggle').forEach(function(cb){
+    cb.addEventListener('change', applyColVisibility);
+  });
+
+  /* Select All button */
+  window.selectAllColumns = function(){
+    document.querySelectorAll('.col-toggle').forEach(function(cb){ cb.checked = true; });
+    applyColVisibility();
+  };
+  window.unselectAllColumns = function(){
+    document.querySelectorAll('.col-toggle').forEach(function(cb){ cb.checked = false; });
+    applyColVisibility();
+  };
+})();
+
+/* Field panel toggle */
+document.getElementById('fieldTrigger').addEventListener('click', function(e) {
+  e.stopPropagation();
+  document.getElementById('fieldPanel').classList.toggle('open');
+});
+document.addEventListener('click', function(e) {
+  /* Only close field panel — never touch header elements */
+  var fieldSelector = document.getElementById('fieldSelector');
+  if (fieldSelector && !fieldSelector.contains(e.target)) {
+    document.getElementById('fieldPanel').classList.remove('open');
+  }
+  /* Also close filter panel if click is outside it and outside the FAB */
+  var filterPanel = document.getElementById('filterPanel');
+  var filterFab   = document.getElementById('filterFab');
+  if (filterPanel && filterFab &&
+      !filterPanel.contains(e.target) &&
+      !filterFab.contains(e.target)) {
+    filterPanel.classList.remove('open');
+  }
+});
+
+/* ══════════════════════════════════════
+   COLUMN RESIZE (Excel-like)
+══════════════════════════════════════ */
+(function() {
+  var resizing = null;
+  var startX   = 0;
+  var startW   = 0;
+
+  document.querySelectorAll('.col-resize-handle').forEach(function(handle) {
+    handle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      resizing = handle.parentElement;
+      startX   = e.pageX;
+      startW   = resizing.offsetWidth;
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!resizing) return;
+    var newW = Math.max(60, startW + (e.pageX - startX));
+    resizing.style.minWidth = newW + 'px';
+    resizing.style.width    = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (resizing) {
+      resizing = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+})();
+
+/* ══════════════════════════════════════
+   SHOW MORE / LESS for long text
+══════════════════════════════════════ */
+(function() {
+  var LIMIT = 40;
+  document.querySelectorAll('.ms-table tbody td').forEach(function(td) {
+    var text = td.textContent.trim();
+    if (text.length > LIMIT && !td.querySelector('a') && !td.querySelector('input') && !td.querySelector('span')) {
+      var full = text;
+      td.innerHTML =
+        '<span class="ms-text-cell collapsed">' + full.substring(0, LIMIT) + '…</span>' +
+        '<button class="ms-show-more" onclick="toggleText(this)">Show More</button>';
+    }
+  });
+})();
+
+function toggleText(btn) {
+  var cell = btn.previousElementSibling;
+  if (cell.classList.contains('collapsed')) {
+    cell.classList.remove('collapsed');
+    btn.textContent = 'Show Less';
+  } else {
+    cell.classList.add('collapsed');
+    btn.textContent = 'Show More';
+  }
+}
+
+/* ══════════════════════════════════════
+   FILTER PANEL
+══════════════════════════════════════ */
+document.getElementById('filterFab').addEventListener('click', function() {
+  document.getElementById('filterPanel').classList.toggle('open');
+});
+document.getElementById('filterClose').addEventListener('click', function() {
+  document.getElementById('filterPanel').classList.remove('open');
+});
+
+/* ══════════════════════════════════════
+   BULK SELECTION
+══════════════════════════════════════ */
+$(document).ready(function () {
+  $(".QC_Due_Date_Container").hide();
+  $('input[type="radio"][name="autoQC"]').on('click', function () {
+    if ($(this).val() === '1') {
+      $('.QC_Due_Date_Container').show();
+      $('#QC_Due_Date').attr('required', true);
+    } else {
+      $('.QC_Due_Date_Container').hide();
+      $('#QC_Due_Date').attr('required', false);
+    }
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  var selectAllYTS      = document.getElementById('selectAllYTS');
+  var selectAllOngoing  = document.getElementById('selectAllOngoing');
+  var cbYTS             = document.querySelectorAll('.record-checkbox');
+  var cbOngoing         = document.querySelectorAll('.record-checkbox-ongoing');
+  var selectedRecords   = [];
+  var bulkBar           = document.getElementById('bulkBar');
+  var bulkCount         = document.getElementById('bulkCount');
+
+  function updateBulk() {
+    selectedRecords.length = 0;
+    cbYTS.forEach(function(cb) {
+      if (cb.checked) selectedRecords.push(JSON.stringify({ Job: cb.value, ID: cb.getAttribute('data-id') }));
+    });
+    cbOngoing.forEach(function(cb) {
+      if (cb.checked) selectedRecords.push(JSON.stringify({ Job: cb.value, ID: cb.getAttribute('data-id') }));
+    });
+
+    var count = selectedRecords.length;
+    bulkCount.textContent = count;
+    bulkBar.classList.toggle('hidden', count === 0);
+
+    document.querySelectorAll('.ActiveCount').forEach(function(el) {
+      el.innerText = count || '';
+    });
+
+    if (count > 0) {
+      document.querySelectorAll('.milestone-container').forEach(function(c) {
+        c.innerHTML = '';
+        selectedRecords.forEach(function(job, idx) {
+          var t = JSON.parse(job);
+          c.innerHTML += '<div class="d-flex align-items-center">' +
+            '<span>' + (idx+1) + '-</span>' +
+            '<input type="text" class="border-bottom bg-body-tertiary m-1" name="Milestone_Name" value="' + t.Job + '" readonly required>' +
+            '<input type="hidden" name="ID" value="' + t.ID + '" readonly required>' +
+            '</div>';
+        });
+      });
+    }
+  }
+
+  if (selectAllYTS) {
+    selectAllYTS.addEventListener('change', function() {
+      cbYTS.forEach(function(cb) { cb.checked = selectAllYTS.checked; });
+      updateBulk();
+    });
+  }
+  cbYTS.forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      if (!cb.checked && selectAllYTS) selectAllYTS.checked = false;
+      updateBulk();
+    });
+  });
+
+  if (selectAllOngoing) {
+    selectAllOngoing.addEventListener('change', function() {
+      cbOngoing.forEach(function(cb) { cb.checked = selectAllOngoing.checked; });
+      updateBulk();
+    });
+  }
+  cbOngoing.forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      if (!cb.checked && selectAllOngoing) selectAllOngoing.checked = false;
+      updateBulk();
+    });
+  });
+
+  /* Restore filter values from URL */
+  var params = getUrlParams();
+  document.querySelectorAll('select').forEach(function(sel) {
+    for (var k in params) {
+      if (k === sel.name) {
+        var opt = sel.querySelector('option[value="' + params[k] + '"]');
+        if (opt) opt.selected = true;
+      }
+    }
+  });
+  document.querySelectorAll('input[type="search"]').forEach(function(inp) {
+    for (var k in params) {
+      if (k === inp.name) inp.value = params[k];
+    }
+  });
+
+  /* Update export link with current filters */
+  var exportLink = document.getElementById('ExportLink');
+  if (exportLink) {
+    var base = exportLink.getAttribute('href');
+    var qs   = '?';
+    for (var k in params) { qs += k + '=' + params[k] + '&'; }
+    exportLink.setAttribute('href', base + qs);
+  }
+
+  /* Pure CSS column sort — no DataTables needed */
+  (function(){
+    document.querySelectorAll('.ms-table thead tr:last-child th').forEach(function(th){
+      if(th.querySelector('.col-resize-handle') || th.querySelector('input')) return;
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', function(){
+        var tbl  = th.closest('table');
+        var idx  = Array.from(th.parentElement.children).indexOf(th);
+        var asc  = th.dataset.sort !== 'asc';
+        th.dataset.sort = asc ? 'asc' : 'desc';
+        /* update arrow indicator */
+        tbl.querySelectorAll('thead tr:last-child th').forEach(function(t){ t.dataset.sort = ''; });
+        th.dataset.sort = asc ? 'asc' : 'desc';
+        var rows = Array.from(tbl.querySelectorAll('tbody tr.ms-data-row'));
+        rows.sort(function(a,b){
+          /* each data row is followed by a detail row — keep pairs together */
+          var av = (a.cells[idx] || {}).textContent.trim();
+          var bv = (b.cells[idx] || {}).textContent.trim();
+          return asc ? av.localeCompare(bv, undefined, {numeric:true}) :
+                       bv.localeCompare(av, undefined, {numeric:true});
+        });
+        var tbody = tbl.querySelector('tbody');
+        rows.forEach(function(row){
+          var detail = row.nextElementSibling;
+          tbody.appendChild(row);
+          if(detail && detail.classList.contains('ms-detail-row')) tbody.appendChild(detail);
+        });
+      });
+    });
+  })();
+});
+</script>

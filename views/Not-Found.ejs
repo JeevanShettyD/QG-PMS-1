@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found</title>
+    <%- include('./partials/dependencies') %>
+</head>
+<header>
+    <nav class="d-flex align-items-center justify-content-start">
+        <a href="#" class="text-decoration-none m-1 p-0 text-white">QGPMS </a>
+        <p style="font-size: 12px;" class="m-0 px-1 text-white fw-light rounded-pill bg-secondary bg-gradient">
+            V.2.12 Testing
+        </p>
+    </nav>
+</header>
+
+<body>
+    <section class="position-absolute top-50 start-50 translate-middle p-2 d-flex flex-column justify-content-center align-items-center w-75 h-75">
+        <img src="/static/images/PageNotFound.svg" alt="Page Not Found" width="450px" height="450px">
+        <a href="/" class="btn btn-outline-primary rounded-pill"><i class="bi bi-arrow-left-circle-fill"></i> Go Back To
+            Home</a>
+    </section>
+    <script type="text/javascript" crossorigin="anonymous">
+        document.addEventListener("contextmenu", function(e){
+        if (e.target.nodeName === "IMG") {
+            e.preventDefault();
+        }
+    }, false);
+    </script>
+</body>
+<style type="text/css">
+    input {
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px;
+    }
+
+    /* Underline */
+
+    .bar {
+        position: relative;
+        display: block;
+        width: 100%;
+    }
+
+    .bar:before,
+    .bar:after {
+        content: '';
+        height: 2px;
+        width: 0;
+        bottom: 1px;
+        position: absolute;
+        background: #4a89dc;
+        transition: all 0.2s ease;
+    }
+
+    .bar:before {
+        left: 50%;
+    }
+
+    .bar:after {
+        right: 50%;
+    }
+
+
+    /* active */
+
+    input:focus~.bar:before,
+    input:focus~.bar:after {
+        width: 50%;
+    }
+
+    .or-label {
+        line-height: 0.1em;
+        margin: 10px 0 20px;
+    }
+
+    .or-label span {
+        background: #fff;
+        padding: 0 10px;
+    }
+
+    .input-box .icon {
+        font-size: x-large;
+        position: absolute;
+        left: -20px;
+        bottom: 5px;
+    }
+
+    input:focus~.icon {
+        color: #4a89dc;
+        transition: all 0.2s ease;
+    }
+</style>
+</html>

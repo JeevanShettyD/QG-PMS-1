@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+  <body>
+    <main>
+      <form action="/PMO/editProject/Mastec" method="post" id="createProjectForm">
+        <div class="row m-2 rounded-3 shadow">
+          <p class="bg-primary bg-opacity-50 bg-gradient fg-white p-2 m-0  rounded-3">Project Information</p>
+          <!-- <label for="" class="position-absolute bg-light w-auto" style="top: -10px;">Project Info</label> -->
+          <div class="col p-2">
+            <div class="row fs-6">
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="JOB_ID">JOB ID</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="JOB_ID" id="JOB_ID" value="<%= Data.JOB_ID %>" placeholder="Enter the JOB ID"
+                pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" required>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="hidden" name="idProjects" id="idProjects" value="<%= Data.idProjects %>"
+                placeholder="Enter the CFAS-ID" pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" required>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="SOW">SOW</label>
+              <select class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                name="SOW" id="SOW" required>
+                <option selected value="">Select SOW</option>
+                <% SOW.forEach(sow=>{ %>
+                  <option value="<%- sow %>" <% if(sow==Data.SOW){ %> selected <% } %>><%- sow %></option>
+                  <% }) %>
+              </select>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="Worktype">Work Type</label>
+              <select class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                name="Worktype" id="Worktype" required>
+                <option selected value="">Select Work Type</option>
+                <% WT.forEach(wt=>{ %>
+                  <option value="<%- wt %>" <% if(wt==Data.Worktype){%> selected <% } %>><%- wt %></option>
+                  <% }) %>
+              </select>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Footage">Total Footage</label>
+              <div class="col-sm-8  mb-1 p-0 ">
+                <div class="input-group flex-nowrap">
+                  <input type="text" class="border-start  border-light bg-body-secondary border-start border-light"
+                    name="Total_Footage" id="Total_Footage" placeholder="Enter the Total Footage" minlength="8"
+                    value="<%= Data.Total_Footage %>" title="Positive Integers Only..." pattern="[0-9]+">
+                  <span class="input-group-text bg-body-secondary border-0 rounded-0" id="basic-addon2">ft</span>
+                </div>
+              </div>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Actives">Total No of
+                Actives</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Total_Actives" id="Total_Actives" value="<%= Data.Total_Actives %>" minlength="8"
+                placeholder="Enter the Total No of Actives" title="Positive Integers Only..." pattern="[0-9]+">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Total_Home_Passing">Total Home
+                Passing</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Total_Home_Passing" id="Total_Home_Passing" value="<%= Data.Total_Home_Passing %>"
+                minlength="8" placeholder="Enter the Total Home Passing" title="Positive Integers Only..."
+                pattern="[0-9]+">
+
+
+            </div>
+          </div>
+          <div class="p-2 col">
+            <div class="row">
+
+              <% function formatDateString(dateString) { const dateParts=dateString.split('/'); const
+                formattedDate=dateParts.map(part=> (part.length === 1 ? '0' + part : part)).join('-');
+                return formattedDate;
+                }
+                %>
+                <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="Region">Region</label>
+                <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                  type="text" name="Region" id="Region" value="<%= Data.Region %>" placeholder="Enter the CILLI Code"
+                  pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" required>
+
+                <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Division">Division</label>
+                <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                  type="text" name="Division" id="Division" value="<%= Data.Division %>"
+                  placeholder="Enter the Division" pattern="[A-Za-z0-9]+" title="Alpha Numeric Only">
+
+                <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="No_Nodes">No of
+                  Nodes</label>
+                <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                  type="number" name="No_Nodes" id="No_Nodes" value="<%= Data.No_Nodes %>"
+                  placeholder="Enter the No of Nodes" title="Numeric Only" required>
+
+                <label class="col-sm-4 mb-1 col-form-label  bg-body-secondary required" for="ReceivedDate">Received
+                  Date</label>
+                <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary" type="date"
+                  name="ReceivedDate" id="ReceivedDate" value="<%= formatDateString(Data.n_ReceivedDate) %>" required>
+
+                <label class="col-sm-4 mb-1 col-form-label bg-body-secondary required" for="DueDate">Due Date</label>
+                <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                  type="date" name="DueDate" id="DueDate" value="<%= formatDateString(Data.n_DueDate) %>" required>
+
+                <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="ApprovedDate">Approved Date</label>
+                <% if (Data.n_ApprovedDate) { %>
+                  <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                    type="date" name="ApprovedDate" id="ApprovedDate"
+                    value="<%= formatDateString(Data.n_ApprovedDate) %>">
+                  <% } else { %>
+                    <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                      type="date" name="ApprovedDate" id="ApprovedDate" value="">
+                    <% } %>
+
+                      <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Status">Status</label>
+                      <select
+                        class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                        name="Status" id="Status">
+                        <option <% if (Data.Status=='YTS' ) { %>
+                          selected
+                          <% } %> value="YTS">YTS
+                        </option>
+                        <option <% if (Data.Status=='Work in Progress' ) { %>
+                          selected
+                          <% } %> value="Work in Progress">Work in Progress
+                        </option>
+                        <option <% if (Data.Status=='QC' ) { %>
+                          selected
+                          <% } %> value="QC">QC
+                        </option>
+                        <option <% if (Data.Status=='Completed' ) { %>
+                          selected
+                          <% } %> value="Completed">Completed
+                        </option>
+                      </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="" class="shadow rounded-3 m-2">
+          <div class="bg-primary bg-opacity-50 bg-gradient fg-white  rounded-3 p-2">Comments <i class="bi bi-chat-quote"></i></div>
+          <div class=" p-2 ">
+            <div id="NoteArea">
+              <% if (Comments) { %>
+                <% Object.keys(Comments).forEach(function(groupKey) { %>
+                  <div class="row  m-1">
+                    <div class="col-sm-12">
+                      <p><small><span><i class="bi bi-person-fill"></i>&nbsp;<%= Comments[groupKey].Author_Name %>
+                          </span>&nbsp; <b>|</b>&nbsp;<span><i class="bi bi-calendar3"></i>&nbsp;<%=
+                              Comments[groupKey].On %>
+                          </span>
+                          <% for (const key in Comments[groupKey]) { %>
+                            <% if (key.startsWith('attachment') && Comments[groupKey][key]!='' ) { %>
+                              <b> |</b><span> <a href="../public/uploads/ReferenceDoc/<%= Comments[groupKey][key] %>"
+                                  class="text-decoration-none btn btn-outline-secondary border-0 btn-sm" download><i
+                                    class="bi bi-paperclip"></i></a></span>
+                              <% } %>
+                                <% } %>
+                        </small>
+                        <% if(userData.Employee_ID==Comments[groupKey].Author_ID) { %>
+                          &nbsp; <b>|</b>&nbsp;<i
+                            class="bi bi-trash3-fill btn btn-outline-danger border-0 btn-sm deleteBtn"
+                            data-project-id="<%= Data.idProjects %>" data-comment-id="<%= groupKey %>"
+                            data-customer="Mastec"></i>
+                          <% } %>
+                      </p>
+                      <% for (const key in Comments[groupKey]) { %>
+                        <% if (key.startsWith('Note') ) { %>
+                          <p class='border comment-section p-2 m-0'>
+                            <%- Comments[groupKey][key] %>
+                          </p>
+                          <% } %>
+                            <% } %>
+                    </div>
+                  </div>
+                  <% }); %>
+                    <% } %>
+            </div>
+            <button class="button primary outline rounded shadowed" type="button"
+              onclick="Metro.dialog.open('#AddNoteDialog')" id="AddNoteBtn"><i class="bi bi-plus-circle"></i></button>
+          </div>
+        </div>
+        <div class="text-center m-2">
+          <input type="submit" id="summa" class="button primary shadowed rounded" value="Update">
+        </div>
+      </form>
+    </main>
+  </body>
+  <div class="dialog" data-role="dialog" data-close-button="true" data-overlay-click-close="true" id="AddNoteDialog">
+    <div class="dialog-title">Add Comment</div>
+    <div class="dialog-content">
+
+      <textarea name="CommentInput" id="CommentInput" data-role="textarea" data-auto-size="true" data-max-height="200"
+        cols="30" rows="1" placeholder="Enter your note here"></textarea>
+      <form action="#" id="dialog-form"></form>
+      <input class="my-2" type="file" dir="rtl" data-role="file" accept=".pdf, .xls, .xlsx,.docx" name="attachment"
+        id="attachment" placeholder="Select the Attachment" onchange='getExtension(this)'>
+      <input type="hidden" name="attachmentType" id="attachmentType">
+      <input type="hidden" name="attachmentLocation" id="attachmentLocation">
+      <input type="hidden" name="Customer" id="Customer" value="Mastec">
+      <input type="hidden" name="idProjects" id="idProjects" value="<%= Data.idProjects %>">
+      </form>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="button secondary rounded js-dialog-close" id="addCommentBtn">Add</button>
+    </div>
+  </div>
+  <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+    <script src="/static/js/CreateProject.js"></script>
+
+</html>

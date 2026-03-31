@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CQC Task</title>
+    <%- include('../partials/dependencies') %>
+</head>
+<% if (userData.Role=="Employee" ) { %>
+    <%- include('../partials/Employee-header',{userData:userData}) %>
+        <% }else if(userData.Role=="Admin" ){ %>
+            <%- include('../partials/Admin-header',{userData:userData}) %>
+                <% }else if(userData.Role=="PMO" ){ %>
+                    <%- include('../partials/PMO-header',{userData:userData}) %>
+                        <%}if(userData.Role=="Manager"){ %>
+                            <%- include('../partials/Manager-header',{userData:userData}) %>
+                                <%}%>
+
+                                    <body>
+                                        <main class="d-flex h-100">
+                                            <section class="shadow w-75 p-2 rounded  scrollbar-style-3"
+                                                style="height: calc(100vh - 46px); overflow-y: scroll; overflow-x: hidden;">
+                                                <div class="d-flex  justify-content-between  align-items-center">
+                                                    <div class="d-flex">
+                                                        <img width="40" height="40"
+                                                            src="https://img.icons8.com/nolan/64/checklist.png"
+                                                            alt="checklist" />
+                                                        <div class="d-flex align-items-center">
+                                                            <p class="rounded bg-primary bg-gradient bg-opacity-50  p-1 m-1 text-light"
+                                                                style="width:fit-content; font-size: 14px;">
+                                                                Task
+                                                            </p>
+                                                            <p class="m-0 p-0 fs-5 text-bold">
+                                                                <%= Task.TaskLabel?Task.TaskLabel:"-" %>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p class="p-0 m-0 d-inline">Current Status: <span class="bg-gradient bg-opacity-75  text-light me-2
+                                                                                            <% if(Task.Status ==='YTS'){%> bg-danger <% }else if(Task.Status==='WIP' ){ %>
+                                                                                            bg-warning <% }else if(Task.Status==='Completed'){ %> bg-success <% }else{%> bg-primary <%}%>rounded-5
+                                                                                                                                px-2 py-1">
+                                                                                                                            <%= Task.Status %>
+                                                            </span>
+                                                        </p>
+                                                        <button type="button" id="markTaskCompleted"
+                                                            class="d-inline rounded bg-primary bg-gradient btn btn-primary btn-sm mx-2 <% if (Task.Status!='WIP' || Task.Owner!=userData.Employee_ID) { %> visually-hidden <% } %>">Submit<i class="ms-2 bi bi-arrow-right"></i></button>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <section class="qg-tab bg-primary bg-gradient bg-opacity-75  rounded-3 shadow-sm">
+                                                        <input type="checkbox" name="accordion-1" id="cb1" checked>
+                                                        <label for="cb1" class="qg-tab__label">Information</label>
+                                                        <div class="qg-tab__content bg-light">
+                                                        <div class="row">
+                                                            <p class="col ">Task ID:<br>
+                                                                <input type="text"
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    value="<%=Task.TaskName %>" readonly></input>
+                                                                <!-- <a class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1" href="/ViewTask/<%=Customer%>/<%= Milestone_Info.Milestone_Name %>/<%=Task.TaskName %>"><%=Task.TaskName %></a> -->
+                                                            </p>
+                                                            <p class="col">Job-ID: <span data-bs-toggle="modal"
+                                                                    data-bs-target="#Project_Info_Modal"
+                                                                    title="Click to View the Project Details"><i
+                                                                        class="bi bi-info-circle text-primary d-none"></i></span>
+                                                                <br>
+                                                                <a href="/Project/<%= Milestone_Info.Customer %>/<%= Milestone_Info.Project_ID %>/<%= Milestone_Info.idProjects %>"
+                                                                    class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1">
+                                                                    <%= Milestone_Info.Project_ID %>
+                                                                </a>
+                                                            </p>
+                                                            <p class="col">Milestone: <br>
+                                                                <a class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    href="/ViewMilestone/<%=Customer%>/<%= Milestone_Info.idProjects %>/<%= Milestone_Info.Milestone_Name %>">
+                                                                    <%= Milestone_Info.Milestone_Name %>
+                                                                </a>
+                                                            </p>
+                                                            <p class="col">Task Type:<br> <input type="text"
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    value="<%= Task.Type %>" readonly></input>
+                                                            </p>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col">
+                                                                <span class="d-inline">Owner:</span><br>
+                                                                <% if ((userData.Role=="PMO" || userData.Role=="Manager"
+                                                                    )&&(Task.Status!='Completed')) { %>
+                                                                    <select name="" id="TaskOwner"
+                                                                        class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 w-auto select-list hidden"
+                                                                        data-OwnerFor="Task"
+                                                                        data-ID="<%=Task.TaskName %>">
+                                                                        <% for( let index=0; index <
+                                                                            Object.values(Owners).length; index++){%>
+                                                                            <% if (Owners[index].Role!="PMO" ) { %>
+                                                                                <option
+                                                                                    value="<%= Owners[index].Employee_ID %>"
+                                                                                    <%
+                                                                                    if(Owners[index].Employee_ID==Task.Owner)
+                                                                                    { %>
+                                                                                    selected
+                                                                                    <% } %>>
+                                                                                        <%= Owners[index].Full_Name %> (
+                                                                                            <%= Owners[index].Employee_ID
+                                                                                                %>
+                                                                                                )
+                                                                                </option>
+                                                                                <% } %>
+                                                                                    <% } %>
+                                                                    </select>
+                                                                    <p
+                                                                        class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 m-0 user-info">
+                                                                        <span class="Owner"
+                                                                            data-userID="<%= Task.Owner %>">
+                                                                            <%= Task.Owner %>
+                                                                        </span><span class="toggle-button"><i
+                                                                                class="bi bi-pencil-fill"></i></span>
+                                                                    </p>
+                                                                    <% } else { %>
+                                                                        <p
+                                                                            class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1 m-0">
+                                                                            <span class="Owner"
+                                                                                data-userID="<%= Task.Owner %>">
+                                                                                <%= Task.Owner %>
+                                                                            </span>
+                                                                        </p>
+                                                                        <% } %>
+
+                                                            </div>
+                                                            <p class="col" data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                data-bs-title="Open this checklist in another Browser/Private window.">
+                                                                <span class="required">Checklist:</span> <a href=""
+                                                                    title="Download the Filled Checklist" class=""
+                                                                    id="Checklist_Url"><i
+                                                                        class="bi bi-arrow-down-circle"></i></a><br>
+                                                                <a id="QC_Link" title="<%= Task.QC_Name %>" class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold text-dark rounded-3 p-1 <% if (Task.Owner != userData.Employee_ID || Task.Status=='Completed' || Task.Status=='YTS') { %>
+                                     disabled
+                                    <% } %>" href="https://172.17.1.22:5000/Engineer/QC/<%= Task.QC_Name %>"
+                                                                    target="_blank">
+                                                                    <%= Task.QC_Name %>
+                                                                </a>
+                                                            </p>
+                                                            <p class="col"><span class="required">Iteration:</span><br>
+                                                                <input type="text" id="Iteration"
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    value="<%= Task.Iteration %>" readonly>
+                                                            </p>
+                                                            <p class="col"><span class="required">QC Score:</span><br>
+                                                                <input type="text" id="Score"
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    value="<%= Task.Score %>" readonly>
+                                                            </p>
+                                                        </div>
+                                                        <div class="row">
+                                                            <p class="col"><span class="required">Total Time:</span><br>
+                                                                <input type="text"
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    value="<%=secondsToMinutes(Task.TotalTime+subTaskTotalTime) %>"
+                                                                    readonly></input>
+                                                            </p>
+                                                            <% if (Task.Type=='Production') { %>
+                                                                <p class="col">Due Date:<br> <input
+                                                                        type="text"
+                                                                        class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        value="<%= Task.DueDate?Task.DueDate:"-" %>"
+                                                                        readonly></input> </p>
+                                                                <p class="col">Start Date:<br> <input
+                                                                        type="text"
+                                                                        class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        value="<%= Task.StartDate %>"
+                                                                        readonly></input> </p>
+                                                                <p class="col">End Date:<br> <input
+                                                                        type="text"
+                                                                        class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        value="<%= Task.EndDate %>"
+                                                                        readonly></input> </p>
+
+                                                                <% }else if(Task.Type=='IQC' || Task.Type=='RQC' ){%>
+                                                                    <% if(Task.Prod_Task){%>
+                                                                    <p class="col ">Production Task ID:<br>
+                                                                <input type="text" hidden
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    value="<%=Task.Prod_Task %>" readonly></input>
+                                                               <a class="d-block bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1" href="/ViewTask/<%=Customer%>/<%= Milestone_Info.Milestone_Name %>/<%=Task.Prod_Task %>"><%=Task.Prod_Task %></a>
+                                                            </p>
+                                                            <%}%>
+                                                                    <p class="col">Start Date:<br> <input
+                                                                            type="text"
+                                                                            class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                            value="<%= Task.StartDate %>"
+                                                                            readonly></input> </p>
+                                                                    <p class="col">End Date:<br> <input
+                                                                            type="text"
+                                                                            class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                            value="<%= Task.EndDate %>"
+                                                                            readonly></input> </p>
+                                                                    <% } %>
+                                                        </div>
+                                                        <div class="row mb-2">
+                                                            <% if (Task.Type!='Production') { %>
+                                                            <p class="col ">Due Date:<br> <input
+                                                                        type="text"
+                                                                        class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        value="<%= Task.DueDate?Task.DueDate:"-" %>"
+                                                                        readonly></input> </p>
+                                                                        <%}%>
+                                                            <p class="col">Manager Remark:
+                                                                <input type="text" name="Remark" id="Remark"
+                                                                    value="<%= Task.Remark?Task.Remark:"N/A" %>"
+                                                                    class="bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                    placeholder="Remark" readonly>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    </section>
+
+                                                    <!--Tech Info Section-->
+                                                    <section class="qg-tab bg-primary bg-gradient bg-opacity-75 mt-2 rounded-3 shadow-sm">
+                                                        <input type="checkbox" name="accordion-1" id="cb2">
+                                                        <label for="cb2" class="qg-tab__label">Technical Details</label>
+                                                        <div class="position-absolute end-0 top-0 m-2">
+                                                            <p class="m-0 p-0 btn text-light" id="autosaveStatus">
+                                                                <i class="bi bi-cloud-check fw-bold rounded-3 p-1"></i>
+                                                            </p>
+                                                        </div>
+                                                        <div class="qg-tab__content bg-light">
+                                                        <div class="row">
+                                                            <% let techDetails=JSON.parse(Task.TechInfo); %>
+                                                            <% if(Customer=="ATX"){%>
+                                                                <div class="col">
+                                                                    <label class="mb-1 text-nowrap required"
+                                                                        for="Total_Home_Passing">Total
+                                                                        Home Passing :</label>
+                                                                    <input type="number" id="Total_Home_Passing"
+                                                                        minlength="3"
+                                                                        value="<%= Milestone_Info.Total_Home_Passing?Milestone_Info.Total_Home_Passing:null %>"
+                                                                        min="0" name="Total_Home_Passing"
+                                                                        class="techInfo bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        placeholder="Enter the Total Home Passing"
+                                                                        title="Positive Integers Only..."
+                                                                        pattern="[0-9]+" required>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <label class="mb-1 text-nowrap required"
+                                                                        for="Arial">Aerial(Act):</label>
+                                                                <div class="input-group flex-nowrap p-0">
+                                                                    <input type="number" id="Arial"
+                                                                        value="<%= Milestone_Info.Arial?Milestone_Info.Arial:null %>"
+                                                                        min="0" name="Arial"
+                                                                        class="techInfo  bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-start-3 p-1"
+                                                                        placeholder="Enter the Aerial"
+                                                                        title="Positive Integers Only..."
+                                                                        pattern="[0-9]+" required>
+                                                                        <span class="input-group-text  bg-secondary bg-gradient bg-opacity-25 border-0 rounded-start-0 m-0 px-2"
+                                                                        id="basic-addon2">ft</span>
+                                                                </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <label class="mb-1 text-nowrap required"
+                                                                        for="Buried">Buried (Act):</label>
+                                                                        <div class="input-group flex-nowrap p-0">
+                                                                    <input type="number" id="Buried" minlength="3"
+                                                                        value="<%= Milestone_Info.Buried?Milestone_Info.Buried:null %>"
+                                                                        min="0" name="Buried"
+                                                                        class="techInfo  bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-start-3 p-1"
+                                                                        placeholder="Enter the No of Nodes"
+                                                                        title="Positive Integers Only..."
+                                                                        pattern="[0-9]+" required>
+                                                                        <span class="input-group-text  bg-secondary bg-gradient bg-opacity-25 border-0 rounded-start-0 m-0 px-2"
+                                                                        id="basic-addon2">ft</span>
+                                                                        </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <label class="mb-1 text-nowrap required"
+                                                                        for="Total">Total (Act):</label>
+                                                                        <div class="input-group flex-nowrap p-0">
+                                                                    <input type="number" id="Total" minlength="3"
+                                                                        value="<%= Milestone_Info.Buried+Milestone_Info.Arial %>"
+                                                                        min="0" name="Total"
+                                                                        class="techInfo  bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-start-3 p-1"
+                                                                        placeholder="Enter the No of Nodes"
+                                                                        title="Positive Integers Only..."
+                                                                        pattern="[0-9]+" readonly required>
+                                                                        <span class="input-group-text  bg-secondary bg-gradient bg-opacity-25 border-0 rounded-start-0 m-0 px-2"
+                                                                        id="basic-addon2">ft</span>
+                                                                        </div>
+                                                                </div>
+                                                                <%}else{%> 
+                                                                    <div class="col">
+                                                                    <label class="mb-1 text-nowrap required"
+                                                                        for="Total_Home_Passing">Total
+                                                                        Home Passing :</label>
+                                                                    <input type="number" id="Total_Home_Passing"
+                                                                        minlength="3"
+                                                                        value="<%= Milestone_Info.Total_Home_Passing?Milestone_Info.Total_Home_Passing:null %>"
+                                                                        min="0" name="Total_Home_Passing"
+                                                                        class="techInfo bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        placeholder="Enter the Total Home Passing"
+                                                                        title="Positive Integers Only..."
+                                                                        pattern="[0-9]+" required>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <label class="mb-1 text-nowrap required"
+                                                                        for="No_Nodes">No of
+                                                                        Nodes :</label>
+                                                                    <input type="number" id="No_Nodes" minlength="3"
+                                                                        value="<%= Milestone_Info.No_Nodes?Milestone_Info.No_Nodes:null %>"
+                                                                        min="0" name="No_Nodes"
+                                                                        class="techInfo bg-secondary bg-gradient bg-opacity-25 fw-bold rounded-3 p-1"
+                                                                        placeholder="Enter the No of Nodes"
+                                                                        title="Positive Integers Only..."
+                                                                        pattern="[0-9]+" required>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <label class="mb-1 text-nowrap required"
+                                                                        for="Total_Footage ">Total Footage :</label>
+                                                                    <div class="input-group flex-nowrap p-0">
+                                                                        <input type="number" name="Total_Footage"
+                                                                            id="Total_Footage" min="0"
+                                                                            class="techInfo bg-secondary bg-gradient bg-opacity-25 fw-bold  rounded-start-3 p-1"
+                                                                            placeholder="Enter the Total Footage"
+                                                                            minlength="8"
+                                                                            value="<%= Milestone_Info.Total_Footage?Milestone_Info.Total_Footage:null %>"
+                                                                            title="Positive Integers Only..."
+                                                                            pattern="[0-9]+">
+                                                                        <span
+                                                                            class="input-group-text bg-secondary bg-gradient bg-opacity-25 border-0 rounded-start-0 m-0 p-0 px-2"
+                                                                            id="basic-addon2">ft</span>
+                                                                    </div>
+
+                                                                </div>
+                                                                <%}%>
+                                                        </div>
+                                                    </section>
+
+                                                    <!--Subtask Section-->
+                                                    <section class="qg-tab bg-primary bg-gradient bg-opacity-75 mt-2 rounded-3 shadow-sm">
+                                                        <input type="checkbox" name="accordion-1" id="cb3">
+                                                        <label for="cb3" class="qg-tab__label">Subtask</label>
+                                                        <div class="position-absolute end-0 top-0 m-2">
+                                                            <p class="m-0 p-0 btn text-light <% if ((Task.Status!='WIP' || Task.Owner != userData.Employee_ID) && (userData.Role!="PMO" || Task.Status=="YTS")) { %> visually-hidden <% }%>"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#create-Subtask-Task-Modal"><i
+                                                                    class="bi bi-plus-circle"></i>
+                                                            </p>
+                                                        </div>
+                                                        <div class="qg-tab__content bg-light">
+                                                                <table class="table table-hover overflow-hidden rounded-3"
+                                                                    aria-label="task table" style="font-size: 14px;">
+                                                                    <thead class="bg-primary  bg-opacity-50 bg-gradient">
+                                                                        <th scope="col" class="text-light"></th>
+                                                                        <th scope="col" class="text-light">Subtask ID</th>
+                                                                        <th scope="col" class="text-light">Subtask Name</th>
+                                                                        <th scope="col" class="text-light">Task Name</th>
+                                                                        <th scope="col" class="text-light">Owner</th>
+                                                                        <th scope="col" class="text-light">Status</th>
+                                                                        <th scope="col" class="text-light">ACT Start Date
+                                                                        </th>
+                                                                        <th scope="col" class="text-light">ACT End Date</th>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <% if (Object.values(subTask).length>0) { %>
+                                                                            <% for( let index=0; index <
+                                                                                Object.values(subTask).length; index++ ) {
+                                                                                %>
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        <%= index+1 %>
+                                                                                    </td>
+                                                                                    <td class="text-nowrap">
+                                                                                        <a
+                                                                                            href="/SubTask/<%= subTask[index].SubTaskName %>">
+                                                                                            <%= subTask[index].SubTaskName
+                                                                                                %>
+                                                                                        </a>
+                                                                                    </td>
+                                                                                    <td class="text-wrap">
+                                                                                        <%= subTask[index].SubTaskLabel?subTask[index].SubTaskLabel:"-"%>
+                                                                                        </td>
+                                                                                    <td class="text-nowrap">
+                                                                                        <%= subTask[index].Task_Name %>
+                                                                                    </td>
+                                                                                    <td class="Owner"
+                                                                                        data-userID="<%= subTask[index].Owner %>">
+                                                                                        <%= subTask[index].Owner %>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <%= subTask[index].Status %>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <%= subTask[index].StartDate?subTask[index].StartDate:"-"
+                                                                                            %>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <%= subTask[index].EndDate?subTask[index].EndDate:"-"
+                                                                                            %>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <% } %>
+                                                                                    <% } else { %>
+                                                                                        <tr>
+                                                                                            <td colspan="8"
+                                                                                                class="text-center">No
+                                                                                                Subtask</td>
+                                                                                        </tr>
+                                                                                        <% } %>
+                                                                    </tbody>
+                                                                </table>
+                                                        </div>
+                                                    </section>
+
+                                                    <!--Markup Section-->
+                                                    <section class="qg-tab bg-primary bg-gradient bg-opacity-75 mt-2 rounded-3 shadow-sm <% if(Task.Type=='Production'){%> d-none <%}%>">
+                                                        <input type="checkbox" name="accordion-1" id="cb4">
+                                                        <label for="cb4" class="qg-tab__label">Markups</label>
+                                                        <div class="position-absolute end-0 top-0 m-2">
+                                                            <p class="m-0 p-0 btn text-light <% if (Task.Owner != userData.Employee_ID && Task.Status!="WIP" && Task.Status!="Completed" && userData.Role!="PMO") { %> visually-hidden <% }%>"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#create-Markup-Task-Modal"><i
+                                                                    class="bi bi-plus-circle"></i></p>
+                                                        </div>
+                                                        <div class="qg-tab__content bg-light">
+                                                            <table class="table table-hover overflow-hidden rounded-3"
+                                                                aria-label="markup table" style="font-size: 14px;">
+                                                                <thead class="bg-primary  bg-opacity-50 bg-gradient">
+                                                                    <th scope="col" class="text-light"></th>
+                                                                    <th scope="col" class="text-light">Markup Name</th>
+                                                                    <th scope="col" class="text-light">Task Name</th>
+                                                                    <th scope="col" class="text-light">Owner</th>
+                                                                    <th scope="col" class="text-light">Status</th>
+                                                                    <th scope="col" class="text-light">ACT Start Date
+                                                                    </th>
+                                                                    <th scope="col" class="text-light">ACT End Date</th>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <% if (Object.values(markup).length>0) { %>
+                                                                        <% for( let index=0; index <
+                                                                            Object.values(markup).length; index++ ) { %>
+                                                                            <tr>
+                                                                                <td>
+                                                                                    <%= index+1 %>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <a
+                                                                                        href="/Markup/<%= markup[index].Sub_Task_Name %>">
+                                                                                        <%= markup[index].Sub_Task_Name
+                                                                                            %>
+                                                                                    </a>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <%= markup[index].Task_Name %>
+                                                                                </td>
+                                                                                <td class="Owner"
+                                                                                    data-userID="<%= markup[index].Owner %>">
+                                                                                    <%= markup[index].Owner %>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <%= markup[index].Status %>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <%= markup[index].StartDate?markup[index].StartDate:"-"
+                                                                                        %>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <%= markup[index].EndDate?markup[index].EndDate:"-"
+                                                                                        %>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <% } %>
+                                                                                <% } else { %>
+                                                                                    <tr>
+                                                                                        <td colspan="8"
+                                                                                            class="text-center">No
+                                                                                            Markup</td>
+                                                                                    </tr>
+                                                                                    <% } %>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </section>
+                                                </div>
+                                            </section>
+                                            <button type="button" data-bs-toggle="modal"
+                                                data-bs-target="#Add_Comment_Modal"
+                                                class="position-absolute bottom-0 end-0 btn btn-primary z-3 bordre border-1 m-1 rounded-circle bg-gradient"><i
+                                                    class="bi bi-chat-dots fs-4"></i></button>
+                                            <section class="w-25 px-2 pt-2  scrollbar-style-3 z-1"
+                                                style="height: calc(100vh - 46px); overflow-y: scroll; ">
+                                                <%let completedStatus=['Ready for QC','Completed','IQC-YTS','IQC-WIP','IQC-Completed']%>
+                                                <div class="shadow-sm bg-body-tertiary rounded">
+                                                    <div
+                                                        class="d-flex flex-column mb-2 p-2 border-bottom sticky-top bg-light align-items-center <% if ( completedStatus.includes(Task.Status) || Task.Owner != userData.Employee_ID) { %> visually-hidden <% }%>">
+                                                        <span
+                                                            class="display w-100 rounded-5 p-1 m-1 text-center align-middle bg-danger bg-gradient bg-opacity-100 text-light fs-3 fw-bolder shadow-sm"
+                                                            id="display">00:00:00:00</span>
+                                                        <div
+                                                            class=" m-1 d-flex align-items-center justify-content-center">
+                                                            <% let lock=false; if(Object.values(Log).length){
+                                                                if((Log[Object.values(Log).length-1].startTime !=null ||
+                                                                Log[Object.values(Log).length-1].startTime !=undefined)
+                                                                && (Log[Object.values(Log).length-1].endTime==null)){
+                                                                lock=true; }}%>
+
+                                                                <button
+                                                                    class="btn btn-sm btn-primary bg-gradient <% if(lock==true){ %> d-none <% } %>"
+                                                                    id="startBtn" <% if(ProductionStatus==false &&
+                                                                    (Task.Type=='IQC' || Task.Type=='RQC' )){ %>
+                                                                    disabled <%}%> ><i
+                                                                            class="bi bi-play fs-5"></i></button>
+                                                                <button
+                                                                    class=" btn btn-sm btn-secondary bg-gradient <% if(lock==false){ %> d-none <% } %>"
+                                                                    id="stopBtn" <% if(ProductionStatus==false &&
+                                                                    (Task.Type=='IQC' || Task.Type=='RQC' )){ %>
+                                                                    disabled <%}%>><i
+                                                                            class="bi bi-stop fs-5"></i></button>
+                                                                <button onclick="pause(this)"
+                                                                    class="btn col visually-hidden" id="pauseBtn"
+                                                                    disabled><i class="bi bi-pause"></i></button>
+                                                        </div>
+                                                        <% if(ProductionStatus==false && (Task.Type=='IQC' ||
+                                                            Task.Type=='RQC' )){ %>
+                                                            <p class="text-center" style="font-size: 12px;">The
+                                                                production process is still ongoing. QC cannot be
+                                                                initiated until it is completed.</p>
+                                                            <%}%>
+
+                                                    </div>
+                                                    <div
+                                                        class="bg-primary bg-gradient bg-opacity-25 p-2  rounded-top shadow-sm">
+                                                        <img width="30" height="30" class="d-inline"
+                                                            src="https://img.icons8.com/ios-glyphs/30/228BE6/delivery-time.png"
+                                                            alt="delivery-time" />
+                                                        <p class="d-inline">Time Sheet</p>
+                                                    </div>
+                                                    <div id="lapTimes" style="font-size: 12px; height: fit-content;">
+                                                        <% if (Object.values(Log).length>0) { %>
+                                                            <table class="table table-hover table-striped"
+                                                                aria-label="">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th></th>
+                                                                        <th>Start</th>
+                                                                        <th>End</th>
+                                                                        <th>Duration</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <% for( let index=0; index <
+                                                                        Object.values(Log).length; index++ ) { %>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <%= index+1 %>
+                                                                            </td>
+                                                                            <td>
+                                                                                <%= Log[index].startTime %>
+                                                                            </td>
+                                                                            <td>
+                                                                                <%= Log[index].endTime %>
+                                                                            </td>
+                                                                            <td>
+                                                                                <%= secondsToMinutes(Log[index].duration)
+                                                                                    %>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% } %>
+                                                                            <% }else{ %>
+                                                                                <div class="d-flex justify-content-center"
+                                                                                    id="">
+                                                                                    <img src="/static/images/Data report-amico.svg"
+                                                                                        alt="Image" width="200"
+                                                                                        height="200"
+                                                                                        id="DataReportIcon">
+                                                                                </div>
+                                                                                <% } %>
+                                                                </tbody>
+                                                            </table>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2 shadow-sm bg-body-tertiary rounded">
+                                                    <% if (Comments) { %>
+                                                        <div
+                                                            class="bg-primary bg-gradient bg-opacity-25 p-2 rounded-top shadow-sm">
+                                                            <img width="30" height="30" class="d-inline"
+                                                                src="https://img.icons8.com/ios/50/228BE6/speech-bubble-with-dots--v1.png"
+                                                                alt="speech-bubble-with-dots--v1" />
+                                                            <p class="d-inline">Comments</p>
+                                                        </div>
+                                                        <% Object.keys(Comments).forEach(function(groupKey) { %>
+                                                            <div class="row m-1" style="font-size: 12px;">
+                                                                <div class="col-sm-12">
+                                                                    <p><small><span><i
+                                                                                    class="bi bi-person-fill"></i>&nbsp;
+                                                                                <%= Comments[groupKey].Author_Name %>
+                                                                            </span>&nbsp; <b>|</b>&nbsp;<span><i
+                                                                                    class="bi bi-calendar3"></i>&nbsp;
+                                                                                <%= Comments[groupKey].On %>
+                                                                            </span>
+                                                                            <% for (const key in Comments[groupKey]) {
+                                                                                %>
+                                                                                <% if (key.startsWith('attachment') &&
+                                                                                    Comments[groupKey][key]!='' &&
+                                                                                    Comments[groupKey][key]!=null ) {%>
+                                                                                    <b> |</b><span> <a
+                                                                                            href="../public/uploads/ReferenceDoc/<%= Comments[groupKey][key] %>"
+                                                                                            class="text-decoration-none btn btn-outline-secondary border-0 btn-sm"
+                                                                                            download><i
+                                                                                                class="bi bi-paperclip"></i></a></span>
+                                                                                    <% } %>
+                                                                                        <% } %>
+                                                                        </small>
+                                                                        <% if(userData.Employee_ID==Comments[groupKey].Author_ID)
+                                                                            { %>
+                                                                            &nbsp; <b>|</b>&nbsp;<i
+                                                                                class="bi bi-trash3-fill btn btn-outline-danger border-0 btn-sm deleteBtn"
+                                                                                data-project-id="<%= Task.TaskName %>"
+                                                                                data-target="Task"
+                                                                                data-comment-id="<%= groupKey %>"
+                                                                                data-customer="<%=Customer%>"></i>
+                                                                            <% } %>
+                                                                    </p>
+                                                                    <% for (const key in Comments[groupKey]) { %>
+                                                                        <% if (key.startsWith('Note') ) { %>
+                                                                            <p
+                                                                                class='border p-2 m-0 text-break <% if(userData.Employee_ID==Comments[groupKey].Author_ID){ %> comment-section-owner bg-primary bg-gradient bg-opacity-50 <% }else{ %> comment-section<% } %>'>
+                                                                                <%- Comments[groupKey][key] %>
+                                                                            </p>
+                                                                            <% } %>
+                                                                                <% } %>
+                                                                </div>
+                                                            </div>
+                                                            <% }); %>
+                                                                <% } %>
+                                                </div>
+                                            </section>
+                                        </main>
+                                    </body>
+                                    <!-- Comment Modal -->
+                                    <div class="modal fade" id="Add_Comment_Modal" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Comment</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <form action="/api/AddCommentTo/Task/<%= Task.TaskName %>" method="post"
+                                                    enctype="multipart/form-data">
+                                                    <div class="modal-body">
+                                                        <div class="form-floating">
+                                                            <textarea class="form-control mb-2"
+                                                                placeholder="Leave a comment here" name="Comment"
+                                                                id="Comment" style="height: 100px" minlength="5"
+                                                                required></textarea>
+                                                            <label for="Comment">Enter Comments...</label>
+                                                        </div>
+                                                        <input type="file" name="attachment" id="attachment"
+                                                            class="form-control">
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-primary">Create</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Project Info Modal -->
+                                    <div class="modal fade" id="Project_Info_Modal" tabindex="-1"
+                                        aria-labelledby="Project_Info_ModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="Project_Info_ModalLabel">Project
+                                                        Info</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="row">
+                                                                <p class="col "> <b>JOB ID:</b> <span id="JOB_ID">
+                                                                        <%= Milestone_Info.JOB_ID %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>SOW:</b> <span id="SOW">
+                                                                        <%= Milestone_Info.SOW %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Region:</b> <span id="Region">
+                                                                        <%= Milestone_Info.Region %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Division:</b> <span id="Division">
+                                                                        <%= Milestone_Info.Division %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Total Footage:</b> <span
+                                                                        id="Total_Footage">
+                                                                        <%= Milestone_Info.Total_Footage %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>No of Nodes:</b> <span
+                                                                        id="No_Nodes">
+                                                                        <%= Milestone_Info.No_Nodes %>
+                                                                    </span></p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+
+                                                            <div class="row">
+                                                                <p class="col "> <b>Work Type:</b> <span id="Worktype">
+                                                                        <%= Milestone_Info.Worktype %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Total No of Actives:</b> <span
+                                                                        id="Total_Actives">
+                                                                        <%= Milestone_Info.Total_Actives %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Total Home Passing:</b> <span
+                                                                        id="Total_Home_Passing">
+                                                                        <%= Milestone_Info.Total_Home_Passing %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Received Date:</b> <span
+                                                                        id="n_ReceivedDate">
+                                                                        <%= Milestone_Info.n_ReceivedDate %>
+                                                                    </span></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Due Date:</b> <span
+                                                                        id="n_DueDate"></span>
+                                                                    <%= Milestone_Info.n_DueDate %>
+                                                                </p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <p class="col "> <b>Approved Date:</b><span
+                                                                        id="n_ApprovedDate">
+                                                                        <%= Milestone_Info.n_ApprovedDate %>
+                                                                    </span></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Create Markup Modal -->
+                                    <div class="modal fade" id="create-Markup-Task-Modal" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Create Markup
+                                                    </h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <form
+                                                    action="/Employee/CreateMarkup/<%= Milestone_Info.Customer%>/<%= Milestone_Info.Milestone_Name%>/<%=Task.TaskName %>"
+                                                    method="post" id="createMarkupForm" enctype="multipart/form-data">
+                                                    <div class="modal-body">
+                                                        <div class="col">
+                                                            <div class="row">
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <input type="text" class="form-control border"
+                                                                            id="Milestone_Name" name="Milestone_Name"
+                                                                            placeholder="Enter Job ID"
+                                                                            value="<%= Milestone_Info.Milestone_Name %>"
+                                                                            readonly required>
+                                                                        <label for="Milestone_Name">Milestone
+                                                                            Name</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <input type="text" class="form-control border"
+                                                                            id="Task_Name" name="Task_Name"
+                                                                            placeholder="Enter Job ID"
+                                                                            value="<%= Task.TaskName %>" readonly
+                                                                            required>
+                                                                        <label for="Task_Name">Task Name</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <input type="text" class="form-control border"
+                                                                            id="Project_ID" name="Project_ID"
+                                                                            placeholder="Enter Job ID"
+                                                                            value="<%= Milestone_Info.Project_ID %>"
+                                                                            readonly required>
+                                                                        <input type="hidden" name="idProjects"
+                                                                            id="idProjects"
+                                                                            value="<%= Milestone_Info.idProjects %>"
+                                                                            required readonly>
+                                                                        <input type="hidden" name="MarkupFor"
+                                                                            id="MarkupFor" value="Task" required
+                                                                            readonly>
+                                                                        <label for="Project_ID">Job ID</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <select name="Owner" id="milestone_owner"
+                                                                            class="form-select border" required>
+                                                                            <option value="" selected>Choose Owner
+                                                                            </option>
+                                                                            <optgroup label="PMO">
+                                                                                <% for( let index=0; index <
+                                                                                    Object.values(Owners).length;
+                                                                                    index++){%>
+                                                                                    <% if (Owners[index].Role=="PMO" ) {
+                                                                                        %>
+                                                                                        <option
+                                                                                            value="<%= Owners[index].Employee_ID %>">
+                                                                                            <%= Owners[index].Full_Name
+                                                                                                %>
+                                                                                        </option>
+                                                                                        <% } %>
+                                                                                            <% } %>
+                                                                            </optgroup>
+                                                                            <optgroup label="Manager">
+                                                                                <% for( let index=0; index <
+                                                                                    Object.values(Owners).length;
+                                                                                    index++){%>
+                                                                                    <% if (Owners[index].Role=="Manager"
+                                                                                        ) { %>
+                                                                                        <option
+                                                                                            value="<%= Owners[index].Employee_ID %>">
+                                                                                            <%= Owners[index].Full_Name
+                                                                                                %>
+                                                                                        </option>
+                                                                                        <% } %>
+                                                                                            <% } %>
+                                                                            </optgroup>
+                                                                            <optgroup label="Engineers">
+                                                                                <% for( let index=0; index <
+                                                                                    Object.values(Owners).length;
+                                                                                    index++){%>
+                                                                                    <% if
+                                                                                        (Owners[index].Role=="Employee"
+                                                                                        ) { %>
+                                                                                        <option
+                                                                                            value="<%= Owners[index].Employee_ID %>">
+                                                                                            <%= Owners[index].Full_Name
+                                                                                                %>
+                                                                                        </option>
+                                                                                        <% } %>
+                                                                                            <% } %>
+                                                                            </optgroup>
+                                                                        </select>
+                                                                        <label for="milestone_owner">Owner</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <input type="date"
+                                                                            class="today-date form-control border"
+                                                                            id="DueDate" name="DueDate" required>
+                                                                        <label for="DueDate">Due Date</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <div class="form-floating">
+                                                                <textarea name="Comments" id="Comments" rows="3"
+                                                                    class="form-control mb-2 border"
+                                                                    spellcheck="true"></textarea>
+                                                                <label for="Comments"
+                                                                    class="from-label">Comments</label>
+                                                            </div>
+                                                            <input type="file" class="form-control" id="attachment"
+                                                                accept=".pdf, .xls, .xlsx,.docx" name="attachment"
+                                                                placeholder="Select the Attachment">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-primary">Create</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Create Subtask Modal -->
+                                    <div class="modal fade" id="create-Subtask-Task-Modal" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Create Subtask
+                                                    </h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <form action="/CreateSubtask" method="post" id="createSubtaskForm">
+                                                    <div class="modal-body m-1">
+                                                        <div class="col">
+                                                            <div class="row">
+                                                                <div class="col-md">
+                                                                    <div class="form-floating ">
+                                                                        <select name="Owner" id="milestone_owner"
+                                                                            class="form-select border" required>
+                                                                            <option value="" selected>Choose Owner
+                                                                            </option>
+                                                                            <optgroup label="PMO">
+                                                                                <% for( let index=0; index <
+                                                                                    Object.values(Owners).length;
+                                                                                    index++){%>
+                                                                                    <% if (Owners[index].Role=="PMO" ) {
+                                                                                        %>
+                                                                                        <option
+                                                                                            value="<%= Owners[index].Employee_ID %>">
+                                                                                            <%= Owners[index].Full_Name
+                                                                                                %>
+                                                                                        </option>
+                                                                                        <% } %>
+                                                                                            <% } %>
+                                                                            </optgroup>
+                                                                            <optgroup label="Manager">
+                                                                                <% for( let index=0; index <
+                                                                                    Object.values(Owners).length;
+                                                                                    index++){%>
+                                                                                    <% if (Owners[index].Role=="Manager"
+                                                                                        ) { %>
+                                                                                        <option
+                                                                                            value="<%= Owners[index].Employee_ID %>">
+                                                                                            <%= Owners[index].Full_Name
+                                                                                                %>
+                                                                                        </option>
+                                                                                        <% } %>
+                                                                                            <% } %>
+                                                                            </optgroup>
+                                                                            <optgroup label="Engineers">
+                                                                                <% for( let index=0; index <
+                                                                                    Object.values(Owners).length;
+                                                                                    index++){%>
+                                                                                    <% if
+                                                                                        (Owners[index].Role=="Employee"
+                                                                                        ) { %>
+                                                                                        <option
+                                                                                            value="<%= Owners[index].Employee_ID %>">
+                                                                                            <%= Owners[index].Full_Name
+                                                                                                %>
+                                                                                        </option>
+                                                                                        <% } %>
+                                                                                            <% } %>
+                                                                            </optgroup>
+                                                                        </select>
+                                                                        <label for="milestone_owner">Owner</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <input type="date"
+                                                                            class="today-date form-control border"
+                                                                            id="Sub_Due_Date" name="Due_Date" required>
+                                                                        <label for="Sub_Due_Date">Due Date</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <input type="text" class="form-control border"
+                                                                            id="SubTaskLabel" name="SubTaskLabel"
+                                                                            placeholder="Enter Subtask Label" value=""
+                                                                            required>
+                                                                        <label for="Task_Name">Subtask Label</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md">
+                                                                    <div class="form-floating">
+                                                                        <input type="tet" class="form-control border"
+                                                                            id="Remark" name="Remark" placeholder="">
+                                                                        <label for="Remarks">Note/Remarks</label>
+                                                                    </div>
+                                                                </div>
+                                                                <% if(Task.Type=="Production"){%>
+                                                                <div class="QC_Due_Date_Container col-md">
+                                                                        <div class="form-floating">
+                                                                            <input type="date"
+                                                                            class="today-date form-control border"
+                                                                            id="Sub_QC_Due_Date" name="QC_Due_Date"  required
+                                                                            data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Choose the DueDate only if your allowing the system to create QC-Task Automatically">
+                                                                            <label for="Sub_QC_Due_Date">QC-Due Date</label>
+                                                                        </div>
+                                                                        <%}%>       
+                                                            </div>
+                                                         
+                                                            <% if(Task.Type=="Production"){%>
+                                                            <div class="row text-center">
+                                                                    <div class="col-md">
+                                                                        <p class="from-label">Allow the system to create the QC for this Subtask automatically when this production Subtask completed...?</p>
+                                                                        <input type="radio" class="btn-check" name="autoQC" id="autoQC1" autocomplete="off" value="1" required>
+                                                                        <label class="btn btn-outline-success" for="autoQC1">Yes</label>
+                                                                        <input type="radio" class="btn-check" name="autoQC" id="autoQC2" autocomplete="off" value="0">
+                                                                        <label class="btn btn-outline-danger" for="autoQC2">No</label>
+                                                                    </div>
+                                                                </div>
+                                                            <%}%>
+                                                               
+                                                                <input type="hidden" class="form-control"
+                                                                    id="Milestone_Name" name="Milestone_Name"
+                                                                    placeholder="Enter Job ID"
+                                                                    value="<%= Milestone_Info.Milestone_Name %>"
+                                                                    readonly required>
+                                                                <input type="hidden" name="idProjects" id="idProjects"
+                                                                    value="<%= Milestone_Info.idProjects %>" required
+                                                                    readonly>
+                                                                <input type="hidden" name="idTask" id="idTask"
+                                                                    value="<%= Task.idTask %>" required readonly>
+                                                                <input type="hidden" class="form-control" id="Task_Name"
+                                                                    name="Task_Name" placeholder="Enter Job ID"
+                                                                    value="<%= Task.TaskName %>" readonly required>
+                                                                <input type="hidden" class="form-control"
+                                                                    id="Project_ID" name="Project_ID"
+                                                                    placeholder="Enter Job ID"
+                                                                    value="<%= Milestone_Info.Project_ID %>" readonly
+                                                                    required>
+                                                          
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-primary">Create</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                <p>There is already a timer running on the task  <b> <span id="taskID">Prod-00000028</span></b>, so you can't start this task right now. <br>Please stop the current timer first. <br>Click <a href="#" id="TaskURL" class="fs-5">here</a> to go to that task.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                        <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+                                        <% if(lock==true){%>
+                                            <script>
+                                                elapsedTime = Date.now() - new Date('<%=Log[Object.values(Log).length-1].startTime%>');
+                                                start();
+                                            </script>
+                                            <% } %>
+                                          
+                                                <script>
+
+                                                    $(document).ready(function() {
+                                                        $(".QC_Due_Date_Container").hide();
+                                                    $('input[type="radio"][name="autoQC"]').on('click', function() {
+                                                        if ($(this).val() === '1') {
+                                                            $('.QC_Due_Date_Container').show();
+                                                            $('#Sub_QC_Due_Date').attr('required', true);
+                                                        } else {
+                                                            $('.QC_Due_Date_Container').hide();
+                                                            $('#Sub_QC_Due_Date').attr('required', false);
+                                                        }
+                                                    });
+                                                });
+                                                    if(elapsedTime==0){
+                                                        document.getElementById('Checklist_Url').classList.add("visually-hidden")
+                                                        document.getElementById('QC_Link').setAttribute("disabled","")
+                                                    }
+                                                    document.getElementById("stopBtn").addEventListener('click', (e) => {
+                                                        $("#stopBtn").prop("disabled",true)
+                                                        stop(e.target)
+                                                        axios.post('/api/updateTimeLog/<%=Task.TaskName %>/stop').then(res => {
+                                                            window.location.reload();
+                                                        }).catch(e => {
+                                                            console.log(e);
+                                                            if (e.response.data == "Access Denied") {
+                                                                alert("Your session got closed.Login again to continue")
+                                                            } else {
+                                                                alert("Unable to stop the Timer. Try again...!")
+                                                            }
+                                                        })
+                                                    });
+                                                    document.getElementById("startBtn").addEventListener('click', (e) => {
+                                                       $("#startBtn").prop("disabled",true)
+                                                        axios.post('/api/updateTimeLog/<%=Task.TaskName %>/start').then(res => {
+                                                            start(e.target);
+                                                            window.location.reload();
+                                                        }).catch(e => {
+                                                            let pendingTask=e.response.data.OngoingTaskInfo;
+                                                            if(pendingTask){
+
+                                                                let URL="#";
+                                                                if(pendingTask.TaskName.startsWith("SUB")){
+                                                                    URL=`/SubTask/${pendingTask.TaskName}`
+                                                                }else if(pendingTask.TaskName.startsWith("MKUP")){
+                                                                URL=`/Markup/${pendingTask.TaskName}`
+                                                            }else{
+                                                                URL=`/ViewTask/${pendingTask.Customer}/${pendingTask.Milestone_Name}/${pendingTask.TaskName}`
+                                                            }
+                                                            document.getElementById("TaskURL").setAttribute("href",URL);
+                                                            document.getElementById("taskID").innerHTML=pendingTask.TaskLabel?pendingTask.TaskLabel:pendingTask.TaskName;
+                                                            var myModal=new bootstrap.Modal(document.getElementById("staticBackdrop"),{
+                                                                keyboard:false
+                                                            });
+                                                            myModal.show();
+                                                            }else if (e.response.data == "Access Denied") {
+                                                                alert("Your session got closed.Login again to continue")
+                                                            } else {
+                                                                console.log(e)
+                                                                alert("Unable to start the Timer. Try again...!")
+                                                            }
+                                                        })
+                                                    });
+                                                    const ProjectStatus = '<%= Task.Status %>'
+                                                    const techInfo = document.querySelectorAll('input[type=number].techInfo');
+                                                    techInfo.forEach(input => {
+                                                        input.addEventListener('change', saveTechInfo);
+                                                        if (ProjectStatus === 'WIP' && input.getAttribute("name")!="Total") {
+                                                            input.removeAttribute('readonly')
+                                                        } else {
+                                                            input.setAttribute('readonly', '')
+                                                        }
+                                                    });
+
+                                                    function saveTechInfo() {
+                                                        document.getElementById("autosaveStatus").innerHTML = '<span><i class="bi bi-arrow-repeat"></i></span>'
+                                                        let values = {};
+                                                        techInfo.forEach(input => {
+                                                            values[input.name] = input.value ? parseInt(input.value) : 0;
+                                                        });
+                                                        axios.post("/api/updateTechInfo/<%= Task.TaskName %>", { values }).then(res => {
+                                                            document.getElementById("autosaveStatus").innerHTML = '<span><i class="bi bi-cloud-check"></i></span>';
+                                                            toasts.push(res.data.Notification)
+                                                        }).catch(error => {
+                                                            toasts.push(error.response.data.Notification)
+                                                            document.getElementById("autosaveStatus").innerHTML = '<span class="text-danger">Error <i class="bi bi-info-circle"></i></span>'
+                                                        })
+                                                    }
+
+                                                    document.getElementById("markTaskCompleted").addEventListener("click", (e) => {
+                                                        if (elapsedTime != 0) {
+                                                            alert("Please stop the timer before submitting the task.");
+                                                        } else if (elapsedTime == 0) {
+                                                            const Iteration = parseInt($("#Iteration").val());
+                                                            const Score = parseFloat($("#Score").val());
+                                                            const Total_Footage = parseInt($("#Total_Footage").val());
+                                                            const No_Nodes = parseInt($("#No_Nodes").val());
+                                                            const Total_Home_Passing = parseInt($("#Total_Home_Passing").val());
+                                                            let isTechInfoFilled=true;
+                                                            techInfo.forEach(input=>{
+                                                                console.log(parseInt(input.value),!isNaN(parseInt(input.value)));
+                                                                if(parseInt(input.value)>=0 && (!isNaN(parseInt(input.value)))){
+                                                                    isTechInfoFilled= (isTechInfoFilled&&true)
+                                                                }else{
+                                                                    isTechInfoFilled=false
+                                                                }
+                                                            });
+                                                            let temp = false;
+                                                            if (Iteration && Score && isTechInfoFilled) {
+                                                                temp = confirm('Are you sure you wan to submit this task...?\nYour total working time is <%=secondsToMinutes(Task.TotalTime) %>.');
+                                                            } else {
+                                                                if(isTechInfoFilled==false){
+                                                                    alert("Please fill the Technical Information.")
+                                                                }else{
+                                                                    alert("Please fill the QC Checklist before submitting the Task.")
+                                                                }
+                                                            }
+
+                                                            if (temp) {
+                                                                e.target.setAttribute("disabled", "")
+                                                                e.target.innerHTML = `<span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span><span role="status">Submitting...</span>`
+                                                                axios.post('/api/MarkTaskCompleted/<%= Task.TaskName %>/Task').then(res => {
+                                                                    toasts.push(res.data.Notification)
+                                                                    window.location.reload();
+                                                                }).catch(error => {
+                                                                    console.log(error)
+                                                                    e.target.innerHTML = `Error <i class="bi bi-x-circle m-1"></i>`
+                                                                    toasts.push(error.response.data.Notification)
+                                                                })
+                                                            }
+                                                        } else if (parseInt('<%=secondsToMinutes(Task.TotalTime) %>') < 10) {
+                                                            alert("You can't submit this job now.\nMin of 10 min working is required.")
+                                                        }
+                                                    });
+                                                    const CompletedSubTaskLength='<%= Object.values(CompletedSubtask).length %>';
+                                                    let temp = document.querySelector("#QC_Link").href;
+                                                    document.querySelector("#QC_Link").href = temp + `?Token=${btoa('<%= userData.Employee_ID %>')}&cfas_no=${btoa('<%= Milestone_Info.Project_ID %>')}&qc_state=${btoa('<%= Milestone_Info.Region %>')}&qc_city=${btoa('<%= Milestone_Info.Region %>')}&qc_type=${btoa('<%= Task.Type==="Production"?"Self QC":Task.Type %>')}&Task_ID=${btoa('<%= Task.TaskName %>')}`;
+                                                    try {
+                                                        axios.get('https://172.17.1.22:5000/api/QGPMS/Checklist/<%-Task.Project_ID%>/<%-Task.QC_Name %>/<%- Task.Type==="Production"?"Self QC":Task.Type %>/<%-Task.TaskName%>', {
+                                                            crossdomain: true, headers: {
+                                                                "Cache-Control": "no-cache",
+                                                                "Content-Type": "application/x-www-form-urlencoded",
+                                                                "Access-Control-Allow-Origin": "*"
+                                                            },
+                                                        }).then(res => {
+                                                            console.log(res)
+                                                            const data = res.data;
+                                                            if (data.Iteration > 0 && data.url) {
+                                                                document.getElementById('Checklist_Url').href = data.url;
+                                                                document.getElementById("Iteration").value = data.Iteration;
+                                                                document.getElementById("Score").value = data.Score + '%';
+                                                            } else {
+                                                                document.getElementById('Checklist_Url').classList.add("visually-hidden")
+                                                            }
+                                                        }).catch(e => {
+                                                            console.log(e)
+                                                            document.getElementById('Checklist_Url').classList.add("visually-hidden")
+                                                        })
+                                                    } catch (error) {
+                                                        console.log(e)
+                                                    }
+                                                    const commentDeleteBtn = document.querySelectorAll('.deleteBtn');
+                                                    commentDeleteBtn.forEach(btn => btn.addEventListener("click", e => {
+                                                        e.target.setAttribute('disabled', '')
+                                                        const commentID = e.target.getAttribute('data-comment-id');
+                                                        const projectID = e.target.getAttribute('data-project-id');
+                                                        const Customer = e.target.getAttribute('data-Customer');
+                                                        const Target = e.target.getAttribute("data-target");
+                                                        axios.delete('/api/deleteComment', {
+                                                            data: {
+                                                                Customer: Customer,
+                                                                commentID: commentID,
+                                                                projectID: projectID,
+                                                                Target: Target
+                                                            }
+                                                        }).then(res => {
+                                                            window.location.reload();
+                                                            console.log(res)
+                                                        }).catch(error => {
+                                                            console.log(error);
+                                                            e.target.removeAttribute('disabled')
+                                                        })
+                                                    }));
+                                                    $("#Arial").change(function(e){
+                                                        $("#Total").val(parseInt($("#Arial").val())+parseInt($("#Buried").val()))
+                                                    })
+                                                    $("#Buried").change(function(e){
+                                                        $("#Total").val(parseInt($("#Arial").val())+parseInt($("#Buried").val()))
+                                                    })
+                                                        $("#Sub_QC_Due_Date").change(function (){
+                                                        if(( $("#Sub_Due_Date").val()) && $(this).val()<=$("#Sub_Due_Date").val()){
+                                                            alert("Date of QC Due cannot be less than the deadline for production.")
+                                                            $(this).val("")
+                                                            $("#Sub_Due_Date").val("")
+                                                        }
+                                                        
+                                                        });
+                                                        $("#Sub_Due_Date").change(function (){
+                                                        if(( $("#Sub_QC_Due_Date").val()) && $(this).val()<=$("#Sub_QC_Due_Date").val()){
+                                                            alert("Date of QC Due cannot be less than the deadline for production.")
+                                                            $(this).val("");
+                                                            $("#Sub_QC_Due_Date").val("");
+                                                        }
+                                                    });
+                                                </script>

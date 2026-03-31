@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+  <body>
+    <main>
+      <form action="/PMO/editProject/Comcast" method="post" id="createProjectForm">
+        <div class="row m-2 border border-2 p-2">
+          <label for="" class="position-absolute bg-white w-auto" style="top: -10px;">Project Info</label>
+          <div class="col m-2">
+            <div class="row fs-6">
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="JOB_ID">JOB ID</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="JOB_ID" id="JOB_ID" value="<%= Data.JOB_ID %>" placeholder="Enter the JOB ID"
+                pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" autocomplete="off">
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="hidden" name="idProjects" id="idProjects" value="<%= Data.idProjects %>"
+                placeholder="Enter the CFAS-ID" pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="SOW">SOW</label>
+              <select class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                name="SOW" id="SOW">
+                <option <% if (Data.SOW=='BAU' ) { %>
+                  selected
+                  <% } %> value="BAU">BAU
+                </option>
+                <option <% if (Data.SOW=='Drafting' ) { %>
+                  selected
+                  <% } %> value="Drafting">Drafting
+                </option>
+                <option <% if (Data.SOW=='PFP' ) { %>
+                  selected
+                  <% } %> value="PFP">PFP
+                </option>
+                <option <% if (Data.SOW=='Planning & Drafting' ) { %>
+                  selected
+                  <% } %> value="Planning & Drafting">Planning & Drafting
+                </option>
+              </select>
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Market">Market</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Market" id="Market" value="<%= Data.Market %>" placeholder="Enter the Market"
+                pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" autocomplete="off">
+
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Priority">Priority</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="number" name="Priority" id="Priority" value="<%= Data.Priority %>"
+                placeholder="Enter the Priority" title="Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label  bg-body-secondary" for="ReceivedDate">Received Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary" type="date" name="ReceivedDate"
+                id="ReceivedDate" value="<%= Data.n_ReceivedDate.replaceAll('/','-') %>" autocomplete="off">
+
+            </div>
+          </div>
+          <div class="m-2 col">
+            <div class="row">
+
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Region">Region</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Region" id="Region" value="<%= Data.Region %>" placeholder="Enter the CILLI Code"
+                pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Division">Division</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="text" name="Division" id="Division" value="<%= Data.Division %>" placeholder="Enter the Division"
+                pattern="[A-Za-z0-9]+" title="Alpha Numeric Only" autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="DueDate">Due Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="date" name="DueDate" id="DueDate" value="<%= Data.n_DueDate.replaceAll('/','-') %>"
+                autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="ApprovedDate">Approved Date</label>
+              <input class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                type="date" name="ApprovedDate" id="ApprovedDate" value="<%= Data.n_ApprovedDate.replaceAll('/','-') %>"
+                autocomplete="off">
+
+              <label class="col-sm-4 mb-1 col-form-label bg-body-secondary" for="Status">Status</label>
+              <select class="col-sm-8 mb-1 border-start  border-light bg-body-secondary border-start  border-light"
+                name="Status" id="Status">
+                <option <% if (Data.Status=='YTS' ) { %>
+                  selected
+                  <% } %> value="YTS">YTS
+                </option>
+                <option <% if (Data.Status=='Work in Progress' ) { %>
+                  selected
+                  <% } %> value="Work in Progress">Work in Progress
+                </option>
+                <option <% if (Data.Status=='QC' ) { %>
+                  selected
+                  <% } %> value="QC">QC
+                </option>
+                <option <% if (Data.Status=='Completed' ) { %>
+                  selected
+                  <% } %> value="Completed">Completed
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="m-2  border border-2">
+          <table class="table table-hover">
+            <thead class="bg-cyan">
+              <tr>
+                <th scope="col" class="border-end border-2"></th>
+                <th scope="col" class="text-center border-end border-2 text-light" colspan="4">COAX</th>
+                <th scope="col" class="text-center text-light" colspan="4">FIBER</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-bottom">
+                <td class="border-end border-2">
+
+                  <b>Aerial</b>
+                </td>
+                <td class="border-end border-2 text-nowrap">
+                  <b>Estimated (ft)</b>
+                </td>
+                <td class="border-end border-2 text-nowrap"> <input type="number" min="0"
+                    value="<%= Data.Air_Coax_Est %>" name="Air_Coax_Est" id="Air_Coax_Est"
+                    onchange="calculateCableLength()"></td>
+                <td class="border-end border-2 text-nowrap">
+                  <b>Actual (ft)</b>
+                </td>
+                <td class="border-end border-2 text-nowrap"> <input type="number" min="0"
+                    value="<%= Data.Air_Coax_Act %>" name="Air_Coax_Act" id="Air_Coax_Act"
+                    onchange="calculateCableLength()"></td>
+                <td class="border-end border-2">
+                  <b>Estimated (ft)</b>
+                </td>
+                <td class="border-end border-2 text-nowrap"> <input type="number" min="0"
+                    value="<%= Data.Air_Fib_Est %>" name="Air_Fib_Est" id="Air_Fib_Est"
+                    onchange="calculateCableLength()"></td>
+                <td class="border-end border-2 text-nowrap">
+                  <b>Actual (ft)</b>
+                </td>
+                <td> <input type="number" min="0" value="<%= Data.Air_Fib_Act %>" name="Air_Fib_Act" id="Air_Fib_Act"
+                    onchange="calculateCableLength()"></td>
+
+              </tr>
+              <tr class="border-bottom">
+                <td class="border-end border-2">
+                  <b>Buried/UG</b>
+                </td>
+                <td class="border-end border-2 text-nowrap">
+                  <b>Estimated (ft)</b>
+                </td>
+                <td class="border-end border-2 text-nowrap"> <input type="number" min="0"
+                    value="<%= Data.UG_Coax_Est %>" name="UG_Coax_Est" id="UG_Coax_Est"
+                    onchange="calculateCableLength()"></td>
+                <td class="border-end border-2 text-nowrap">
+                  <b>Actual (ft)</b>
+                </td>
+                <td class="border-end border-2 text-nowrap"> <input type="number" min="0"
+                    value="<%= Data.UG_Coax_Act %>" name="UG_Coax_Act" id="UG_Coax_Act"
+                    onchange="calculateCableLength()"></td>
+                <td class="border-end border-2 text-nowrap">
+                  <b>Estimated (ft)</b>
+                </td>
+                <td class="border-end border-2 text-nowrap"> <input type="number" min="0" value="<%= Data.UG_Fib_Est %>"
+                    name="UG_Fib_Est" id="UG_Fib_Est" onchange="calculateCableLength()"></td>
+                <td class="border-end border-2 text-nowrap">
+                  <b>Actual (ft)</b>
+                </td>
+                <td> <input type="number" min="0" value="<%= Data.UG_Fib_Act %>" name="UG_Fib_Act" id="UG_Fib_Act"
+                    onchange="calculateCableLength()"></td>
+
+              </tr>
+              <tr class="border-bottom">
+                <td class="border-end border-2"><b>Total</b></td>
+                <td colspan="2" class="border-end border-2">
+                  <input type="number" name="Total_Coax_Est" min="0" value="<%= Data.Total_Coax_Est %>"
+                    id="Total_Coax_Est" readonly>
+                </td>
+                <td colspan="2" class="border-end border-2">
+                  <input type="number" name="Total_Coax_Act" min="0" value="<%= Data.Total_Coax_Act %>"
+                    id="Total_Coax_Act" readonly>
+                </td>
+                <td colspan="2" class="border-end border-2">
+                  <input type="number" name="Total_Fib_Est" min="0" value="<%= Data.Total_Fib_Est %>" id="Total_Fib_Est"
+                    readonly>
+                </td>
+                <td colspan="2">
+                  <input type="number" name="Total_Fib_Act" min="0" value="<%= Data.Total_Fib_Act %>" id="Total_Fib_Act"
+                    readonly>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="d-flex justify-content-evenly align-items-center m-2">
+            <label for="">Total Footage</label>
+            <div class="d-flex total align-items-center">
+              <label for="Total_Est" class="text-nowrap">Estimated (ft):&nbsp; </label>
+              <input type="number" name="Total_Est" id="Total_Est" min="0" value="<%= Data.Total_Est %>" readonly>
+            </div>
+            <div class="d-flex total align-items-center">
+              <label for="Total_Act" class="text-nowrap">Actual (ft):&nbsp; </label>
+              <input type="number" name="Total_Act" id="Total_Act" min="0" value="<%= Data.Total_Act %>" readonly>
+            </div>
+          </div>
+        </div>
+        <div id="" class=" m-2">
+          <div class="bg-cyan fg-white p-2">Comments <i class="bi bi-chat-quote"></i></div>
+          <div class="border border-2 p-2 ">
+            <div id="NoteArea">
+              <% if (Comments) { %>
+                <% Object.keys(Comments).forEach(function(groupKey) { %>
+                  <div class="row  m-1">
+                    <div class="col-sm-12">
+                      <p><small><span><i class="bi bi-person-fill"></i>&nbsp;<%= Comments[groupKey].Author_Name %>
+                          </span>&nbsp; <b>|</b>&nbsp;<span><i class="bi bi-calendar3"></i>&nbsp;<%=
+                              Comments[groupKey].On %>
+                          </span>
+                          <% for (const key in Comments[groupKey]) { %>
+                            <% if (key.startsWith('attachment') && Comments[groupKey][key]!='' ) { %>
+                              <b> |</b><span> <a href="../public/uploads/ReferenceDoc/<%= Comments[groupKey][key] %>"
+                                  class="text-decoration-none btn btn-outline-secondary border-0 btn-sm" download><i
+                                    class="bi bi-paperclip"></i></a></span>
+                              <% } %>
+                                <% } %>
+                        </small>
+                        <% if(userData.Employee_ID==Comments[groupKey].Author_ID) { %>
+                          &nbsp; <b>|</b>&nbsp;<i
+                            class="bi bi-trash3-fill btn btn-outline-danger border-0 btn-sm deleteBtn"
+                            data-project-id="<%= Data.idProjects %>" data-comment-id="<%= groupKey %>"
+                            data-customer="Comcast"></i>
+                          <% } %>
+                      </p>
+                      <% for (const key in Comments[groupKey]) { %>
+                        <% if (key.startsWith('Note') ) { %>
+                          <p class='border comment-section p-2 m-0'>
+                            <%= Comments[groupKey][key] %>
+                          </p>
+                          <% } %>
+                            <% } %>
+                    </div>
+                  </div>
+                  <% }); %>
+                    <% } %>
+            </div>
+            <button class="button primary outline rounded shadowed" type="button"
+              onclick="Metro.dialog.open('#AddNoteDialog')" id="AddNoteBtn"><i class="bi bi-plus-circle"></i></button>
+          </div>
+        </div>
+        <div class="text-center m-2">
+          <input type="submit" id="summa" class="button primary shadowed rounded" value="Update">
+        </div>
+      </form>
+    </main>
+  </body>
+  <div class="dialog" data-role="dialog" data-close-button="true" data-overlay-click-close="true" id="AddNoteDialog">
+    <div class="dialog-title">Add Comment</div>
+    <div class="dialog-content">
+      <form action="#" id="dialog-form">
+        <textarea name="CommentInput" id="CommentInput" data-role="textarea" data-auto-size="true" data-max-height="200"
+          cols="30" rows="1" placeholder="Enter your note here"></textarea>
+        <input class="my-2" type="file" dir="rtl" data-role="file" accept=".pdf, .xls, .xlsx,.docx" name="attachment"
+          id="attachment" placeholder="Select the Attachment" onchange='getExtension(this)'>
+        <input type="hidden" name="attachmentType" id="attachmentType">
+        <input type="hidden" name="attachmentLocation" id="attachmentLocation">
+        <input type="hidden" name="Customer" id="Customer" value="Comcast">
+        <input type="hidden" name="idProjects" id="idProjects" value="<%= Data.idProjects %>">
+      </form>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="button secondary rounded js-dialog-close" id="addCommentBtn">Add</button>
+    </div>
+  </div>
+  <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+    <script src="/static/js/CreateProject.js"></script>
+
+</html>

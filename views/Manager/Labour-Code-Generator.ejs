@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labor Code Generator</title>
+    <%- include('../partials/dependencies') %>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ms-blue:    #2d7dd2;
+            --ms-blue-dk: #1a60b8;
+            --ms-navy:    #0f1e36;
+            --ms-navy2:   #1e3a5f;
+            --ms-cyan:    #00c6ff;
+            --ms-light:   #f4f7fc;
+            --ms-border:  #e2e8f4;
+            --ms-text:    #1e2d45;
+            --ms-muted:   #7a8aaa;
+            --ms-radius:  10px;
+            --ms-shadow:  0 2px 12px rgba(15,30,80,0.08), 0 8px 28px rgba(15,30,80,0.06);
+            --ms-tr:      all 0.18s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        * { box-sizing: border-box; }
+        body { background: #f0f4fa; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ms-text); }
+
+        /* ── Page Layout ── */
+        .lc-page { padding: 16px 20px 60px; }
+
+        /* ── Page Header ── */
+        .lc-page-header {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 18px;
+        }
+        .lc-page-icon {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-blue-dk));
+            border-radius: var(--ms-radius);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 18px;
+            box-shadow: 0 4px 14px rgba(45,125,210,0.35);
+            flex-shrink: 0;
+        }
+        .lc-page-title {
+            font-size: 18px; font-weight: 700; color: var(--ms-text); line-height: 1.2;
+        }
+        .lc-page-subtitle {
+            font-size: 12px; color: var(--ms-muted); font-weight: 400; margin-top: 2px;
+        }
+
+        /* ── Main Card ── */
+        .lc-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--ms-border);
+            box-shadow: var(--ms-shadow);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .lc-card-header {
+            background: linear-gradient(135deg, var(--ms-navy), var(--ms-navy2));
+            padding: 11px 18px;
+            display: flex; align-items: center; gap: 8px;
+            color: #fff;
+            font-size: 12.5px; font-weight: 600; letter-spacing: 0.03em;
+        }
+        .lc-card-header i { color: var(--ms-cyan); font-size: 14px; }
+        .lc-card-body { padding: 16px 18px; }
+
+        /* ── Form Grid ── */
+        .lc-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .lc-field { display: flex; flex-direction: column; gap: 4px; }
+        .lc-label {
+            font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em; color: var(--ms-muted);
+        }
+        .lc-input, .lc-select {
+            border: 1.5px solid var(--ms-border);
+            border-radius: var(--ms-radius);
+            padding: 7px 11px;
+            font-size: 12.5px; font-family: 'DM Sans', sans-serif;
+            color: var(--ms-text);
+            background: #fff;
+            transition: var(--ms-tr);
+            width: 100%;
+        }
+        .lc-input:focus, .lc-select:focus {
+            outline: none;
+            border-color: var(--ms-blue);
+            box-shadow: 0 0 0 3px rgba(45,125,210,0.12);
+        }
+        .lc-input::placeholder { color: var(--ms-muted); }
+
+        /* ── Config Section (Support/Cable etc) ── */
+        .lc-config-section {
+            background: #fafbff;
+            border: 1px solid var(--ms-border);
+            border-radius: var(--ms-radius);
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+        .lc-config-title {
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--ms-blue);
+            margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+        }
+        .lc-config-title::after {
+            content: ''; flex: 1; height: 1px; background: var(--ms-border);
+        }
+        .lc-config-grid {
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+        }
+        .lc-radio-group {
+            display: flex; align-items: center; gap: 5px;
+            background: #fff; border: 1.5px solid var(--ms-border);
+            border-radius: var(--ms-radius); padding: 6px 12px;
+            font-size: 12px; font-weight: 500; color: var(--ms-text);
+            transition: var(--ms-tr);
+        }
+        .lc-radio-group:has(input:checked) {
+            border-color: var(--ms-blue);
+            background: rgba(45,125,210,0.05);
+        }
+        .lc-radio-label { font-size: 11px; font-weight: 600; color: var(--ms-muted); margin-right: 4px; }
+        .lc-radio-opt { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; font-size: 12px; }
+        .lc-radio-opt input[type="radio"] { accent-color: var(--ms-blue); cursor: pointer; }
+        .lc-number-input {
+            border: 1.5px solid var(--ms-border);
+            border-radius: var(--ms-radius);
+            padding: 6px 10px;
+            font-size: 12.5px; font-family: 'DM Mono', monospace;
+            color: var(--ms-text);
+            width: 120px;
+            transition: var(--ms-tr);
+        }
+        .lc-number-input:focus {
+            outline: none; border-color: var(--ms-blue);
+            box-shadow: 0 0 0 3px rgba(45,125,210,0.12);
+        }
+        .lc-number-input:disabled { background: #f4f7fc; color: var(--ms-muted); }
+        .lc-number-wrap {
+            display: flex; align-items: center; gap: 6px;
+            background: #fff; border: 1.5px solid var(--ms-border);
+            border-radius: var(--ms-radius); padding: 5px 10px;
+        }
+        .lc-number-wrap span {
+            font-size: 11px; font-weight: 700; color: var(--ms-muted);
+            text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+        }
+        .lc-number-wrap input {
+            border: none; outline: none; width: 80px;
+            font-family: 'DM Mono', monospace; font-size: 12.5px; color: var(--ms-text);
+            background: transparent;
+        }
+        .lc-number-wrap input:disabled { color: var(--ms-muted); }
+
+        /* Checkbox toggle */
+        .lc-check-group {
+            display: flex; align-items: center; gap: 6px;
+            background: #fff; border: 1.5px solid var(--ms-border);
+            border-radius: var(--ms-radius); padding: 6px 12px;
+            font-size: 12px; font-weight: 500; color: var(--ms-text);
+            transition: var(--ms-tr); cursor: pointer;
+        }
+        .lc-check-group:has(input:checked) {
+            border-color: var(--ms-blue); background: rgba(45,125,210,0.05);
+        }
+        .lc-check-group input[type="checkbox"] { accent-color: var(--ms-blue); cursor: pointer; }
+
+        /* ── Result Table ── */
+        .lc-table-wrap {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--ms-border);
+            box-shadow: 0 1px 4px rgba(15,30,80,0.06), 0 6px 20px rgba(15,30,80,0.07);
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+        .lc-table {
+            width: 100%; border-collapse: collapse; font-size: 12.5px;
+        }
+        .lc-table thead tr th {
+            background: linear-gradient(135deg, var(--ms-navy), var(--ms-navy2));
+            color: rgba(255,255,255,0.9);
+            font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+            padding: 10px 14px; text-align: left;
+            border-bottom: 2px solid rgba(45,125,210,0.4);
+        }
+        .lc-table tbody tr {
+            border-bottom: 1px solid #edf1fa;
+            transition: background 0.12s;
+        }
+        .lc-table tbody tr:hover { background: #f0f6ff; }
+        .lc-table tbody tr:last-child { border-bottom: none; }
+        .lc-table tbody td {
+            padding: 10px 14px; color: var(--ms-text); vertical-align: middle;
+        }
+        .lc-table tbody td:first-child {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px; font-weight: 600; color: var(--ms-blue);
+        }
+        .lc-table tbody td:nth-child(2) {
+            font-family: 'DM Mono', monospace; font-weight: 700;
+            color: var(--ms-text);
+        }
+        .lc-empty-state {
+            text-align: center; padding: 40px 20px;
+            color: var(--ms-muted); font-size: 13px; font-weight: 500;
+        }
+        .lc-empty-state i { font-size: 32px; color: rgba(45,125,210,0.2); display: block; margin-bottom: 10px; }
+
+        /* ── Action Buttons ── */
+        .lc-actions {
+            display: flex; justify-content: center; gap: 10px; padding: 14px 0 4px;
+        }
+        .lc-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 20px; border-radius: var(--ms-radius);
+            font-size: 12.5px; font-weight: 600; cursor: pointer;
+            border: none; transition: var(--ms-tr); text-decoration: none;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .lc-btn-primary {
+            background: linear-gradient(135deg, var(--ms-blue), var(--ms-blue-dk));
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(45,125,210,0.35);
+        }
+        .lc-btn-primary:hover {
+            background: linear-gradient(135deg, #3a8ae0, #2266cc);
+            box-shadow: 0 5px 16px rgba(45,125,210,0.45);
+            transform: translateY(-1px);
+        }
+        .lc-btn-secondary {
+            background: #fff; color: var(--ms-muted);
+            border: 1.5px solid var(--ms-border);
+        }
+        .lc-btn-secondary:hover { background: #f4f7fc; color: var(--ms-text); }
+        .lc-btn-outline {
+            background: transparent; color: var(--ms-blue);
+            border: 1.5px solid var(--ms-blue);
+        }
+        .lc-btn-outline:hover {
+            background: var(--ms-blue); color: #fff;
+            box-shadow: 0 3px 10px rgba(45,125,210,0.3);
+        }
+
+        /* ── Divider ── */
+        .lc-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--ms-border), transparent);
+            margin: 12px 0;
+        }
+
+        /* visually-hidden util */
+        .visually-hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .lc-form-grid { grid-template-columns: 1fr 1fr; }
+            .lc-config-grid { flex-direction: column; align-items: flex-start; }
+        }
+        @media (max-width: 480px) {
+            .lc-form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<% if (userData.Role=="Employee") { %>
+    <%- include('../partials/Employee-header',{userData:userData}) %>
+<% } else if(userData.Role=="Admin") { %>
+    <%- include('../partials/Admin-header',{userData:userData}) %>
+<% } else if(userData.Role=="PMO") { %>
+    <%- include('../partials/PMO-header',{userData:userData}) %>
+<% } if(userData.Role=="Manager") { %>
+    <%- include('../partials/Manager-header',{userData:userData}) %>
+<% } %>
+
+<body>
+<main class="lc-page">
+
+    <!-- Page Header -->
+    <div class="lc-page-header">
+        <div class="lc-page-icon"><i class="bi bi-gear-wide-connected"></i></div>
+        <div>
+            <div class="lc-page-title">Labour Code Generator</div>
+            <div class="lc-page-subtitle">Generate labor codes based on BAU, type and placement configuration</div>
+        </div>
+    </div>
+
+    <form action="#" method="post" id="generate-form">
+
+        <!-- Main Config Card -->
+        <div class="lc-card">
+            <div class="lc-card-header">
+                <i class="bi bi-sliders"></i> Configuration
+            </div>
+            <div class="lc-card-body">
+                <div class="lc-form-grid">
+                    <div class="lc-field">
+                        <label class="lc-label">Job ID</label>
+                        <input type="text" name="Job_ID" id="Job_ID" class="lc-input"
+                            placeholder="Enter Job ID" required>
+                    </div>
+                    <div class="lc-field">
+                        <label class="lc-label">Scope</label>
+                        <select class="lc-select" id="Scope" name="Scope" required>
+                            <option selected>Choose...</option>
+                            <option value="Betterments - Forced Relocates - Reimbursable">Betterments - Forced Relocates - Reimbursable</option>
+                            <option value="Betterments - Line Extension - Coax">Betterments - Line Extension - Coax</option>
+                            <option value="Commercial - Hyperbuild - Fiber">Commercial - Hyperbuild - Fiber</option>
+                            <option value="Commercial - SMB - SMB">Commercial - SMB - SMB</option>
+                            <option value="Metro-E Retail">Metro-E Retail</option>
+                            <option value="Metro-E Wholesale">Metro-E Wholesale</option>
+                            <option value="Residential - MDU - HFC">Residential - MDU - HFC</option>
+                            <option value="Residential - SDU - HFC">Residential - SDU - HFC</option>
+                            <option value="Residential - SDU - FTTP">Residential - SDU - FTTP</option>
+                            <option value="Residential - MDU - FTTU">Residential - MDU - FTTU</option>
+                            <option value="Others">Other's</option>
+                        </select>
+                    </div>
+                    <div class="lc-field">
+                        <label class="lc-label">BAU</label>
+                        <select class="lc-select" id="BAU" name="BAU" required>
+                            <option value="">Choose...</option>
+                        </select>
+                    </div>
+                    <div class="lc-field">
+                        <label class="lc-label">Type</label>
+                        <select class="lc-select" id="Type" name="Type" required>
+                            <option value="">Choose...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Support Placement -->
+                <div class="lc-config-section visually-hidden" id="Support_div">
+                    <div class="lc-config-title"><i class="bi bi-arrow-up-right-circle"></i> Support Placement</div>
+                    <div class="lc-config-grid">
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&lt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Support_Placement_LT_Yes" id="Support_Placement_LT_Yes" name="Support_Placement_LT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Support_Placement_LT_No" id="Support_Placement_LT_No" name="Support_Placement_LT" checked> No</label>
+                        </div>
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&gt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Support_Placement_GT_Yes" id="Support_Placement_GT_Yes" name="Support_Placement_GT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Support_Placement_GT_No" id="Support_Placement_GT_No" name="Support_Placement_GT" checked> No</label>
+                        </div>
+                        <div class="lc-number-wrap">
+                            <span>Enter ft</span>
+                            <input type="number" value="0" min="0" id="Support_Placement_GT_Value" name="Support_Placement_GT_Value" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cable Placement -->
+                <div class="lc-config-section visually-hidden" id="Cable_div">
+                    <div class="lc-config-title"><i class="bi bi-bezier2"></i> Cable Placement</div>
+                    <div class="lc-config-grid">
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&lt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Cable_Placement_LT_Yes" id="Cable_Placement_LT_Yes" name="Cable_Placement_LT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Cable_Placement_LT_No" id="Cable_Placement_LT_No" name="Cable_Placement_LT" checked> No</label>
+                        </div>
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&gt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Cable_Placement_GT_Yes" id="Cable_Placement_GT_Yes" name="Cable_Placement_GT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Cable_Placement_GT_No" id="Cable_Placement_GT_No" name="Cable_Placement_GT" checked> No</label>
+                        </div>
+                        <div class="lc-number-wrap">
+                            <span>Enter ft</span>
+                            <input type="number" value="0" min="0" id="Cable_Placement_GT_Value" name="Cable_Placement_GT_Value" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fiber Placement -->
+                <div class="lc-config-section visually-hidden" id="Fiber_div">
+                    <div class="lc-config-title"><i class="bi bi-optical-audio"></i> Fiber Placement</div>
+                    <div class="lc-config-grid">
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&lt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Fiber_Placement_LT_Yes" id="Fiber_Placement_LT_Yes" name="Fiber_Placement_LT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Fiber_Placement_LT_No" id="Fiber_Placement_LT_No" name="Fiber_Placement_LT" checked> No</label>
+                        </div>
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&gt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Fiber_Placement_GT_Yes" id="Fiber_Placement_GT_Yes" name="Fiber_Placement_GT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Fiber_Placement_GT_No" id="Fiber_Placement_GT_No" name="Fiber_Placement_GT" checked> No</label>
+                        </div>
+                        <div class="lc-number-wrap">
+                            <span>Enter ft</span>
+                            <input type="number" value="0" min="0" id="Fiber_Placement_GT_Value" name="Fiber_Placement_GT_Value" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coax Placement -->
+                <div class="lc-config-section visually-hidden" id="Coax_div">
+                    <div class="lc-config-title"><i class="bi bi-broadcast"></i> Coax Placement</div>
+                    <div class="lc-config-grid">
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&lt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Coax_Placement_LT_Yes" id="Coax_Placement_LT_Yes" name="Coax_Placement_LT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Coax_Placement_LT_No" id="Coax_Placement_LT_No" name="Coax_Placement_LT" checked> No</label>
+                        </div>
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">&gt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Coax_Placement_GT_Yes" id="Coax_Placement_GT_Yes" name="Coax_Placement_GT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Coax_Placement_GT_No" id="Coax_Placement_GT_No" name="Coax_Placement_GT" checked> No</label>
+                        </div>
+                        <div class="lc-number-wrap">
+                            <span>Enter ft</span>
+                            <input type="number" value="0" min="0" id="Coax_Placement_GT_Value" name="Coax_Placement_GT_Value" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outdoor Survey -->
+                <div class="lc-config-section visually-hidden" id="Survey_div">
+                    <div class="lc-config-title"><i class="bi bi-map"></i> Survey Configuration</div>
+                    <div class="lc-config-grid">
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">Outdoor &lt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Outdoor_Survey_LT_Yes" id="Outdoor_Survey_LT_Yes" name="Outdoor_Survey_LT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Outdoor_Survey_LT_No" id="Outdoor_Survey_LT_No" name="Outdoor_Survey_LT" checked> No</label>
+                        </div>
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">Outdoor &gt; 2000ft</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Outdoor_Survey_GT_Yes" id="Outdoor_Survey_GT_Yes" name="Outdoor_Survey_GT"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Outdoor_Survey_GT_No" id="Outdoor_Survey_GT_No" name="Outdoor_Survey_GT" checked> No</label>
+                        </div>
+                        <div class="lc-radio-group">
+                            <span class="lc-radio-label">Indoor Survey</span>
+                            <label class="lc-radio-opt"><input type="radio" value="Indoor_Survey_Yes" id="Indoor_Survey_Yes" name="Indoor_Survey"> Yes</label>
+                            <label class="lc-radio-opt"><input type="radio" value="Indoor_Survey_No" id="Indoor_Survey_No" name="Indoor_Survey" checked> No</label>
+                        </div>
+                        <div class="lc-number-wrap">
+                            <span>Total ft</span>
+                            <input type="number" value="0" min="0" id="Outdoor_Survey_GT_Value" name="Outdoor_Survey_GT_Value" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Splice -->
+                <div class="lc-config-section visually-hidden" id="Splice_div">
+                    <div class="lc-config-title"><i class="bi bi-scissors"></i> Splice Configuration</div>
+                    <div class="lc-config-grid">
+                        <label class="lc-check-group">
+                            <input type="checkbox" value="" id="Splice_Updates" name="Splice_Updates">
+                            Splice Updates
+                        </label>
+                        <div class="lc-number-wrap">
+                            <span>Updates Count</span>
+                            <input type="number" value="0" name="Splice_Update_Count" id="Splice_Update_Count" disabled>
+                        </div>
+                        <label class="lc-check-group">
+                            <input type="checkbox" value="" id="Splice_Additions" name="Splice_Additions">
+                            Splice Additions
+                        </label>
+                        <div class="lc-number-wrap">
+                            <span>Additions Count</span>
+                            <input type="number" value="0" name="Splice_Addition_Count" id="Splice_Addition_Count" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="lc-table-wrap">
+            <table class="lc-table" id="jsonTable">
+                <thead>
+                    <tr>
+                        <th>Labor Code</th>
+                        <th>Quantity</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3">
+                            <div class="lc-empty-state">
+                                <i class="bi bi-table"></i>
+                                Configure the form above and click Generate to see labor codes
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="lc-actions">
+            <button type="submit" class="lc-btn lc-btn-primary" data-Mode="View" id="generate-btn">
+                <i class="bi bi-arrow-repeat"></i> Generate
+            </button>
+            <button type="reset" class="lc-btn lc-btn-secondary">
+                <i class="bi bi-x-circle"></i> Clear
+            </button>
+            <button type="submit" data-Mode="Download" class="lc-btn lc-btn-outline">
+                <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+            </button>
+        </div>
+
+    </form>
+</main>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script>
+    const Truth_Table = JSON.parse('<%- JSON.stringify(Truth_Table) %>');
+    const BAU = [...new Set(Truth_Table.map(item => item.BAU))];
+    const BAU_Input = document.getElementById("BAU");
+    const Type_Input = document.getElementById("Type");
+    const AllContainersID = ["Support_div", "Cable_div", "Fiber_div", "Coax_div", "Survey_div", "Splice_div"];
+
+    BAU_Input.innerHTML = "<option selected value=''>Choose...</option>"
+    BAU.forEach(item => {
+        BAU_Input.innerHTML += `<option value="${item}">${item}</option>`
+    });
+
+    BAU_Input.addEventListener("change", (e) => {
+        BAU_Value, Type_Value, SP_LT, SP_GT, CB_LT, CB_GT, COX_LT, COX_GT, Fib_LT, Fib_GT, SU, SA, In_Sur, Out_Sur_LT, Out_Sur_GT, temp = "No";
+        SP_GT_Value, COX_GT_Value, Fib_GT_Value, SA_Count, Out_Sur_GT_Value, CB_GT_Value, SU_Count = 0;
+        AllContainersID.forEach(id => {
+            document.getElementById(id).classList.contains("visually-hidden") ? null : document.getElementById(id).classList.add("visually-hidden");
+        });
+        Type_Input.innerHTML = "<option selected value=''>Choose...</option>"
+        let Type = [...new Set(Truth_Table.filter(item => item.BAU == e.target.value).map(item => item.Type))];
+        Type.forEach(item => {
+            Type_Input.innerHTML += `<option value="${item}">${item}</option>`
+        });
+    });
+
+    Type_Input.addEventListener("change", (e) => {
+        BAU_Value, Type_Value, SP_LT, SP_GT, CB_LT, CB_GT, COX_LT, COX_GT, Fib_LT, Fib_GT, SU, SA, In_Sur, Out_Sur_LT, Out_Sur_GT, temp = "No";
+        SP_GT_Value, COX_GT_Value, Fib_GT_Value, SA_Count, Out_Sur_GT_Value, CB_GT_Value, SU_Count = 0;
+        AllContainersID.forEach(id => {
+            document.getElementById(id).classList.contains("visually-hidden") ? null : document.getElementById(id).classList.add("visually-hidden");
+        });
+        let type = e.target.value.trim();
+        let bau = BAU_Input.value.trim();
+        if (bau == "Survey") {
+            document.getElementById("Survey_div").classList.remove("visually-hidden")
+        } else if (bau == "Design" && type == "Fiber") {
+            document.getElementById("Support_div").classList.remove("visually-hidden");
+            document.getElementById("Cable_div").classList.remove("visually-hidden");
+            document.getElementById("Splice_div").classList.remove("visually-hidden");
+        } else if (bau == "Design" && (type == "Coax" || type == "Forced Relocates-All")) {
+            document.getElementById("Support_div").classList.remove("visually-hidden");
+            document.getElementById("Cable_div").classList.remove("visually-hidden");
+        } else if (bau == "Design" && type == "HFC") {
+            document.getElementById("Support_div").classList.remove("visually-hidden");
+            document.getElementById("Coax_div").classList.remove("visually-hidden");
+            document.getElementById("Fiber_div").classList.remove("visually-hidden");
+            document.getElementById("Splice_div").classList.remove("visually-hidden");
+        }
+    });
+
+    let BAU_Value, Type_Value, SP_LT, SP_GT, CB_LT, CB_GT, COX_LT, COX_GT, Fib_LT, Fib_GT, In_Sur, Out_Sur_LT, Out_Sur_GT, temp = "No";
+    let SP_GT_Value, COX_GT_Value, Fib_GT_Value, SA_Count, Out_Sur_GT_Value, CB_GT_Value, SU_Count = 0;
+    let SU = "No", SA = "No";
+
+    $("#Support_Placement_GT_Yes").change(function () { if ($(this).is(":checked")) { $("#Support_Placement_GT_Value").removeAttr("disabled") } });
+    $("#Support_Placement_GT_No").change(function () { if ($(this).is(":checked")) { $("#Support_Placement_GT_Value").attr("disabled", ""); $("#Support_Placement_GT_Value").val("0"); } });
+    $("#Support_Placement_LT_Yes").change(function () { if ($(this).is(":checked")) { $("#Support_Placement_GT_Value").attr("disabled", ""); $("#Support_Placement_GT_Value").val("0"); } });
+    $("#Cable_Placement_GT_Yes").change(function () { if ($(this).is(":checked")) { $("#Cable_Placement_GT_Value").removeAttr("disabled"); } });
+    $("#Cable_Placement_GT_No").change(function () { if ($(this).is(":checked")) { $("#Cable_Placement_GT_Value").attr("disabled", ""); $("#Cable_Placement_GT_Value").val("0") } });
+    $("#Cable_Placement_LT_Yes").change(function () { if ($(this).is(":checked")) { $("#Cable_Placement_GT_Value").attr("disabled", ""); $("#Cable_Placement_GT_Value").val("0") } });
+    $("#Fiber_Placement_GT_Yes").change(function () { if ($(this).is(":checked")) { $("#Fiber_Placement_GT_Value").removeAttr("disabled") } });
+    $("#Fiber_Placement_GT_No").change(function () { if ($(this).is(":checked")) { $("#Fiber_Placement_GT_Value").attr("disabled", ""); $("#Fiber_Placement_GT_Value").val("0") } });
+    $("#Fiber_Placement_LT_Yes").change(function () { if ($(this).is(":checked")) { $("#Fiber_Placement_GT_Value").attr("disabled", ""); $("#Fiber_Placement_GT_Value").val("0") } });
+    $("#Coax_Placement_GT_Yes").change(function () { if ($(this).is(":checked")) { $("#Coax_Placement_GT_Value").removeAttr("disabled") } });
+    $("#Coax_Placement_GT_No").change(function () { if ($(this).is(":checked")) { $("#Coax_Placement_GT_Value").attr("disabled", ""); $("#Coax_Placement_GT_Value").val("0") } });
+    $("#Coax_Placement_LT_Yes").change(function () { if ($(this).is(":checked")) { $("#Coax_Placement_GT_Value").attr("disabled", ""); $("#Coax_Placement_GT_Value").val("0") } });
+    $("#Outdoor_Survey_GT_Yes").change(function () { if ($(this).is(":checked")) { $("#Outdoor_Survey_GT_Value").removeAttr("disabled") } });
+    $("#Outdoor_Survey_GT_No").change(function () { if ($(this).is(":checked")) { $("#Outdoor_Survey_GT_Value").attr("disabled", ""); $("#Outdoor_Survey_GT_Value").val("0") } });
+    $("#Outdoor_Survey_LT_Yes").change(function () { if ($(this).is(":checked")) { $("#Outdoor_Survey_GT_Value").attr("disabled", ""); $("#Outdoor_Survey_GT_Value").val("0") } });
+    $("#Indoor_Survey_Yes").change(function () { if ($(this).is(":checked")) { In_Sur = "Yes"; } });
+    $("#Indoor_Survey_No").change(function () { if ($(this).is(":checked")) { In_Sur = "No"; } });
+    $("#Splice_Updates").change(function () {
+        if ($(this).is(":checked")) { $("#Splice_Update_Count").removeAttr("disabled"); SU = "Yes"; }
+        else { SU = "No"; $("#Splice_Update_Count").attr("disabled", ""); $("#Splice_Update_Count").val("0") }
+    });
+    $("#Splice_Additions").change(function () {
+        if ($(this).is(":checked")) { SA = "Yes"; $("#Splice_Addition_Count").removeAttr("disabled") }
+        else { SA = "No"; $("#Splice_Addition_Count").attr("disabled", ""); $("#Splice_Addition_Count").val("0") }
+    });
+
+    const tableBody = document.querySelector('#jsonTable tbody');
+
+    document.getElementById("generate-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const { jsPDF } = window.jspdf;
+        var doc = new jsPDF();
+        let temp;
+        try {
+            temp = document.querySelector("input[name=Support_Placement_GT]:checked").value;
+            if (temp == "Support_Placement_GT_Yes") {
+                SP_GT = "Yes"; SP_GT_Value = document.getElementById("Support_Placement_GT_Value").value;
+                if (SP_GT_Value == 0 || SP_GT_Value == undefined) { document.getElementById("Support_Placement_GT_Value").focus(); return; }
+            } else { SP_GT = "No"; SP_GT_Value = 0 }
+            temp = document.querySelector("input[name=Support_Placement_LT]:checked").value;
+            (temp == "Support_Placement_LT_Yes") ? SP_LT = "Yes" : SP_LT = "No";
+
+            temp = document.querySelector("input[name=Cable_Placement_GT]:checked").value;
+            if (temp == "Cable_Placement_GT_Yes") {
+                CB_GT = "Yes"; CB_GT_Value = document.getElementById("Cable_Placement_GT_Value").value;
+                if (CB_GT_Value == 0 || CB_GT_Value == undefined) { document.getElementById("Cable_Placement_GT_Value").focus(); return }
+            } else { CB_GT = "No"; CB_GT_Value = 0; }
+            temp = document.querySelector("input[name=Cable_Placement_LT]:checked").value;
+            (temp == "Cable_Placement_LT_Yes") ? CB_LT = "Yes" : CB_LT = "No";
+
+            temp = document.querySelector("input[name=Fiber_Placement_GT]:checked").value;
+            if (temp == "Fiber_Placement_GT_Yes") {
+                Fib_GT = "Yes"; Fib_GT_Value = document.getElementById("Fiber_Placement_GT_Value").value;
+                if (Fib_GT_Value == 0 || Fib_GT_Value == undefined) { document.getElementById("Fiber_Placement_GT_Value").focus(); return }
+            } else { Fib_GT = "No"; Fib_GT_Value = 0 }
+            temp = document.querySelector("input[name=Fiber_Placement_LT]:checked").value;
+            (temp == "Fiber_Placement_LT_Yes") ? Fib_LT = "Yes" : Fib_LT = "No";
+
+            temp = document.querySelector("input[name=Coax_Placement_GT]:checked").value;
+            if (temp == "Coax_Placement_GT_Yes") {
+                COX_GT = "Yes"; COX_GT_Value = document.getElementById("Coax_Placement_GT_Value").value;
+                if (COX_GT_Value == 0 || COX_GT_Value == undefined) { document.getElementById("Coax_Placement_GT_Value").focus(); return }
+            } else { COX_GT = "No"; COX_GT_Value = 0 }
+            temp = document.querySelector("input[name=Coax_Placement_LT]:checked").value;
+            (temp == "Coax_Placement_LT_Yes") ? COX_LT = "Yes" : COX_LT = "No";
+
+            temp = document.querySelector("input[name=Outdoor_Survey_GT]:checked").value;
+            if (temp == "Outdoor_Survey_GT_Yes") {
+                Out_Sur_GT = "Yes"; Out_Sur_GT_Value = document.getElementById("Outdoor_Survey_GT_Value").value;
+                if ((Out_Sur_GT_Value == 0 || Out_Sur_GT_Value == undefined)) { document.getElementById("Outdoor_Survey_GT_Value").focus(); return }
+            } else { Out_Sur_GT = "No"; Out_Sur_GT_Value = 0 }
+            temp = document.querySelector("input[name=Outdoor_Survey_LT]:checked").value;
+            (temp == "Outdoor_Survey_LT_Yes") ? Out_Sur_LT = "Yes" : Out_Sur_LT = "No";
+            temp = document.querySelector("input[name=Indoor_Survey]:checked").value;
+            (temp == "Indoor_Survey_Yes") ? In_Sur = "Yes" : In_Sur = "No";
+
+            SA_Count = parseInt(document.getElementById("Splice_Addition_Count").value);
+            SU_Count = parseInt(document.getElementById("Splice_Update_Count").value);
+            if (SA == "Yes" && (SA_Count == 0 || SA_Count == undefined)) { document.getElementById("Splice_Addition_Count").focus(); return }
+            if (SU == "Yes" && (SU_Count == 0 || SU_Count == undefined)) { document.getElementById("Splice_Update_Count").focus(); return }
+
+            BAU_Value = BAU_Input.value;
+            Type_Value = Type_Input.value;
+            let filterObj = {
+                Job_ID: document.getElementById("Job_ID").value,
+                BAU: BAU_Value, Type: Type_Value,
+                Scope: document.getElementById("Scope").value,
+                Mode: e.submitter.dataset.mode.trim()
+            };
+
+            if (BAU_Value == "Survey") {
+                temp = { Outdoor_Survey_LT: Out_Sur_LT, Outdoor_Survey_GT: Out_Sur_GT, Outdoor_Survey_GT_Value: Out_Sur_GT_Value, Indoor_Survey: In_Sur }
+                Object.assign(filterObj, temp);
+            } else if (BAU_Value = "Design" && Type_Value == "Fiber") {
+                temp = { Support_Placement_LT: SP_LT, Support_Placement_GT: SP_GT, Support_Placement_GT_Value: SP_GT_Value, Cable_Placement_LT: CB_LT, Cable_Placement_GT: CB_GT, Cable_Placement_GT_Value: CB_GT_Value, Splice_Updates: SU, Splice_Additions: SA, Splice_Updates_Count_Value: SU_Count, Splice_Additions_Count_Value: SA_Count }
+                Object.assign(filterObj, temp);
+            } else if (BAU_Value = "Design" && (Type_Value == "Coax" || Type_Value == "Forced Relocates-All")) {
+                temp = { Support_Placement_LT: SP_LT, Support_Placement_GT: SP_GT, Support_Placement_GT_Value: SP_GT_Value, Cable_Placement_LT: CB_LT, Cable_Placement_GT: CB_GT, Cable_Placement_GT_Value: CB_GT_Value }
+                Object.assign(filterObj, temp);
+            } else if (BAU_Value = "Design" && Type_Value == "HFC") {
+                temp = { Support_Placement_LT: SP_LT, Support_Placement_GT: SP_GT, Support_Placement_GT_Value: SP_GT_Value, Splice_Updates: SU, Splice_Additions: SA, Splice_Updates_Count_Value: SU_Count, Splice_Additions_Count_Value: SA_Count, Coax_Placement_LT: COX_LT, Fiber_Placement_LT: Fib_LT, Coax_Placement_GT: COX_GT, Fiber_Placement_GT: Fib_GT, Coax_Placement_GT_Value: COX_GT_Value, Fiber_Placement_GT_Value: Fib_GT_Value }
+                Object.assign(filterObj, temp);
+            }
+
+            $("#generate-form input").each(function () { $(this).prop("disabled", true); });
+            $("#generate-form select").each(function () { $(this).prop("disabled", true); });
+
+            function drawCellWithTextWrapping(doc, x, y, width, height, text) {
+                const lineHeight = 7;
+                const maxLineWidth = width - 2;
+                const textLines = doc.splitTextToSize(text, maxLineWidth);
+                const rowHeight = Math.max(10, 10 * textLines.length);
+                doc.rect(x, y, width, rowHeight);
+                textLines.forEach((line, index) => { const lineY = y + lineHeight * (index + 1); doc.text(line, x + 1, lineY); });
+            }
+
+            axios.get("api/generateLabourCode", { params: filterObj }).then(async result => {
+                if (filterObj.Mode == "Download") {
+                    const base64Image = await loadImageAsBase64("../static/images/Quadgen_Logo.png");
+                    doc.addImage(base64Image, 'JPEG', 5, 5, 20, 20);
+                    doc.setFontSize(18);
+                    doc.text('Labor Code Sheet', 105, 20, { align: 'center' });
+                    doc.setFontSize(12);
+                    let yPosition = 40;
+                    const columnWidths = [40, 30, 110];
+                    const rowHeight = 10;
+
+                    let headerPart = ['Job_ID', 'Type', 'BAU'];
+                    headerPart.forEach(key => {
+                        const wrappedDesc = doc.splitTextToSize(result.data[key], 45);
+                        const rh = Math.max(10, 6 * wrappedDesc.length);
+                        doc.text(key, 25, yPosition, { align: 'left' }); doc.rect(20, yPosition - 5, 40, rh);
+                        doc.text(wrappedDesc, 65, yPosition, { align: 'left' }); doc.rect(60, yPosition - 5, 80, rh);
+                        yPosition += rh;
+                    });
+                    headerPart = ['Scope'];
+                    headerPart.forEach(key => {
+                        const wrappedDesc = doc.splitTextToSize(result.data[key], 80);
+                        const rh = Math.max(10, 6 * wrappedDesc.length);
+                        doc.text(key, 25, yPosition, { align: 'left' }); doc.rect(20, yPosition - 5, 40, rh);
+                        doc.text(wrappedDesc, 65, yPosition, { align: 'left' }); doc.rect(60, yPosition - 5, 80, rh);
+                        yPosition += rh;
+                    });
+                    yPosition += rowHeight;
+                    doc.text('Labor Code', 25, yPosition - 5, { align: 'left' });
+                    doc.text('Quantity', 65, yPosition - 5, { align: 'left' });
+                    doc.text('Description', 130, yPosition - 5, { align: 'left' });
+                    doc.rect(20, yPosition - 10, columnWidths[0], rowHeight);
+                    doc.rect(60, yPosition - 10, columnWidths[1], rowHeight);
+                    doc.rect(90, yPosition - 10, columnWidths[2], rowHeight);
+                    yPosition += 5;
+
+                    Object.entries(result.data).forEach(([key, value]) => {
+                        let ignore = ['time', 'username', 'Job_ID', 'BAU', 'Type', 'Scope'];
+                        if (ignore.includes(key) || key.endsWith("_Desc")) return;
+                        doc.setFontSize(12);
+                        doc.text(key, 25, yPosition, { align: 'left' });
+                        doc.text(value, 65, yPosition, { align: 'left' });
+                        const descKey = `${key}_Desc`;
+                        const description = result.data[descKey] || "-";
+                        const wrappedDesc = doc.splitTextToSize(description, 100);
+                        const rh = Math.max(10, 6 * wrappedDesc.length);
+                        doc.rect(20, yPosition - 5, columnWidths[0], rh);
+                        doc.rect(60, yPosition - 5, columnWidths[1], rh);
+                        doc.rect(90, yPosition - 5, columnWidths[2], rh);
+                        doc.text(wrappedDesc, 95, yPosition, { align: 'left' });
+                        yPosition += rh;
+                        if (yPosition > 270) { doc.addPage(); yPosition = 30; }
+                    });
+                    doc.setFontSize(12);
+                    doc.text(`${result.data.username} ${result.data.time}`, 105, 290, { align: 'center' });
+                    doc.save(`${result.data.Job_ID}_${result.data.Scope}_${result.data.BAU}.pdf`);
+                } else {
+                    tableBody.innerHTML = "";
+                    for (let key in result.data) {
+                        let ignore = ['Job_ID', 'time', 'username', 'Scope', 'Type', 'BAU'];
+                        if (!ignore.includes(key) && !key.endsWith("_Desc")) {
+                            const row = document.createElement('tr');
+                            const keyCell = document.createElement('td'); keyCell.textContent = key;
+                            if (!key.endsWith("_Desc")) row.appendChild(keyCell);
+                            const valueCell = document.createElement('td');
+                            if (Array.isArray(result.data[key])) { valueCell.textContent = result.data[key].join(', '); }
+                            else { valueCell.textContent = result.data[key] ? result.data[key] : "0"; }
+                            if (!key.endsWith("_Desc")) row.appendChild(valueCell);
+                            const descKey = `${key}_Desc`;
+                            const descCell = document.createElement('td');
+                            descCell.textContent = result.data[descKey] ? result.data[descKey].substring(0, 100) : "No description";
+                            descCell.title = result.data[descKey] ? result.data[descKey] : "No description";
+                            row.appendChild(descCell);
+                            tableBody.appendChild(row);
+                        }
+                    }
+                }
+            }).catch(er => {
+                tableBody.innerHTML = `<tr><td colspan="3"><div class="lc-empty-state"><i class="bi bi-exclamation-triangle"></i>Invalid Inputs — Please check your configuration and try again.</div></td></tr>`;
+                console.log(er); alert("Invalid Inputs");
+            });
+
+        } catch (error) {
+            tableBody.innerHTML = `<tr><td colspan="3"><div class="lc-empty-state"><i class="bi bi-exclamation-circle"></i>Unknown Error. Try again...!</div></td></tr>`;
+            console.log(error); alert("Something Went Wrong Try Again..!");
+        }
+    });
+
+    document.getElementById("generate-form").addEventListener("reset", (e) => {
+        tableBody.innerHTML = `<tr><td colspan="3"><div class="lc-empty-state"><i class="bi bi-table"></i>Configure the form above and click Generate to see labor codes</div></td></tr>`;
+        $("#generate-form input").each(function () { $(this).prop("disabled", false); });
+        $("#generate-form select").each(function () { $(this).prop("disabled", false); });
+        $("#generate-form input[type='number']").each(function () { $(this).prop("disabled", true); });
+        AllContainersID.forEach(id => {
+            document.getElementById(id).classList.contains("visually-hidden") ? null : document.getElementById(id).classList.add("visually-hidden");
+        });
+    });
+
+    async function loadImageAsBase64(imageUrl) {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+</script>
+</html>

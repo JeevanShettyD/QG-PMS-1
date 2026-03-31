@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Time Sheet</title>
+    <%- include('../partials/dependencies') %>
+</head>
+<% if (userData.Role=="Employee" ) { %>
+    <%- include('../partials/Employee-header',{userData:userData}) %>
+        <% }else if(userData.Role=="Admin" ){ %>
+            <%- include('../partials/Admin-header',{userData:userData}) %>
+                <% }else if(userData.Role=="PMO" ){ %>
+                    <%- include('../partials/PMO-header',{userData:userData}) %>
+                        <%}if(userData.Role=="Manager"){ %>
+                            <%- include('../partials/Manager-header',{userData:userData}) %>
+                                <%}%>
+
+    <body>
+        <section class="flex-grow-1 scrollbar-style-3 scrollableContainer overflow-y-scroll z-1"
+            style="height: calc(100vh - 50px);">
+            <div class="position-absolute sticky-top end-0 dropdown z-2" style="margin-top: 45px; margin-right: 10px">
+                <button class=" btn btn-sm m-1" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <img width="15" height="15" src="https://img.icons8.com/ios-glyphs/30/FFFFFF/forward-arrow.png"
+                        alt="forward-arrow" />
+                </button>
+                <ul class="dropdown-menu ">
+                    <li><a href="/api/downloadTimeSheets" id="ExportLink" class="dropdown-item" type="button"><i
+                                class="bi bi-filetype-xlsx"></i> Excel</a></li>
+                </ul>
+            </div>
+            <table class="table table-sm table-hover text-dark z-1 mt-1" style="font-size: 14px;" aria-label="User List"
+                id="User-List">
+                <thead class="bg-primary opacity-75 fg-white bg-gradient sticky-top z-1">
+                    <tr>
+                        <th class="text-light text-nowrap" scope="col">S.No</th>
+                        <th class="text-light text-nowrap" scope="col">Project</th>
+                        <th class="text-light text-nowrap" scope="col">Milestone</th>
+                        <th class="text-light text-nowrap" scope="col">Task</th>
+                        <th class="text-light text-nowrap" scope="col">Start Time</th>
+                        <th class="text-light text-nowrap" scope="col">End Time</th>
+                        <th class="text-light text-nowrap" scope="col">Duration</th>
+                    </tr>
+                </thead>
+                <tbody id="content-area">
+                </tbody>
+            </table>
+
+            <button type="button" class="btn btn-primary scroll-btn topBtn" id="topBtn"><i
+                    class="bi bi-arrow-up-circle-fill"></i></button>
+            <button type="button" class="btn btn-primary scroll-btn bottomBtn" id="bottomBtn"><i
+                    class="bi bi-arrow-down-circle-fill"></i></button>
+        </section>
+        <button type="button" class="floating-btn btn btn-secondary bg-gradient rounded-pill z-2">Filter
+            <i class="bi bi-funnel"></i></button>
+        <form action="/<%= userData.Role  %>/TimeSheets" method="get">
+            <div class="floating-container bg-light shadow rounded-3 p-1 z-2">
+                <div>
+                    <label for="Project_ID" class="from-label">Project ID</label>
+                    <input type="search" name="Project_ID" id="Project_ID" class="form-control form-control-sm"
+                        placeholder="Enter the Last 4 Digits.">
+                </div>
+                <div>
+                    <label for="TaskName" class="from-label">Task ID</label>
+                    <input type="search" name="TaskName" id="TaskName" class="form-control form-control-sm"
+                        placeholder="Enter the Task ID.">
+                </div>
+                <div>
+                    <label for="Milestone_Name" class="from-label">Milestone ID</label>
+                    <input type="search" name="Milestone_Name" id="Milestone_Name" class="form-control form-control-sm"
+                        placeholder="Enter the Milestone ID.">
+                </div>
+                <div>
+                    <label for="Full_Name" class="from-label">User Name</label>
+                    <input type="search" name="Full_Name" id="Full_Name" class="form-control form-control-sm "
+                        placeholder="Enter the User Name.">
+                </div>
+                <div class="d-flex gap-1">
+                <div>
+                    <label for="start_date" class="from-label">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control form-control-sm bg-light border">
+                </div>
+                <div>
+                    <label for="end_date" class="from-label">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control form-control-sm bg-light border">
+                </div>
+            </div>
+                <p  class="m-0 p-1 from-label">Duration (in hours):</p>
+                <div class="d-flex gap-2">
+                    <div>
+
+                        <label for="min_duration" class="from-label">Min:</label>
+                        <input type="search" id="min_duration" name="min_duration" value="0" class="form-control form-control-sm"
+                            pattern="[0-9]" title="Please Enter Only Numbers">
+                    </div>
+                    <div>
+
+                        <label for="max_duration" class="from-label">Max:</label>
+                        <input type="search" id="max_duration" name="max_duration" value="0" class="form-control form-control-sm">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary bg-gradient btn-sm m-1" id="filter-btn">Show</button>
+                <button type="reset" class="btn btn-secondary bg-gradient btn-sm m-1" id="filter-btn">Clear</button>
+        </form>
+    </body>
+    <%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+        <script>
+            const params = getUrlParams();
+            const selects = document.querySelectorAll('select');
+            const date = document.querySelectorAll('input[type="date"]');
+            const search = document.querySelectorAll('input[type="search"]');
+            selects.forEach(select => {
+                for (const paramName in params) {
+                    if (params.hasOwnProperty(paramName) && paramName === select.name) {
+                        const selectValue = params[paramName];
+                        const option = select.querySelector(`option[value="${selectValue}"]`);
+                        if (option) {
+                            option.selected = true;
+                            break; // Exit loop after setting selected option
+                        }
+                    }
+                }
+            });
+            search.forEach(input => {
+                for (const paramName in params) {
+                    if (params.hasOwnProperty(paramName) && paramName === input.name) {
+                        const selectValue = params[paramName];
+                        input.value = selectValue;
+                    }
+                }
+            });
+            date.forEach(input => {
+                for (const paramName in params) {
+                    if (params.hasOwnProperty(paramName) && paramName === input.name) {
+                        const selectValue = params[paramName];
+                        input.value = selectValue;
+                    }
+                }
+            });
+            const ExportLink = document.getElementById("ExportLink")
+            let ExportLink_URL = ExportLink.getAttribute("href");
+            let temp = "?"
+            for (const paramName in params) {
+                temp += paramName + "=" + params[paramName] + "&"
+            }
+            ExportLink.setAttribute('href', (ExportLink_URL + temp))
+            search.forEach(search => {
+                for (const paramName in params) {
+                    if (params.hasOwnProperty(paramName) && paramName === search.name) {
+                        search.value = params[paramName]
+                        break;
+                    }
+                }
+            });
+        </script>

@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rate Card</title>
+<%- include('../partials/dependencies') %>
+
+<style>
+
+/* ===== THEME COLORS ===== */
+
+:root{
+--primary:#3f7ad9;
+--primary-dark:#2f63d8;
+--border:#e2e5f0;
+--text-main:#1a1a2e;
+--text-muted:#7b8196;
+--bg:#f7f9fc;
+--card:#ffffff;
+}
+
+/* ===== PAGE ===== */
+
+body{
+background:var(--bg);
+}
+
+/* ===== UPLOAD BOX ===== */
+
+.upload-box{
+display:inline-flex;
+align-items:center;
+gap:10px;
+padding:14px 24px;
+background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+color:white;
+border-radius:10px;
+cursor:pointer;
+font-weight:500;
+box-shadow:0 4px 14px rgba(0,0,0,0.15);
+transition:all .2s ease;
+}
+
+.upload-box:hover{
+transform:translateY(-1px);
+box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.upload-box input{
+display:none;
+}
+
+.upload-icon{
+font-size:18px;
+}
+
+/* ===== CARD TABLE ===== */
+
+.ratecard-wrapper{
+background:var(--card);
+border-radius:14px;
+box-shadow:0 4px 18px rgba(0,0,0,0.08);
+border:1px solid var(--border);
+overflow:hidden;
+}
+
+/* ===== TABLE ===== */
+
+.ratecard-table{
+width:100%;
+border-collapse:separate;
+border-spacing:0;
+font-size:13px;
+}
+
+/* ===== HEADER ===== */
+
+.ratecard-table thead th{
+background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+color:white;
+font-weight:600;
+letter-spacing:.3px;
+padding:14px 18px;
+white-space:nowrap;
+position:sticky;
+top:0;
+z-index:2;
+}
+
+/* ===== BODY ===== */
+
+.ratecard-table tbody td{
+padding:14px 18px;
+color:var(--text-main);
+border-bottom:1px solid #edf0f6;
+vertical-align:middle;
+}
+
+/* ===== ROW HOVER ===== */
+
+.ratecard-table tbody tr:hover{
+background:rgba(63,122,217,0.06);
+transition:.15s ease;
+}
+
+/* ===== PRICE ===== */
+
+.price{
+font-weight:600;
+text-align:right;
+}
+
+/* ===== CONTAINER ===== */
+
+.scrollableContainer{
+padding:10px;
+}
+/* ── Scroll nav buttons ── */
+.scroll-nav {
+    position: fixed;
+    left: 18px;
+    bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 999;
+}
+.scroll-nav-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(63,122,217,0.35);
+    transition: all .2s;
+}
+.scroll-nav-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(63,122,217,0.45);
+}
+
+</style>
+
+</head>
+
+
+<% if (userData.Role=="Employee" ) { %>
+<%- include('../partials/Employee-header',{userData:userData}) %>
+<% }else if(userData.Role=="Admin" ){ %>
+<%- include('../partials/Admin-header',{userData:userData}) %>
+<% }else if(userData.Role=="PMO" ){ %>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+<%}if(userData.Role=="Manager"){ %>
+<%- include('../partials/Manager-header',{userData:userData}) %>
+<%}%>
+
+
+<body>
+
+<main style="font-size:13px;">
+
+<!-- ===== Upload Section ===== -->
+
+<section class="text-center my-3">
+
+<label class="upload-box">
+
+<i class="bi bi-cloud-arrow-up upload-icon"></i>
+
+<span id="uploadText">Upload Rate Card</span>
+
+<input type="file" name="RateCard" id="RateCard">
+
+</label>
+
+</section>
+
+
+<!-- ===== Table Section ===== -->
+
+<section class="scrollbar-style-3 scrollableContainer">
+
+<div class="ratecard-wrapper">
+
+<table class="ratecard-table Project-List" id="Project-List">
+
+<thead>
+<tr>
+<th>S.No</th>
+<th>Customer</th>
+<th>Project Name</th>
+<th>Region/State</th>
+<th>Item</th>
+<th>UOM</th>
+<th style="width:28%">Item Description</th>
+<th class="text-end">Unit Price</th>
+</tr>
+</thead>
+
+<tbody>
+
+<% if (Object.values(RateCard).length>0) { let slNo=1;%>
+
+<% for(let index=0; index < Object.values(RateCard).length; index++ ) { %>
+
+<tr>
+
+<td><%- index+1 %></td>
+
+<td><%- RateCard[index].Customer%></td>
+
+<td><%- RateCard[index].Program%></td>
+
+<td><%- RateCard[index].Region%></td>
+
+<td><%- RateCard[index].Item%></td>
+
+<td><%- RateCard[index].UOM%></td>
+
+<td title="<%- RateCard[index].Description %>">
+<%- RateCard[index].Description.substring(0,40) %>
+</td>
+
+<td class="price">
+$ <%- parseFloat(RateCard[index].UnitPrice).toFixed(2)%>
+</td>
+
+</tr>
+
+<% } %>
+
+<% } %>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</div>
+<!-- Scroll nav buttons -->
+<div class="scroll-nav">
+    <button class="scroll-nav-btn" id="scrollTopBtn" title="Go to top">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+    <button class="scroll-nav-btn" id="scrollBottomBtn" title="Go to bottom">
+        <i class="bi bi-arrow-down"></i>
+    </button>
+</div>
+
+</main>
+
+</body>
+
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+
+<script>
+
+let fileInput = document.querySelector("#RateCard");
+let uploadText = document.querySelector("#uploadText");
+
+fileInput.addEventListener("change", async (e) => {
+
+const file = fileInput.files[0];
+
+uploadText.innerText = file.name;
+
+let fromData = new FormData();
+
+fromData.append("RateCard", file)
+
+await axios.post(`/api/UploadRateCard`, fromData).then(res => {
+
+if (res.status == 200) {
+
+const Responses = res.data[0];
+
+toasts.push(Responses);
+
+window.location.reload();
+
+}
+
+}).catch(e => {
+
+console.log(e)
+alert("Unable to Import all the Data");
+
+})
+
+});
+
+// Scroll to top / bottom
+document.getElementById('scrollTopBtn').addEventListener('click', () => {
+    document.querySelector('.scrollableContainer').scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+document.getElementById('scrollBottomBtn').addEventListener('click', () => {
+    document.querySelector('.scrollableContainer').scrollTo({ top: 999999, behavior: 'smooth' });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+});
+</script>
+
+</html>
+

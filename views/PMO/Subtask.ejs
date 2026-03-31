@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subtask</title>
+  <%- include('../partials/dependencies') %>
+</head>
+
+<% if (userData.Role=="Employee") { %>
+  <%- include('../partials/Employee-header',{userData:userData}) %>
+<% } else if(userData.Role=="Admin") { %>
+  <%- include('../partials/Admin-header',{userData:userData}) %>
+<% } else if(userData.Role=="PMO") { %>
+  <%- include('../partials/PMO-header',{userData:userData}) %>
+<% } if(userData.Role=="Manager") { %>
+  <%- include('../partials/Manager-header',{userData:userData}) %>
+<% } %>
+
+<style>
+  /* ══════════════════════════════════════
+     DESIGN SYSTEM — exact match to Task page
+  ══════════════════════════════════════ */
+  :root {
+    --navy-900: #0f1e36;
+    --navy-800: #152844;
+    --navy-700: #1b3258;
+    --blue-500: #2d7dd2;
+    --blue-400: #4a96e8;
+    --accent:   #00c6ff;
+    --page-bg:  #f0f4fa;
+    --card-bg:  #ffffff;
+    --border:   #e2e8f4;
+    --text:     #1e2d45;
+    --muted:    #7a8aaa;
+    --radius:   10px;
+    --shadow:   0 1px 4px rgba(15,30,80,0.06), 0 4px 16px rgba(15,30,80,0.07);
+    --tr:       all 0.18s cubic-bezier(0.4,0,0.2,1);
+  }
+  html, body { background: var(--page-bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+  main { display: grid; grid-template-columns: 1fr 280px; gap: 12px; padding: 12px 18px 40px; height: calc(100vh - 52px); }
+
+  /* ══════════════════════════════════════
+     PAGE HEADER BAR
+  ══════════════════════════════════════ */
+  .vt-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 55%, var(--navy-700) 100%);
+    border-radius: var(--radius); padding: 11px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 18px rgba(15,30,80,0.18);
+    position: relative; overflow: hidden;
+  }
+  .vt-header::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-500), var(--accent), transparent);
+    opacity: 0.7;
+  }
+  .vt-header-left { display: flex; align-items: center; gap: 10px; }
+  .vt-header-icon {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: rgba(45,125,210,0.25); border: 1px solid rgba(45,125,210,0.3);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .vt-header-icon i { font-size: 17px; color: var(--accent); }
+  .vt-header-name { font-size: 14px; font-weight: 800; color: #fff; letter-spacing: 0.2px; }
+  .vt-header-sub {
+    font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 500;
+    display: flex; align-items: center; gap: 5px; margin-top: 2px;
+  }
+  .vt-header-sub a { color: var(--accent); font-weight: 700; text-decoration: none; }
+  .vt-header-sub a:hover { text-decoration: underline; }
+  .vt-header-right { display: flex; align-items: center; gap: 8px; }
+
+  /* Status pill */
+  .vt-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 13px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(45,125,210,0.22); color: #90c8ff;
+    border: 1px solid rgba(45,125,210,0.35);
+  }
+  .vt-status::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); display: block; box-shadow: 0 0 5px var(--accent);
+  }
+  .vt-status.wip   { background: rgba(196,154,0,0.2); color: #ffd966; border-color: rgba(196,154,0,0.3); }
+  .vt-status.wip::before { background: #ffd966; box-shadow: 0 0 5px #ffd966; }
+  .vt-status.done  { background: rgba(13,159,106,0.2); color: #6dffc0; border-color: rgba(13,159,106,0.3); }
+  .vt-status.done::before { background: #6dffc0; }
+  .vt-status.yts   { background: rgba(220,53,69,0.2); color: #ff9aa2; border-color: rgba(220,53,69,0.3); }
+  .vt-status.yts::before { background: #ff9aa2; }
+
+  /* Submit button */
+  .vt-submit-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 700; cursor: pointer; border: none;
+    background: linear-gradient(135deg, var(--blue-400), var(--blue-500));
+    color: #fff; box-shadow: 0 3px 10px rgba(45,125,210,0.35);
+    transition: var(--tr);
+  }
+  .vt-submit-btn:hover { box-shadow: 0 5px 16px rgba(45,125,210,0.5); transform: translateY(-1px); }
+
+  /* ══════════════════════════════════════
+     LEFT COLUMN SCROLL
+  ══════════════════════════════════════ */
+  .vt-left { overflow-y: auto; overflow-x: hidden; height: calc(100vh - 64px); }
+  .vt-left::-webkit-scrollbar { width: 5px; }
+  .vt-left::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+
+  /* ══════════════════════════════════════
+     SECTION
+  ══════════════════════════════════════ */
+  .vt-section {
+    background: var(--card-bg); border: 1px solid #dce8ff;
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: 0 2px 10px rgba(45,125,210,0.08); margin-bottom: 10px;
+  }
+  .vt-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px;
+    background: linear-gradient(135deg, #eef5ff 0%, #e4effe 100%);
+    border-bottom: 1px solid #d0e4ff;
+    cursor: pointer; user-select: none;
+  }
+  .vt-section-header .sec-left { display: flex; align-items: center; gap: 8px; }
+  .vt-section-header .sec-title { font-size: 12.5px; font-weight: 800; color: var(--navy-700); }
+  .vt-section-header .sec-icon { font-size: 13px; color: var(--blue-500); }
+  .vt-section-header .sec-toggle { font-size: 11px; color: var(--blue-500); transition: transform 0.2s; }
+  .vt-section-body { padding: 12px 14px; background: #fafcff; }
+
+  .vt-add-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    border: 1px solid rgba(45,125,210,0.25);
+    background: rgba(45,125,210,0.08); color: var(--blue-500);
+    transition: var(--tr);
+  }
+  .vt-add-btn:hover { background: rgba(45,125,210,0.16); transform: translateY(-1px); }
+
+  /* ══════════════════════════════════════
+     INFO GRID
+  ══════════════════════════════════════ */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 9px;
+  }
+  .info-field {
+    display: flex; flex-direction: column; gap: 4px;
+    border-radius: 9px; padding: 10px 13px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
+    border: 1px solid #dce8ff;
+    box-shadow: 0 1px 4px rgba(45,125,210,0.07);
+    transition: var(--tr);
+  }
+  .info-field::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--blue-400), var(--blue-500));
+    border-radius: 9px 0 0 9px;
+  }
+  .info-field:hover {
+    border-color: rgba(45,125,210,0.4);
+    box-shadow: 0 3px 14px rgba(45,125,210,0.14);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #f0f7ff, #e8f2ff);
+  }
+  .info-field label {
+    font-size: 9px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.9px; color: var(--blue-500);
+    display: flex; align-items: center; gap: 4px; margin: 0; opacity: 0.85;
+  }
+  .info-field label i { font-size: 10px; }
+  .info-field .info-val {
+    font-size: 13px; font-weight: 800; color: var(--navy-700);
+    display: flex; align-items: center; gap: 6px; min-height: 20px;
+  }
+  .info-field .info-val a { color: var(--blue-500); text-decoration: none; font-weight: 800; }
+  .info-field .info-val a:hover { text-decoration: underline; }
+  .info-field .edit-wrap { display: flex; align-items: center; gap: 6px; width: 100%; }
+  .info-field select.select-list,
+  .info-field input.select-list {
+    font-size: 12px; font-weight: 700; color: var(--text);
+    border: 1px solid #c8daff; border-radius: 6px;
+    padding: 3px 8px; background: #f0f6ff; flex: 1; min-width: 0; transition: var(--tr);
+  }
+  .info-field select.select-list:focus,
+  .info-field input.select-list:focus {
+    border-color: var(--blue-500); outline: none;
+    box-shadow: 0 0 0 3px rgba(45,125,210,0.18); background: #fff;
+  }
+  .toggle-button { color: var(--blue-500); cursor: pointer; font-size: 12px; opacity: 0.55; transition: opacity 0.15s; }
+  .toggle-button:hover { opacity: 1; }
+  .reset-btn { color: var(--blue-500); cursor: pointer; font-size: 14px; opacity: 0.65; }
+  .reset-btn:hover { opacity: 1; }
+
+  /* ══════════════════════════════════════
+     TABLE
+  ══════════════════════════════════════ */
+  .vt-table-wrap { overflow-x: auto; }
+  .vt-table-wrap::-webkit-scrollbar { height: 4px; }
+  .vt-table-wrap::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+  .vt-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 11.5px; margin: 0; table-layout: auto;
+  }
+  .vt-table thead th {
+    background: linear-gradient(135deg, #1a3060, #1e3a5f);
+    color: rgba(255,255,255,0.88);
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px;
+    text-transform: uppercase; padding: 8px 11px; white-space: nowrap;
+    border-bottom: 2px solid rgba(45,125,210,0.35);
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .vt-table thead th:last-child { border-right: none; }
+  .vt-table tbody tr { border-bottom: 1px solid #edf1fa; transition: background 0.12s, box-shadow 0.12s; }
+  .vt-table tbody tr:nth-child(even) { background: #fafcff; }
+  .vt-table tbody tr:hover { background: #f0f6ff !important; box-shadow: inset 3px 0 0 var(--blue-500); }
+  .vt-table tbody tr:last-child { border-bottom: none; }
+  .vt-table tbody td { padding: 7px 11px; color: var(--text); vertical-align: middle; border-right: 1px solid #f0f4fc; }
+  .vt-table tbody td:last-child { border-right: none; }
+  .vt-table a { color: var(--blue-500); text-decoration: none; font-weight: 600; }
+  .vt-table a:hover { text-decoration: underline; }
+
+  /* Empty state */
+  .vt-empty { text-align: center; padding: 22px 16px; }
+  .vt-empty i { font-size: 20px; color: rgba(45,125,210,0.3); display: block; margin-bottom: 6px; }
+  .vt-empty p { font-size: 11.5px; color: var(--muted); margin: 0; font-weight: 500; }
+
+  /* Status badge */
+  .st-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 10.5px; font-weight: 600; }
+  .st-wip       { background: #eef4ff; color: #2d6ec0; }
+  .st-completed { background: #e8faf2; color: #0d9f6a; }
+  .st-yts       { background: #fff0f2; color: #c02038; }
+  .st-other     { background: #f4f4f8; color: var(--muted); }
+
+  /* Time badge */
+  .time-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 9px; border-radius: 7px; font-size: 11px; font-weight: 800;
+    background: linear-gradient(135deg, rgba(45,125,210,0.12), rgba(45,125,210,0.06));
+    color: var(--blue-500); border: 1px solid rgba(45,125,210,0.2);
+  }
+  .time-badge i { color: var(--accent); font-size: 10px; }
+
+  /* ══════════════════════════════════════
+     RIGHT PANEL
+  ══════════════════════════════════════ */
+  .vt-right { overflow-y: auto; overflow-x: hidden; height: calc(100vh - 64px); }
+  .vt-right::-webkit-scrollbar { width: 4px; }
+  .vt-right::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+
+  .vt-timer-card {
+    background: var(--card-bg); border: 1px solid #dce8ff;
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: 0 2px 10px rgba(45,125,210,0.08); margin-bottom: 10px;
+  }
+  .vt-timer-display {
+    background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
+    padding: 12px 14px; text-align: center;
+  }
+  .vt-timer-display .display {
+    font-size: 22px; font-weight: 900; color: #fff;
+    font-variant-numeric: tabular-nums; letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(0,198,255,0.4);
+    display: block; margin-bottom: 8px;
+    font-family: 'Courier New', monospace;
+  }
+  .vt-timer-btns { display: flex; justify-content: center; gap: 8px; }
+  .vt-timer-btns button {
+    width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    transition: var(--tr);
+  }
+  #startBtn { background: linear-gradient(135deg, #0d9f6a, #0b8058); color: #fff; box-shadow: 0 3px 10px rgba(13,159,106,0.4); }
+  #startBtn:hover { transform: scale(1.1); }
+  #stopBtn  { background: linear-gradient(135deg, #c02038, #a01028); color: #fff; box-shadow: 0 3px 10px rgba(192,32,56,0.4); }
+  #stopBtn:hover  { transform: scale(1.1); }
+
+  .vt-panel-header {
+    display: flex; align-items: center; gap: 7px;
+    padding: 9px 14px;
+    background: linear-gradient(135deg, #eef5ff, #e4effe);
+    border-bottom: 1px solid #d0e4ff;
+  }
+  .vt-panel-header i { color: var(--blue-500); font-size: 13px; }
+  .vt-panel-header span { font-size: 12px; font-weight: 800; color: var(--navy-700); }
+  .vt-panel-header .panel-action { margin-left: auto; color: var(--blue-500); cursor: pointer; font-size: 14px; }
+  .vt-panel-header .panel-action:hover { opacity: 0.7; }
+
+  .ts-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .ts-table thead th {
+    background: linear-gradient(135deg, #1a3060, #1e3a5f);
+    color: rgba(255,255,255,0.85);
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; padding: 6px 10px; white-space: nowrap;
+  }
+  .ts-table tbody tr { border-bottom: 1px solid #edf1fa; }
+  .ts-table tbody tr:hover { background: #f4f8ff; }
+  .ts-table tbody td { padding: 6px 10px; color: var(--text); }
+
+  .comment-block { padding: 8px 12px; border-bottom: 1px solid #f0f4fc; font-size: 11.5px; }
+  .comment-block:last-child { border-bottom: none; }
+  .comment-meta { color: var(--muted); font-size: 10.5px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .comment-text {
+    padding: 7px 10px; border-radius: 8px;
+    line-height: 1.5; font-size: 11.5px; color: var(--text);
+    border: 1px solid var(--border); background: #f8fbff;
+  }
+  .comment-text.is-owner {
+    background: linear-gradient(135deg, rgba(45,125,210,0.08), rgba(45,125,210,0.04));
+    border-color: rgba(45,125,210,0.2);
+  }
+  .comment-del { color: #c02038; cursor: pointer; opacity: 0.6; font-size: 11px; }
+  .comment-del:hover { opacity: 1; }
+
+  .closure-item {
+    display: flex; flex-direction: column; gap: 3px;
+    padding: 9px 12px; border-radius: 8px; margin-bottom: 6px;
+    background: linear-gradient(135deg, #f8fbff, #f0f6ff);
+    border: 1px solid #dce8ff; font-size: 12px;
+  }
+  .closure-item label { color: var(--muted); font-size: 10.5px; font-weight: 600; }
+  .closure-status { font-weight: 700; color: var(--text); }
+
+  .hidden { display: none !important; }
+</style>
+
+<body>
+<%
+  let lock = false;
+  if(Object.values(Log).length){
+    let last = Log[Object.values(Log).length-1];
+    if(last.startTime != null && last.endTime == null) lock = true;
+  }
+  let statusCls = Task.Status==='WIP' ? 'wip' : Task.Status==='Completed' ? 'done' : 'yts';
+
+  function stBadge(s) {
+    if (!s) return '<span class="st-badge st-yts">—</span>';
+    const l = s.toLowerCase();
+    const c = l.includes('wip') ? 'wip' : l.includes('complet') ? 'completed' : l.includes('yts') ? 'yts' : 'other';
+    return '<span class="st-badge st-' + c + '">' + s + '</span>';
+  }
+%>
+
+<main>
+
+  <!-- ══ LEFT COLUMN ══ -->
+  <div class="vt-left">
+
+    <!-- PAGE HEADER -->
+    <div class="vt-header">
+      <div class="vt-header-left">
+        <div class="vt-header-icon"><i class="bi bi-diagram-3"></i></div>
+        <div>
+          <div class="vt-header-name">
+            <% if((userData.Role=="PMO"||userData.Role=="Manager")&&Task.Status=='WIP'){ %>
+              <span class="user-info">
+                <%= Task.SubTaskLabel || Task.SubTaskName %>
+                <span class="toggle-button" style="color:var(--accent);font-size:12px;margin-left:4px;"><i class="bi bi-pencil-square"></i></span>
+              </span>
+              <input type="text" name="SubTaskLabel" id="SubTaskLabel"
+                class="select-list hidden" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:3px 8px;font-size:13px;font-weight:700;"
+                data-Target="Subtask" data-ID="<%= Task.idSubTask %>"
+                value="<%= Task.SubTaskLabel || '' %>">
+              <span class="reset-btn hidden" style="color:var(--accent);"><i class="bi bi-x-square-fill fs-5"></i></span>
+            <% } else { %>
+              <%= Task.SubTaskLabel || Task.SubTaskName %>
+            <% } %>
+          </div>
+          <div class="vt-header-sub">
+            <i class="bi bi-signpost-split"></i>
+            <a href="/ViewMilestone/<%= Customer %>/<%= Task.idProjects %>/<%= Task.Milestone_Name %>"><%= Task.Milestone_Name %></a>
+            <span style="color:rgba(255,255,255,0.2)">|</span>
+            <i class="bi bi-check2-square"></i>
+            <% if(Task.Prod_Sub_Task && Task.Type=="IQC"){ %>
+              <a href="/Subtask/<%= Task.Prod_Sub_Task %>"><%= Task.Prod_Sub_Task %></a>
+            <% } else { %>
+              <a href="/ViewTask/<%= Customer %>/<%= Task.Milestone_Name %>/<%= Task.Task_Name %>"><%= Task.Task_Name %></a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <div class="vt-header-right">
+        <span class="vt-status <%= statusCls %>"><%= Task.Status %></span>
+        <button type="button" id="markTaskCompleted"
+          class="vt-submit-btn <%= (Task.Status!='WIP'||Task.Owner!=userData.Employee_ID) ? 'hidden' : '' %>">
+          Submit <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- INFORMATION SECTION -->
+    <div class="vt-section">
+      <div class="vt-section-header" onclick="toggleSection(this)">
+        <div class="sec-left">
+          <i class="bi bi-card-list sec-icon"></i>
+          <span class="sec-title">Information</span>
+        </div>
+        <i class="bi bi-chevron-down sec-toggle"></i>
+      </div>
+      <div class="vt-section-body">
+        <div class="info-grid">
+
+          <!-- Subtask ID -->
+          <div class="info-field">
+            <label><i class="bi bi-hash"></i> Subtask ID</label>
+            <div class="info-val"><%= Task.SubTaskName %></div>
+          </div>
+
+          <!-- Task -->
+          <div class="info-field">
+            <label><i class="bi bi-check2-square"></i> Main Task</label>
+            <div class="info-val">
+              <% if(Task.Prod_Sub_Task && Task.Type=="IQC"){ %>
+                <a href="/Subtask/<%= Task.Prod_Sub_Task %>"><%= Task.Prod_Sub_Task %></a>
+              <% } else { %>
+                <a href="/ViewTask/<%= Customer %>/<%= Task.Milestone_Name %>/<%= Task.Task_Name %>"><%= Task.Task_Name %></a>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Milestone -->
+          <div class="info-field">
+            <label><i class="bi bi-signpost-split"></i> Milestone</label>
+            <div class="info-val">
+              <a href="/ViewMilestone/<%= Customer %>/<%= Task.idProjects %>/<%= Task.Milestone_Name %>"><%= Task.Milestone_Name %></a>
+            </div>
+          </div>
+
+          <!-- Task Type -->
+          <div class="info-field">
+            <label><i class="bi bi-tag"></i> Task Type</label>
+            <div class="info-val"><%= Task.Type %></div>
+          </div>
+
+          <!-- Owner -->
+          <div class="info-field">
+            <label><i class="bi bi-person"></i> Owner</label>
+            <div class="info-val">
+              <div class="edit-wrap">
+                <% if((userData.Role=="PMO"||userData.Role=="Manager")&&Task.Status!='Completed'){ %>
+                  <select name="" id="" class="select-list hidden" data-OwnerFor="SubTask" data-ID="<%= Task.SubTaskName %>">
+                    <% for(let i=0;i<Object.values(Owners).length;i++){ %>
+                      <option value="<%= Owners[i].Employee_ID %>" <%= Owners[i].Employee_ID==Task.Owner?"selected":"" %>>
+                        <%= Owners[i].Full_Name %> (<%= Owners[i].Employee_ID %>)
+                      </option>
+                    <% } %>
+                  </select>
+                  <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill fs-5 text-primary opacity-75 m-1"></i></span>
+                  <span class="Owner user-info" data-userID="<%= Task.Owner %>"><%= Task.Full_Name %></span>
+                  <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                <% } else { %>
+                  <span class="Owner" data-userID="<%= Task.Owner %>"><%= Task.Full_Name %></span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Time -->
+          <div class="info-field">
+            <label><i class="bi bi-stopwatch"></i> Total Time</label>
+            <div class="info-val">
+              <span class="time-badge"><i class="bi bi-clock"></i> <%= secondsToMinutes(Task.TotalTime+markupTotalTime) %></span>
+            </div>
+          </div>
+
+          <!-- Iteration (hidden for CQC/USQC) -->
+          <% if(Task.Type!="CQC" && Task.Type!="USQC"){ %>
+          <div class="info-field">
+            <label><i class="bi bi-arrow-repeat"></i> Iteration</label>
+            <div class="info-val">
+              <input type="text" id="Iteration" readonly
+                style="background:transparent;border:none;font-size:13px;font-weight:800;color:var(--navy-700);padding:0;width:100%;"
+                value="<%= Task.Iteration %>">
+            </div>
+          </div>
+
+          <!-- QC Score -->
+          <div class="info-field">
+            <label><i class="bi bi-star"></i> QC Score</label>
+            <div class="info-val">
+              <input type="text" id="Score" readonly
+                style="background:transparent;border:none;font-size:13px;font-weight:800;color:var(--navy-700);padding:0;width:100%;"
+                value="<%= Task.Score %>">
+            </div>
+          </div>
+          <% } else { %>
+            <input type="hidden" id="Iteration" value="<%= null %>">
+            <input type="hidden" id="Score" value="<%= null %>">
+          <% } %>
+
+          <!-- Due Date -->
+          <div class="info-field">
+            <label><i class="bi bi-calendar-event"></i> Due Date</label>
+            <div class="info-val">
+              <div class="edit-wrap">
+                <% if((userData.Role=="PMO"||userData.Role=="Manager")&&Task.Status!='Completed'){ %>
+                  <span class="user-info"><%= Task.DueDate || "—" %></span>
+                  <span class="toggle-button"><i class="bi bi-pencil-square"></i></span>
+                  <input type="date" name="Due_Date" id="Due_Date"
+                    class="select-list hidden today-date"
+                    data-Target="Subtask" data-ID="<%= Task.idSubTask %>"
+                    value="<%= Task.n_DueDate ? formatDateString(Task.n_DueDate) : null %>">
+                  <span class="position-absolute reset-btn hidden"><i class="bi bi-x-square-fill fs-5 text-primary opacity-75 m-1"></i></span>
+                <% } else { %>
+                  <span><%= Task.DueDate || "—" %></span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Start Date -->
+          <div class="info-field">
+            <label><i class="bi bi-play-circle"></i> Start Date</label>
+            <div class="info-val"><%= Task.StartDate || "—" %></div>
+          </div>
+
+          <!-- End Date -->
+          <div class="info-field">
+            <label><i class="bi bi-stop-circle"></i> End Date</label>
+            <div class="info-val"><%= Task.EndDate || "—" %></div>
+          </div>
+
+          <!-- QC Checklist -->
+          <% if(Task.QC_Name && Task.Type!="CQC" && Task.Type!="USQC"){ %>
+          <div class="info-field" style="grid-column: span 2;">
+            <label>
+              <i class="bi bi-clipboard-check"></i> QC Checklist
+              <a href="" title="Download Filled Checklist" id="Checklist_Url" class="ms-1" style="color:var(--blue-500);font-size:10px;">
+                <i class="bi bi-arrow-down-circle"></i>
+              </a>
+            </label>
+            <div class="info-val">
+              <a id="QC_Link" href="https://172.17.1.22:5000/Engineer/QC/<%= Task.QC_Name %>" target="_blank"
+                class="<%= Task.Owner!=userData.Employee_ID||Task.Status=='Completed'||Task.Status=='YTS' ? 'disabled' : '' %>"
+                style="font-weight:700;">
+                <%= Task.QC_Name %>
+              </a>
+            </div>
+          </div>
+          <% } %>
+
+          <!-- Remark -->
+          <div class="info-field" style="grid-column: span 2;">
+            <label><i class="bi bi-chat-left-text"></i> Note / Remark</label>
+            <div class="info-val" style="font-weight:600;color:var(--muted);font-size:12px;">
+              <%= Task.Remark || "N/A" %>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- QC TASK SECTION (Production only) -->
+    <% if(Task.Type=='Production'){ %>
+    <div class="vt-section">
+      <div class="vt-section-header" onclick="toggleSection(this)">
+        <div class="sec-left">
+          <i class="bi bi-shield-check sec-icon"></i>
+          <span class="sec-title">QC Task</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <% if(Task.Status!='YTS' && Task.Owner==userData.Employee_ID && ParentTaskStatus=="WIP"){ %>
+            <span class="vt-add-btn" data-bs-toggle="modal" data-bs-target="#create-Subtask-Task-Modal" onclick="event.stopPropagation()">
+              <i class="bi bi-plus-lg"></i> Add
+            </span>
+          <% } %>
+          <i class="bi bi-chevron-down sec-toggle"></i>
+        </div>
+      </div>
+      <div class="vt-section-body p-0">
+        <div class="vt-table-wrap">
+          <% if(Object.values(Tagged_QC_Task).length > 0){ %>
+            <table class="vt-table">
+              <thead><tr>
+                <th>S.No</th><th>Subtask ID</th><th>Subtask Name</th>
+                <th>Task</th><th>Owner</th><th>Status</th><th>Start</th><th>End</th>
+              </tr></thead>
+              <tbody>
+                <% Object.values(Tagged_QC_Task).forEach(function(t,i){ %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:10px;"><%= i+1 %></td>
+                  <td><a href="/SubTask/<%= t.SubTaskName %>"><%= t.SubTaskName %></a></td>
+                  <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= t.SubTaskLabel %>"><%= t.SubTaskLabel||"—" %></td>
+                  <td><%= t.Task_Name %></td>
+                  <td><p class="Owner m-0 text-truncate" style="max-width:90px;" data-userID="<%= t.Owner %>"><%= t.Full_Name %></p></td>
+                  <td><%- stBadge(t.Status) %></td>
+                  <td><%= t.StartDate||"—" %></td>
+                  <td><%= t.EndDate||"—" %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="vt-empty"><i class="bi bi-shield-check"></i><p>No QC subtasks</p></div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- MARKUP SECTION (not Production/CQC/USQC) -->
+    <% if(Task.Type!='Production' && Task.Type!='CQC' && Task.Type!='USQC'){ %>
+    <div class="vt-section">
+      <div class="vt-section-header" onclick="toggleSection(this)">
+        <div class="sec-left">
+          <i class="bi bi-pencil sec-icon"></i>
+          <span class="sec-title">Markups</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <% if(Task.Owner==userData.Employee_ID && Task.Status=="WIP"){ %>
+            <span class="vt-add-btn" data-bs-toggle="modal" data-bs-target="#create-Markup-Task-Modal" onclick="event.stopPropagation()">
+              <i class="bi bi-plus-lg"></i> Add
+            </span>
+          <% } %>
+          <i class="bi bi-chevron-down sec-toggle"></i>
+        </div>
+      </div>
+      <div class="vt-section-body p-0">
+        <div class="vt-table-wrap">
+          <% if(Object.values(markup).length > 0){ %>
+            <table class="vt-table">
+              <thead><tr>
+                <th>S.No</th><th>Markup</th><th>Task</th><th>Owner</th>
+                <th>Status</th><th>Start</th><th>End</th>
+              </tr></thead>
+              <tbody>
+                <% Object.values(markup).forEach(function(m,i){ %>
+                <tr>
+                  <td style="color:var(--muted);font-weight:700;font-size:10px;"><%= i+1 %></td>
+                  <td><a href="/Markup/<%= m.Sub_Task_Name %>"><%= m.Sub_Task_Name %></a></td>
+                  <td><%= m.Task_Name %></td>
+                  <td><p class="Owner m-0 text-truncate" style="max-width:90px;" data-userID="<%= m.Owner %>"><%= m.Full_Name %></p></td>
+                  <td><%- stBadge(m.Status) %></td>
+                  <td><%= m.StartDate||"—" %></td>
+                  <td><%= m.EndDate||"—" %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="vt-empty"><i class="bi bi-pencil"></i><p>No markups</p></div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- ATTACHMENTS SECTION -->
+    <div class="vt-section">
+      <div class="vt-section-header" onclick="toggleSection(this)">
+        <div class="sec-left">
+          <i class="bi bi-paperclip sec-icon"></i>
+          <span class="sec-title">Attachments</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <% if(Task.Status!="YTS" && Task.Owner==userData.Employee_ID){ %>
+            <span class="vt-add-btn" data-bs-toggle="modal" data-bs-target="#AttachmentDialog" onclick="event.stopPropagation()">
+              <i class="bi bi-plus-lg"></i> Add
+            </span>
+          <% } %>
+          <p class="m-0 p-0 btn visually-hidden" id="zipDownload" data-FileName="<%-Task.SubTaskLabel%>">
+            <i class="bi bi-cloud-arrow-down-fill" style="color:var(--blue-500);font-size:14px;"></i>
+          </p>
+          <i class="bi bi-chevron-down sec-toggle"></i>
+        </div>
+      </div>
+      <div class="vt-section-body p-0">
+        <% if(Object.values(attachments).length > 0){ %>
+          <div class="vt-table-wrap">
+            <table class="vt-table" id="AttachmentsTable">
+              <thead><tr>
+                <th><div class="d-flex align-items-center gap-1">
+                  <input type="checkbox" id="selectAll" class="form-check-input m-0"> S.No
+                </div></th>
+                <th>File Name</th><th>Date</th><th>Size</th><th>Type</th><th>Owner</th><th></th>
+              </tr></thead>
+              <tbody>
+                <% Object.values(attachments).forEach(function(a,i){ %>
+                <tr>
+                  <td><div class="form-check"><input type="checkbox" class="record-checkbox form-check-input" value="<%= a.idattachments %>" id="ATT-<%= a.idattachments %>"><label for="ATT-<%= a.idattachments %>"><%= i+1 %></label></div></td>
+                  <td><a href="../../..<%= a.path %>" target="_blank"><p class="m-0" title="<%= a.Name %>" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= a.Name.substring(0,60) %></p></a></td>
+                  <td style="white-space:nowrap;"><%= a.Created_Date %></td>
+                  <td><%= a.Size %>MB</td>
+                  <td><img width="20" height="20" src="/static/icons/<%= a.Type.substring(1) %>.png" alt="<%= a.Type %>"/></td>
+                  <td style="white-space:nowrap;"><%= a.Full_Name %></td>
+                  <td><i class="bi bi-trash3-fill text-secondary archive-btn fs-6 <%= a.Owner!=userData.Employee_ID?'visually-hidden':'' %>" data-fileID="<%= a.idattachments %>" style="cursor:pointer;"></i></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <%
+            let noteFound = false;
+          %>
+          <% Object.keys(Comments).forEach(function(gk){ %>
+            <% for(const k in Comments[gk]){ %>
+              <% if(k.startsWith('Note') && Comments[gk][k].startsWith("Reason For No Attachments")){ %>
+                <div style="padding:12px;display:flex;align-items:center;gap:12px;">
+                  <div style="flex:1;padding:8px 12px;border-radius:8px;background:rgba(45,125,210,0.06);border:1px solid rgba(45,125,210,0.15);font-size:12px;color:var(--muted);">
+                    <%= Comments[gk][k] %>
+                  </div>
+                  <img src="../../../static/images/empty-animate.svg" width="100" height="100" alt="">
+                </div>
+                <% noteFound = true; %>
+              <% } %>
+            <% } %>
+          <% }); %>
+          <% if(!noteFound){ %>
+            <div class="vt-empty">
+              <img src="../../../static/images/empty-animate.svg" width="100" height="100" alt="" style="margin:0 auto 8px;display:block;">
+              <p>No attachments</p>
+            </div>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+
+  </div><!-- end vt-left -->
+
+  <!-- ══ RIGHT COLUMN ══ -->
+  <div class="vt-right">
+
+    <!-- TIMER CARD -->
+    <div class="vt-timer-card">
+      <% if(Task.Status!='Completed' && Task.Owner==userData.Employee_ID){ %>
+        <div class="vt-timer-display">
+          <span class="display" id="display">00:00:00:00</span>
+          <div class="vt-timer-btns">
+            <button id="startBtn" class="<%= lock ? 'd-none' : '' %>"><i class="bi bi-play-fill"></i></button>
+            <button id="stopBtn"  class="<%= !lock ? 'd-none' : '' %>"><i class="bi bi-stop-fill"></i></button>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Timesheet -->
+      <div class="vt-panel-header">
+        <i class="bi bi-clock-history"></i>
+        <span>Time Sheet</span>
+      </div>
+      <div style="overflow-x:auto; max-height:220px; overflow-y:auto;">
+        <% if(Object.values(Log).length > 0){ %>
+          <table class="ts-table">
+            <thead><tr><th>S.No</th><th>User</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
+            <tbody>
+              <% Object.values(Log).forEach(function(l,i){ %>
+              <tr>
+                <td><%= i+1 %></td>
+                <td><p class="Owner text-truncate m-0" style="max-width:80px;" data-userID="<%= l.UserID %>"><%= l.Full_Name %></p></td>
+                <td style="white-space:nowrap;font-size:10px;"><%= l.startTime %></td>
+                <td style="white-space:nowrap;font-size:10px;"><%= l.endTime %></td>
+                <td style="white-space:nowrap;"><%= secondsToMinutes(l.duration) %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <div style="text-align:center;padding:16px;">
+            <img src="/static/images/Data report-amico.svg" width="120" height="120" alt="">
+            <p style="font-size:11px;color:var(--muted);margin:0;">No time logs yet</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- COMMENTS CARD -->
+    <div class="vt-timer-card">
+      <div class="vt-panel-header">
+        <i class="bi bi-chat-dots"></i>
+        <span>Comments</span>
+        <span class="panel-action" data-bs-toggle="modal" data-bs-target="#Add_Comment_Modal">
+          <i class="bi bi-plus-circle"></i>
+        </span>
+      </div>
+      <%
+        let relevantComments = Object.keys(Comments).filter(function(gk){
+          return Object.keys(Comments[gk]).some(function(k){
+            return k.startsWith('Note') && !Comments[gk][k].startsWith("Reason For No Attachments");
+          });
+        });
+      %>
+      <% if(relevantComments.length > 0){ %>
+        <% relevantComments.forEach(function(gk){ %>
+          <% let c = Comments[gk]; let isOwner = userData.Employee_ID===c.Author_ID; %>
+          <div class="comment-block">
+            <div class="comment-meta">
+              <i class="bi bi-person-fill"></i> <%= c.Author_Name %>
+              <span style="color:var(--border)">|</span>
+              <i class="bi bi-calendar3"></i> <%= c.On %>
+              <% for(const k in c){ if(k.startsWith('attachment')&&c[k]){ %>
+                <a href="../public/uploads/ReferenceDoc/<%= c[k] %>" class="text-decoration-none" download title="Attachment">
+                  <i class="bi bi-paperclip" style="color:var(--blue-500);"></i>
+                </a>
+              <% }} %>
+              <% if(isOwner){ %>
+                <i class="bi bi-trash3-fill comment-del deleteBtn" style="margin-left:auto;"
+                  data-project-id="<%= Task.SubTaskName %>" data-target="Subtask"
+                  data-comment-id="<%= gk %>" data-customer="<%= Customer %>"></i>
+              <% } %>
+            </div>
+            <% for(const k in c){ if(k.startsWith('Note')&&!c[k].startsWith("Reason For No Attachments")){ %>
+              <div class="comment-text <%= isOwner ? 'is-owner' : '' %>"><%- c[k] %></div>
+            <% }} %>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div style="text-align:center;padding:12px;">
+          <img src="../../../static/images/co-workers-animate.svg" width="140" height="140" alt="" style="display:block;margin:0 auto;">
+          <p style="font-size:11px;color:var(--muted);margin:0;">No comments yet</p>
+        </div>
+      <% } %>
+    </div>
+
+  </div><!-- end vt-right -->
+
+</main>
+</body>
+
+<!-- ══ MODALS (FUNCTIONALITY UNCHANGED) ══ -->
+
+<!-- Comment Modal -->
+<div class="modal fade" id="Add_Comment_Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h1 class="modal-title fs-5">Comment</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <form action="/api/AddCommentTo/Subtask/<%= Task.SubTaskName %>" method="post" enctype="multipart/form-data" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+        <div class="modal-body">
+          <div class="form-floating">
+            <textarea class="form-control" placeholder="Leave a comment here" name="Comment" id="Comment" style="height:100px" minlength="5" required></textarea>
+            <label for="Comment">Enter Comments...</label>
+          </div>
+          <input type="file" name="attachment" id="attachment" class="form-control visually-hidden">
+        </div>
+        <div class="modal-footer"><button type="submit" class="btn btn-primary">Add</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Create Markup Modal -->
+<div class="modal fade" id="create-Markup-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h1 class="modal-title fs-5">Create Markup</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <form action="/Employee/CreateMarkup/<%= Customer%>/<%= Task.Milestone_Name%>/<%=Task.SubTaskName %>" method="post" id="createMarkupForm" enctype="multipart/form-data" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+        <div class="modal-body">
+          <input type="hidden" name="Milestone_Name" value="<%= Task.Milestone_Name %>" required>
+          <input type="hidden" name="Task_Name" value="<%= Task.SubTaskName %>" required>
+          <input type="hidden" name="Project_ID" value="<%= Task.Project_ID %>" required>
+          <input type="hidden" name="idProjects" value="<%= Task.idProjects %>" required>
+          <input type="hidden" name="MarkupFor" value="Subtask" required>
+          <div class="row g-3 mb-3">
+            <div class="col"><div class="form-floating"><select name="Owner" id="milestone_owner" class="form-select border" required><option value="">Choose Owner</option><optgroup label="PMO"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="PMO"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Manager"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Manager"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Engineers"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Employee"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup></select><label>Owner</label></div></div>
+            <div class="col"><div class="form-floating"><input type="date" class="today-date form-control border" id="DueDate" name="DueDate" required><label>Due Date</label></div></div>
+          </div>
+          <div class="form-floating"><textarea name="Comments" id="Comments" rows="3" class="form-control border" spellcheck="true"></textarea><label>Comments</label></div>
+        </div>
+        <div class="modal-footer"><button type="submit" class="btn btn-primary">Create</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Create Subtask Modal -->
+<div class="modal fade" id="create-Subtask-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h1 class="modal-title fs-5">Create Subtask</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <form action="/CreateSubtask" method="post" id="createSubtaskForm" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+        <div class="modal-body">
+          <div class="row g-3 mb-3">
+            <div class="col"><div class="form-floating"><select name="Owner" id="milestone_owner" class="form-select border" required><option value="">Choose Owner</option><optgroup label="PMO"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="PMO"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Manager"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Manager"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Engineers"><%for(let i=0;i<Object.values(Owners).length;i++){%><%if(Owners[i].Role=="Employee"){%><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><%}%><%}%></optgroup></select><label>Owner</label></div></div>
+            <div class="col"><div class="form-floating"><input type="date" class="today-date form-control border" id="Due_Date" name="Due_Date" required><label>Due Date</label></div></div>
+            <div class="col"><div class="form-floating"><input type="text" class="form-control border" id="SubTaskLabel" name="SubTaskLabel" placeholder="" required><label>Subtask Label</label></div></div>
+          </div>
+          <div class="row g-3">
+            <div class="col"><div class="form-floating"><input type="text" class="form-control border" id="Remark" name="Remark" placeholder=""><label>Note/Remarks</label></div></div>
+          </div>
+          <input type="hidden" name="Milestone_Name" value="<%= Task.Milestone_Name %>" required>
+          <input type="hidden" name="idProjects" value="<%= Task.idProjects %>" required>
+          <input type="hidden" name="Type" value="<%= (Task.Type=='Production')?'IQC':Task.Type %>" required>
+          <input type="hidden" name="idTask" value="<%= Task.idTask %>" required>
+          <input type="hidden" name="Task_Name" value="<%= Task.Task_Name %>" required>
+          <input type="hidden" name="Project_ID" value="<%= Task.Project_ID %>" required>
+          <input type="hidden" name="Prod_Sub_Task" value="<%= Task.SubTaskName %>" required>
+        </div>
+        <div class="modal-footer"><button type="submit" class="btn btn-primary">Create</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Active Task Conflict Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" style="font-size:13px;">
+        Timer already running on <b><span id="taskID"></span></b>. Stop it first.
+        Click <a href="#" id="TaskURL" class="fs-5">here</a> to go to that task.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Attachments Modal -->
+<div class="modal fade" tabindex="-1" id="AttachmentDialog" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Add Attachment <i class="bi bi-paperclip"></i></h5>
+        <button type="button" class="btn-close modal-close-btn" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body p-1">
+        <ul class="list-group list-group-flush p-0 m-0">
+          <li class="list-group-item text-center p-0"><div class="d-flex justify-content-between bg-primary text-light bg-opacity-50 bg-gradient p-2 rounded"><div class="m-0 p-0 w-50">File Name</div><div class="m-0 p-0 w-25">Size</div><div class="m-0 p-0 w-25 text-start">Progress</div></div></li>
+        </ul>
+        <ul id="filelist" class="list-group list-group-flush mb-2"><li class="list-group-item text-center">No Files Selected</li></ul>
+      </div>
+      <div class="modal-footer p-1">
+        <input type="file" id="fileInput" class="form-control form-control-sm w-50" name="file" multiple>
+        <input type="button" value="Upload" class="btn btn-outline-primary btn-sm" id="startUpload">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Submission Checklist Modal -->
+<div class="modal fade" id="SubmissionBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog" style="font-size:12px;">
+    <div class="modal-content">
+      <div class="modal-header p-2 px-3">
+        <h6 class="modal-title w-100 text-center">Task Closure Checklist</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-2">
+        <div class="closure-item"><label>Is the timer stopped?</label><span id="timerStatus" class="closure-status"><i class="bi bi-circle-fill text-warning me-1"></i> No</span></div>
+        <div class="closure-item"><label>Are all Markup-tasks closed?</label><span id="subTaskStatus" class="closure-status"><i class="bi bi-circle-fill text-warning me-1"></i> No</span></div>
+        <div class="closure-item"><label>Is the quality checklist filled?</label><span id="checklistStatus" class="closure-status"><i class="bi bi-circle-fill text-warning me-1"></i> No</span></div>
+        <div class="closure-item"><label>Have all required attachments been uploaded?</label><span id="attachmentStatus" class="closure-status"><i class="bi bi-circle-fill text-warning me-1"></i> No</span></div>
+      </div>
+      <div class="modal-footer p-2">
+        <button type="button" id="ClosureSubmitBtn" class="btn btn-sm btn-primary" disabled>Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+
+<% if(lock==true){ %>
+<script>
+  elapsedTime = Date.now() - new Date('<%= Log[Object.values(Log).length-1].startTime %>');
+  start();
+</script>
+<% } %>
+
+<script>
+/* ── Section toggle ── */
+function toggleSection(header) {
+  var body = header.nextElementSibling;
+  header.querySelector('.sec-toggle').style.transform =
+    body.style.display === 'none' ? '' : 'rotate(-90deg)';
+  body.style.display = body.style.display === 'none' ? '' : 'none';
+}
+
+/* ── QC checklist link ── */
+var Checklist_Url = document.getElementById('Checklist_Url');
+var QC_Link       = document.getElementById('QC_Link');
+
+if(elapsedTime == 0) {
+  Checklist_Url ? document.getElementById('Checklist_Url').classList.add("visually-hidden") : null;
+  QC_Link ? document.getElementById('QC_Link').setAttribute("disabled","") : null;
+}
+
+/* ── Timer stop ── */
+document.getElementById("stopBtn") && document.getElementById("stopBtn").addEventListener('click', function(e) {
+  $("#stopBtn").prop("disabled", true);
+  axios.post('/api/updateTimeLog/<%= Task.SubTaskName %>/stop').then(function(res){
+    stop(e.target);
+    window.location.reload();
+  }).catch(function(e){
+    console.log(e);
+    if(e.response.data=="Access Denied") alert("Your session got closed. Login again to continue.");
+    else alert("Unable to stop the Timer. Try again...!");
+  });
+});
+
+/* ── Timer start ── */
+document.getElementById("startBtn") && document.getElementById("startBtn").addEventListener('click', function(e) {
+  $("#startBtn").prop("disabled", true);
+  axios.post('/api/updateTimeLog/<%= Task.SubTaskName %>/start').then(function(res){
+    start(e.target);
+    window.location.reload();
+  }).catch(function(e){
+    let pendingTask = e.response.data.OngoingTaskInfo;
+    if(pendingTask){
+      let URL = "#";
+      if(pendingTask.TaskName.startsWith("SUB")){ URL = `/SubTask/${pendingTask.TaskName}`; }
+      else if(pendingTask.TaskName.startsWith("MKUP")){ URL = `/Markup/${pendingTask.TaskName}`; }
+      else { URL = `/ViewTask/${pendingTask.Customer}/${pendingTask.Milestone_Name}/${pendingTask.TaskName}`; }
+      document.getElementById("TaskURL").setAttribute("href", URL);
+      document.getElementById("taskID").innerHTML = pendingTask.TaskLabel ? pendingTask.TaskLabel : pendingTask.TaskName;
+      new bootstrap.Modal(document.getElementById("staticBackdrop"),{keyboard:false}).show();
+    } else if(e.response.data=="Access Denied"){
+      alert("Your session got closed. Login again to continue.");
+    } else {
+      console.log(e);
+      alert("Unable to start the Timer. Try again...!");
+    }
+  });
+});
+
+/* ── Submit task ── */
+const ProjectStatus = '<%= Task.Status %>';
+let AttachmentLength = parseInt('<%= Object.values(attachments).length %>');
+
+document.getElementById("markTaskCompleted").addEventListener("click", async function(e) {
+  const myModal = new bootstrap.Modal('#SubmissionBackdrop', { keyboard: false });
+  const Iteration = parseInt($("#Iteration").val());
+  const Score     = parseInt($("#Score").val());
+  let temp = false, attachConfirm = false, reason = "";
+
+  if(elapsedTime == 0){
+    document.getElementById("timerStatus").innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> Yes`;
+  }
+
+  let SubtaskResult = await axios.get("/api/checkMarkupClosed/<%= Task.SubTaskName %>");
+  if(SubtaskResult.data.status == "All Clear"){
+    document.getElementById("subTaskStatus").innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> Yes`;
+  }
+
+  let TaskType = "<%= Task.Type %>";
+  if(TaskType == "Production"){
+    document.getElementById("subTaskStatus").parentElement.classList.add("visually-hidden");
+  }
+
+  if((Iteration && Score) || ('<%= Task.QC_Name %>' == "")){
+    document.getElementById("checklistStatus").innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> Yes`;
+  }
+
+  if(AttachmentLength != 0){
+    document.getElementById("attachmentStatus").innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> Yes`;
+    temp = true; myModal.show();
+  } else {
+    attachConfirm = confirm("Proceed without attachment? Select OK or Cancel to add one.");
+    if(attachConfirm){
+      reason = prompt("Reason for no attachments (Min 5 Characters):");
+      if(!reason || reason.trim().length < 6){ alert("Submission Canceled."); }
+      else { temp = true; myModal.show(); }
+    } else {
+      new bootstrap.Modal('#AttachmentDialog', { keyboard: false }).show();
+    }
+  }
+
+  if(temp && (elapsedTime == 0) && (SubtaskResult.data.status == "All Clear") && ((Iteration && Score) || ('<%= Task.QC_Name %>' == ""))){
+    e.target.setAttribute("disabled", "");
+    e.target.innerHTML = `<span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span><span role="status"> Submitting...</span>`;
+    document.getElementById("ClosureSubmitBtn").innerHTML = `<span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span><span role="status"> Submitting...</span>`;
+    axios.post('/api/MarkTaskCompleted/<%= Task.SubTaskName %>/Subtask', { Iteration: Iteration, Score: Score }).then(function(res){
+      toasts.push(res.data.Notification);
+      if(res.status == 200 && reason?.trim()){
+        axios.post("/api/AddCommentTo/Subtask/<%= Task.SubTaskName %>", { Comment: "Reason For No Attachments: " + reason }).then(function(){ location.reload(); });
+      } else { location.reload(); }
+    }).catch(function(error){
+      console.log(error);
+      e.target.innerHTML = `Error <i class="bi bi-x-circle m-1"></i>`;
+      toasts.push(error.response.data.Notification);
+    });
+  }
+});
+
+/* ── QC Link ── */
+if(document.querySelector("#QC_Link")){
+  let temp = document.querySelector("#QC_Link").href;
+  document.querySelector("#QC_Link").href = temp +
+    `?Token=${btoa('<%= userData.Employee_ID %>')}&cfas_no=${btoa('<%= Task.Project_ID %>')}&qc_state=${btoa('<%= Milestone_Info.Region %>')}&qc_city=${btoa('<%= Milestone_Info.Region %>')}&qc_type=${btoa('<%= Task.Type==="Production"?"Self QC":Task.Type %>')}&Task_ID=${btoa('<%= Task.SubTaskName %>')}`;
+}
+
+/* ── Checklist fetch ── */
+try {
+  axios.get('https://172.17.1.22:5000/api/QGPMS/Checklist/<%-Task.Project_ID%>/<%-Task.QC_Name %>/<%- Task.Type==="Production"?"Self QC":Task.Type %>/<%-Task.SubTaskName %>', {
+    crossdomain: true,
+    headers: { "Cache-Control": "no-cache", "Content-Type": "application/x-www-form-urlencoded", "Access-Control-Allow-Origin": "*" }
+  }).then(function(res){
+    const data = res.data;
+    if(data.Iteration > 0 && data.url){
+      document.getElementById('Checklist_Url').href = data.url;
+      document.getElementById("Iteration").value = data.Iteration;
+      document.getElementById("Score").value = data.Score + '%';
+    } else {
+      Checklist_Url ? document.getElementById('Checklist_Url').classList.add("visually-hidden") : null;
+    }
+  }).catch(function(e){
+    console.log(e);
+    Checklist_Url ? document.getElementById('Checklist_Url').classList.add("visually-hidden") : null;
+  }).finally(function(){
+    const score = parseInt(document.getElementById("Score").value);
+    if(((score > 99) || (score < 1)) && QC_Link){
+      $("[data-bs-target='#create-Markup-Task-Modal']").attr("disabled", true);
+    } else {
+      $("[data-bs-target='#create-Markup-Task-Modal']").attr("disabled", false);
+    }
+  });
+} catch(error){ console.log(error); }
+
+/* ── Comment delete ── */
+document.querySelectorAll('.deleteBtn').forEach(function(btn){
+  btn.addEventListener("click", function(e){
+    e.target.setAttribute('disabled', '');
+    axios.delete('/api/deleteComment', {
+      data: {
+        Customer: e.target.getAttribute('data-customer'),
+        commentID: e.target.getAttribute('data-comment-id'),
+        projectID: e.target.getAttribute('data-project-id'),
+        Target: e.target.getAttribute("data-target")
+      }
+    }).then(function(){ window.location.reload(); })
+    .catch(function(){ e.target.removeAttribute('disabled'); });
+  });
+});
+</script>
+</document_content>

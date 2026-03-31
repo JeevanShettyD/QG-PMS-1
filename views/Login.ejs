@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QGPMS Login</title>
+  <%- include('./partials/dependencies') %>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #4a89dc;
+      --primary-dark: #3a70c0;
+      --text-main: #1a1a2e;
+      --text-muted: #8a8fa8;
+      --border: #e2e5f0;
+      --input-bg: #f7f8fc;
+      --transition: 0.25s ease;
+    }
+
+    html, body {
+      height: 100%; width: 100%;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Page wrapper ── */
+    .page-wrapper {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ════════════════════════════
+       LEFT — Carousel (65%)
+    ════════════════════════════ */
+    .carousel-section {
+      flex: 0 0 65%;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: #fffefc;
+    }
+
+    /* Carousel + inner fill the section fully */
+    .carousel-section .carousel {
+      height: 100vh;
+      width: 100%;
+    }
+    .carousel-section .carousel-inner {
+      height: 100vh;
+      width: 100%;
+    }
+
+    /* Each slide — absolutely fills the carousel-inner */
+    .carousel-section .carousel-item {
+      position: absolute !important;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100vh;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+    .carousel-section .carousel-item.active {
+      opacity: 1;
+      pointer-events: auto;
+      position: relative !important;
+    }
+
+    /* Background fill — solid #f3f3f4 wherever black bars appear */
+    .carousel-section .carousel-item::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background: #fffefc;
+    }
+
+    /* Foreground image — fully visible, no cropping */
+    .carousel-section .carousel-item img {
+      display: block;
+      position: relative; z-index: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    /* Subtle dark overlay */
+    .carousel-section::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(135deg, rgba(10,15,40,0.35) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* ── Top nav inside carousel ── */
+    .top-nav {
+      position: absolute; top: 0; left: 0; right: 0;
+      z-index: 10;
+      display: flex; align-items: center; gap: 8px;
+      padding: 18px 24px;
+    }
+    .top-nav .brand {
+      font-weight: 700; font-size: 15px; color: #fff;
+      letter-spacing: 0.6px; text-decoration: none;
+    }
+    .top-nav .version-badge {
+      font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 2px 9px; border-radius: 20px;
+      backdrop-filter: blur(6px);
+    }
+
+    /* ── Carousel indicator dots ── */
+    .carousel-indicators {
+      z-index: 10;
+      bottom: 18px; margin: 0;
+      gap: 6px; justify-content: center;
+    }
+    .carousel-indicators [data-bs-target] {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      border: none; padding: 0; flex-shrink: 0;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .carousel-indicators .active {
+      background: #fff; transform: scale(1.3);
+    }
+
+    /* ════════════════════════════
+       RIGHT — Form panel (35%)
+    ════════════════════════════ */
+    .form-section {
+      flex: 0 0 35%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      /* Equal padding all sides — more on right to avoid edge */
+      padding: 40px 48px 40px 36px;
+      background: #fffefc;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ── Login Card ── */
+    .login-card {
+      width: 100%;
+      background: #dce9f1;
+      border-radius: 24px;
+      padding: 48px 44px 40px;
+      border: 1px solid rgba(74,137,220,0.13);
+      box-shadow:
+        0 2px 8px rgba(74,137,220,0.07),
+        0 8px 32px rgba(74,137,220,0.11),
+        0 24px 56px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeSlideUp 0.45s ease both;
+    }
+
+    /* ── Logo ── */
+    .logo-wrap {
+      margin-bottom: 8px;
+      text-align: center;
+      animation: fadeSlideDown 0.45s ease both;
+    }
+    .logo-wrap img {
+      height: 90px; width:160px;
+      object-fit: contain;
+      display: block; margin: 0 auto;
+    }
+
+    .logo-divider {
+      width: 40px; height: 2.5px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      border-radius: 2px;
+      margin: 12px auto 28px;
+    }
+
+    /* ── Form ── */
+    .login-form { width: 100%; }
+
+    .field-group { margin-bottom: 20px; }
+    .field-group label {
+      display: block; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.9px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 7px;
+      transition: color var(--transition);
+    }
+    .field-group:focus-within label { color: var(--primary); }
+
+    .input-wrap { position: relative; }
+    .input-wrap i.input-icon {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px; color: #c8cedd;
+      transition: color var(--transition); pointer-events: none;
+    }
+    .field-group:focus-within .input-icon { color: var(--primary); }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 13px 42px 13px 42px;
+      font-size: 14px; color: var(--text-main);
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 11px; outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+    .input-wrap input:focus {
+      border-color: var(--primary); background: #fff;
+      box-shadow: 0 0 0 4px rgba(74,137,220,0.12);
+    }
+    .input-wrap input::placeholder { color: #cdd1df; font-size: 13px; }
+
+    .toggle-pw {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px; color: #c8cedd; cursor: pointer;
+      transition: color var(--transition); z-index: 2;
+    }
+    .toggle-pw:hover { color: var(--primary); }
+
+    /* ── Sign In button ── */
+    .btn-login {
+      width: 100%; padding: 14px;
+      font-size: 15px; font-weight: 600; letter-spacing: 0.3px;
+      color: #fff;
+      background: linear-gradient(135deg, #5a96e8, #3a70c0);
+      border: none; border-radius: 11px; cursor: pointer;
+      margin-top: 8px;
+      transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+      box-shadow: 0 4px 18px rgba(74,137,220,0.40);
+    }
+    .btn-login:hover {
+      opacity: 0.91;
+      box-shadow: 0 6px 22px rgba(74,137,220,0.48);
+      transform: translateY(-1px);
+    }
+    .btn-login:active { transform: translateY(0); }
+
+    /* ── Forgot link ── */
+    .forgot-link {
+      display: block; text-align: center; margin-top: 16px;
+      font-size: 13px; color: var(--text-muted);
+      text-decoration: none; transition: color var(--transition);
+    }
+    .forgot-link:hover { color: var(--primary); }
+
+    /* ── Footer ── */
+    .footer-notice { margin-top: 20px; text-align: center; }
+    .copyright { font-size: 11px; color: #b8bdd0; letter-spacing: 0.2px; }
+
+    /* ── Modal ── */
+    .modal-content {
+      border: none; border-radius: 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.13);
+    }
+    .modal-header { border-bottom: 1px solid var(--border); padding: 18px 22px 14px; }
+    .modal-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
+    .modal-body { padding: 22px; }
+    .form-control {
+      border-radius: 10px; border-color: var(--border); font-size: 14px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(74,137,220,0.12);
+    }
+    .modal .btn-primary {
+      background: linear-gradient(135deg, #5a96e8, #3a70c0);
+      border: none; border-radius: 10px;
+      padding: 10px 20px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 4px 12px rgba(74,137,220,0.3);
+      transition: opacity var(--transition), transform var(--transition);
+    }
+    .modal .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* ── Animations ── */
+    @keyframes fadeSlideDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeSlideUp   { from { opacity:0; transform:translateY(18px);  } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideIn  { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes slideOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-16px); } }
+
+    .animated { animation-duration: 0.28s; animation-fill-mode: both; }
+    .slide-in  { animation-name: slideIn; }
+    .slide-out { animation-name: slideOut; }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- ════ LEFT: Carousel (60%) ════ -->
+  <section class="carousel-section">
+    <nav class="top-nav">
+      <a href="#" class="brand">QGPMS</a>
+      <span class="version-badge">V.2.12 Testing</span>
+    </nav>
+
+    <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
+
+      <div class="carousel-indicators">
+        <% let order = generateShuffledNaturalNumbersArray(30) %>
+        <% for (let i = 0; i < order.length; i++) { %>
+          <button type="button"
+                  data-bs-target="#carouselExampleSlidesOnly"
+                  data-bs-slide-to="<%= i %>"
+                  <%= i === 0 ? 'class="active" aria-current="true"' : '' %>
+                  aria-label="Slide <%= i + 1 %>"></button>
+        <% } %>
+      </div>
+
+      <div class="carousel-inner">
+        <% for (let index = 0; index < order.length; index++) { %>
+          <div class="carousel-item <%= index === 0 ? 'active' : '' %>"
+               data-bs-interval="15000"
+               style="--slide-bg: url('../static/images/Motivational/<%= order[index] %>.jpg')">
+            <img src="../static/images/Motivational/<%= order[index] %>.jpg"
+                 alt="Motivational Slide <%= index + 1 %>">
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════ RIGHT: Form panel (40%) ════ -->
+  <section class="form-section">
+
+    <div class="login-card">
+
+      <div class="logo-wrap">
+        <img src="./static/icons/QG-Logo.png" alt="QuadGen Logo"/>
+      </div>
+      <div class="logo-divider"></div>
+
+      <form action="/login" method="post" class="login-form">
+
+        <div class="field-group">
+          <label for="UserName">Username</label>
+          <div class="input-wrap">
+            <i class="bi bi-person input-icon"></i>
+            <input type="text" id="UserName" name="UserName"
+                   placeholder="Employee ID" value="QGI464"
+                   autofocus autocomplete="username"/>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="key">Password</label>
+          <div class="input-wrap">
+            <i class="bi bi-lock input-icon"></i>
+            <input type="password" id="key" name="key"
+                   placeholder="Enter your password" value="User@123"
+                   autocomplete="current-password"/>
+            <i class="bi bi-eye toggle-pw" id="togglePw"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login">
+          Sign In &nbsp;<i class="bi bi-arrow-right-short"></i>
+        </button>
+
+      </form>
+
+      <a href="#" class="forgot-link"
+         data-bs-toggle="modal" data-bs-target="#ForgetPasswordModal">
+        Forgot your password?
+      </a>
+
+    </div>
+
+    <div class="footer-notice">
+      <p class="copyright">&copy; QuadGen Wireless Solution Pvt Ltd</p>
+    </div>
+
+  </section>
+</div>
+
+<!-- ── Forgot Password Modal ── -->
+<div class="modal fade" id="ForgetPasswordModal" data-bs-backdrop="static"
+     data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="ForgetPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ForgetPasswordModalLabel">
+          <i class="bi bi-shield-lock me-2 text-primary"></i>Reset Password
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="container-1 animated slide-in">
+          <p style="font-size:13px;color:#8a8fa8;margin-bottom:16px;">
+            Enter your Employee ID and we'll send an OTP to your registered email.
+          </p>
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Employee_ID" placeholder="Employee ID"/>
+            <label for="Employee_ID">Employee ID</label>
+          </div>
+          <button type="button" class="nextBtn btn btn-primary w-100">
+            Send OTP &nbsp;<i class="bi bi-send"></i>
+          </button>
+        </div>
+
+        <div class="container-2 d-none animated">
+          <p style="font-size:13px;color:#8a8fa8;margin-bottom:16px;">
+            Check your email and enter the OTP below.
+          </p>
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="OTP" placeholder="OTP"/>
+            <label for="OTP">Enter OTP</label>
+          </div>
+          <button type="button" class="verifyBtn btn btn-primary w-100">
+            Verify &nbsp;<i class="bi bi-check-circle"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/dependencies-js', { Notifications: Notifications }) %>
+<script>
+  document.getElementById('togglePw').addEventListener('click', function () {
+    const inp = document.getElementById('key');
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    this.classList.toggle('bi-eye', !show);
+    this.classList.toggle('bi-eye-slash', show);
+  });
+
+  document.getElementById('key').addEventListener('keyup', e => {
+    if (e.key === 'Enter' && document.getElementById('UserName').value)
+      e.target.closest('form').submit();
+  });
+
+  document.querySelector('.nextBtn').addEventListener('click', function () {
+    const idInp = document.getElementById('Employee_ID');
+    const id = idInp.value.trim();
+    if (id.length <= 5) { idInp.focus(); return alert('Invalid Employee ID.'); }
+    this.innerHTML = 'Sending… <span class="spinner-border spinner-border-sm ms-1"></span>';
+    idInp.disabled = true;
+    axios.post('/api/GeneratePasswordResetOPT', { ID: id }).then(() => {
+      this.innerHTML = 'Sent <i class="bi bi-check2 ms-1"></i>';
+      const c1 = document.querySelector('.container-1');
+      const c2 = document.querySelector('.container-2');
+      c1.classList.add('slide-out');
+      setTimeout(() => {
+        c1.classList.add('d-none');
+        c2.classList.remove('d-none');
+        c2.classList.add('slide-in');
+      }, 280);
+    }).catch(er => {
+      idInp.disabled = false; idInp.value = '';
+      $('#ForgetPasswordModal').modal('hide');
+      this.innerHTML = 'Send OTP &nbsp;<i class="bi bi-send"></i>';
+      alert('Something went wrong. Please try again.');
+      idInp.focus(); console.error(er);
+    });
+  });
+
+  document.querySelector('.verifyBtn').addEventListener('click', function () {
+    const otpInp = document.getElementById('OTP');
+    const idInp  = document.getElementById('Employee_ID');
+    const otp    = otpInp.value.trim();
+    if (otp.length <= 5) { otpInp.focus(); return alert('Invalid OTP.'); }
+    this.innerHTML = 'Verifying… <span class="spinner-border spinner-border-sm ms-1"></span>';
+    this.disabled = true;
+    axios.post('/api/GenerateNewPassword', { userID: idInp.value, otp }).then(() => {
+      this.innerHTML = 'Done <i class="bi bi-check-circle ms-1"></i>';
+      otpInp.value = ''; idInp.value = '';
+    }).catch(er => {
+      this.disabled = false;
+      this.innerHTML = 'Verify &nbsp;<i class="bi bi-check-circle"></i>';
+      alert('Invalid OTP or OTP has expired. Please try again.');
+      otpInp.value = ''; otpInp.focus(); console.error(er);
+    });
+  });
+</script>
+</body>
+</html>

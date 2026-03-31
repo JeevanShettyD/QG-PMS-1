@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subtask</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<% if(userData.Role=="Employee"){ %><%- include('../partials/Employee-header',{userData:userData}) %>
+<% }else if(userData.Role=="Admin"){ %><%- include('../partials/Admin-header',{userData:userData}) %>
+<% }else if(userData.Role=="PMO"){ %><%- include('../partials/PMO-header',{userData:userData}) %>
+<% }if(userData.Role=="Manager"){ %><%- include('../partials/Manager-header',{userData:userData}) %><% } %>
+
+<style>
+:root{--ms-blue:#2d7dd2;--ms-light:#f4f7fc;--ms-border:#e2e8f4;--ms-text:#1e2d45;--ms-muted:#7a8aaa;--ms-radius:10px;--ms-shadow:0 2px 12px rgba(15,30,80,0.08),0 8px 28px rgba(15,30,80,0.06);--ms-tr:all 0.18s cubic-bezier(0.4,0,0.2,1);}
+body{background:#f0f4fa;} .ms-page{padding:14px 18px 60px;}
+.ms-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
+.ms-toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;} .ms-toolbar-right{display:flex;align-items:center;gap:8px;}
+.ms-page-title{font-size:15px;font-weight:700;color:var(--ms-text);display:flex;align-items:center;gap:8px;} .ms-page-title i{color:var(--ms-blue);font-size:16px;}
+.ms-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:var(--ms-tr);text-decoration:none;}
+.ms-btn-primary{background:linear-gradient(135deg,var(--ms-blue),#1a60b8);color:#fff;box-shadow:0 2px 8px rgba(45,125,210,0.3);}
+.ms-btn-primary:hover{background:linear-gradient(135deg,#3a8ae0,#2266cc);box-shadow:0 4px 14px rgba(45,125,210,0.4);transform:translateY(-1px);color:#fff;}
+.ms-field-selector{position:relative;}
+.ms-field-trigger{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:8px;background:#fff;border:1px solid var(--ms-border);font-size:12px;font-weight:600;color:var(--ms-text);cursor:pointer;transition:var(--ms-tr);box-shadow:0 1px 4px rgba(0,0,0,0.06);user-select:none;}
+.ms-field-trigger:hover{border-color:var(--ms-blue);background:#eef5ff;} .ms-field-trigger i{color:var(--ms-blue);}
+.ms-field-panel{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--ms-border);border-radius:var(--ms-radius);box-shadow:0 8px 32px rgba(15,30,80,0.14);z-index:999;min-width:220px;padding:10px;display:none;animation:dropIn 0.18s cubic-bezier(0.34,1.56,0.64,1);}
+.ms-field-panel.open{display:block;}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px) scale(0.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.ms-field-panel-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--ms-border);margin-bottom:8px;}
+.ms-field-panel-header span{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--ms-muted);}
+.ms-field-panel-header button{font-size:10px;color:var(--ms-blue);background:none;border:none;cursor:pointer;font-weight:600;padding:0;}
+.ms-field-item{display:flex;align-items:center;gap:8px;padding:5px 4px;border-radius:6px;font-size:12px;color:var(--ms-text);cursor:pointer;transition:background 0.12s;}
+.ms-field-item:hover{background:#f0f6ff;} .ms-field-item input[type="checkbox"]{accent-color:var(--ms-blue);width:14px;height:14px;}
+.ms-tabs-wrap{display:flex;justify-content:center;margin-bottom:10px;}
+.ms-tabs{display:inline-flex;align-items:center;background:#fff;border:1px solid var(--ms-border);border-radius:12px;padding:4px;gap:3px;box-shadow:var(--ms-shadow);}
+.ms-tab{display:inline-flex;align-items:center;gap:7px;padding:7px 18px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--ms-muted);transition:var(--ms-tr);white-space:nowrap;}
+.ms-tab i{font-size:13px;} .ms-tab:hover{background:#f0f6ff;color:var(--ms-blue);}
+.ms-tab.active{background:linear-gradient(135deg,var(--ms-blue),#1a60b8);color:#fff;box-shadow:0 3px 12px rgba(45,125,210,0.3);}
+.ms-tab .ms-tab-count{background:rgba(255,255,255,0.25);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;}
+.ms-tab:not(.active) .ms-tab-count{background:rgba(45,125,210,0.1);color:var(--ms-blue);}
+.ms-table-card{background:#fff;border-radius:12px;border:1px solid var(--ms-border);box-shadow:0 1px 4px rgba(15,30,80,0.06),0 6px 20px rgba(15,30,80,0.07);overflow:hidden;}
+.ms-table-scroll{overflow-x:auto;overflow-y:visible;}
+.ms-table-scroll::-webkit-scrollbar{height:5px;} .ms-table-scroll::-webkit-scrollbar-track{background:#f0f4fc;} .ms-table-scroll::-webkit-scrollbar-thumb{background:#c0cce0;border-radius:3px;} .ms-table-scroll::-webkit-scrollbar-thumb:hover{background:var(--ms-blue);}
+.ms-table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:auto;}
+.ms-table thead tr th{background:linear-gradient(135deg,#1a3060,#1e3a5f);color:rgba(255,255,255,0.9);font-size:11px;font-weight:700;letter-spacing:0.2px;padding:9px 12px;white-space:nowrap;border-bottom:2px solid rgba(45,125,210,0.4);border-right:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:10;cursor:pointer;}
+.ms-table thead tr th:last-child{border-right:none;}
+.ms-table thead tr th[data-sort="asc"]::after{content:' ↑';opacity:0.8;font-size:10px;} .ms-table thead tr th[data-sort="desc"]::after{content:' ↓';opacity:0.8;font-size:10px;}
+.ms-table thead tr th:hover{background:linear-gradient(135deg,#1e3a6e,#244480);}
+.ms-table thead th{position:relative;}
+.col-resize-handle{position:absolute;right:0;top:0;bottom:0;width:4px;cursor:col-resize;background:transparent;transition:background 0.15s;}
+.col-resize-handle:hover{background:rgba(0,198,255,0.6);}
+.ms-table tbody tr.ms-data-row{border-bottom:1px solid #edf1fa;transition:background 0.12s,box-shadow 0.12s;}
+.ms-table tbody tr.ms-data-row:hover{background:#f0f6ff !important;box-shadow:inset 3px 0 0 var(--ms-blue);}
+.ms-table tbody tr.ms-data-row:nth-child(4n+1){background:#fff;} .ms-table tbody tr.ms-data-row:nth-child(4n+3){background:#fafcff;}
+.ms-table tbody td{padding:9px 12px;color:var(--ms-text);vertical-align:middle;border-right:1px solid #f0f4fc;} .ms-table tbody td:last-child{border-right:none;}
+.ms-table tbody tr.ms-detail-row td{background:#f4f8ff !important;padding:12px 18px !important;border-top:none !important;border-bottom:2px solid #d8e4f8 !important;}
+.ms-row-toggle{width:22px;height:22px;border-radius:6px;background:#eef4ff;border:1px solid #d0e0f8;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--ms-tr);flex-shrink:0;color:var(--ms-blue);font-size:10px;}
+.ms-row-toggle:hover{background:var(--ms-blue);color:#fff;}
+.ms-detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.ms-detail-item{display:flex;flex-direction:column;gap:2px;}
+.ms-detail-item label{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:var(--ms-muted);}
+.ms-detail-item span{font-size:12.5px;font-weight:500;color:var(--ms-text);}
+.td-sno{font-weight:700;color:var(--ms-muted);font-size:11px;text-align:center;width:54px;padding-left:14px !important;}
+.ms-table a{color:var(--ms-blue);text-decoration:none;font-weight:600;} .ms-table a:hover{text-decoration:underline;}
+.ms-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+.ms-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;display:block;flex-shrink:0;}
+.ms-badge-yts{background:#eef3ff;color:#3a6ec0;} .ms-badge-wip{background:#fff8e6;color:#c07a00;} .ms-badge-completed{background:#e8faf2;color:#0d9f6a;}
+.ms-delivery{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+.ms-delivery i{font-size:9px;}
+.ms-delivery.on-time{background:#e8faf2;color:#0d9f6a;} .ms-delivery.approaching{background:#fff8e6;color:#c07a00;} .ms-delivery.due-today{background:#eef4ff;color:#2d6ec0;} .ms-delivery.delayed{background:#fff0f2;color:#c02038;} .ms-delivery.escalation{background:#fff0f2;color:#c02038;}
+.ms-empty{text-align:center;padding:52px 20px;}
+.ms-empty .ms-empty-icon{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,rgba(45,125,210,0.1),rgba(45,125,210,0.05));display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;color:rgba(45,125,210,0.4);}
+.ms-empty p{font-size:13px;color:var(--ms-muted);font-weight:500;margin:0;}
+.ms-filter-fab{position:fixed;bottom:28px;right:24px;z-index:400;display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:30px;background:linear-gradient(135deg,var(--ms-blue),#1a60b8);color:#fff;font-size:12.5px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(45,125,210,0.45);transition:var(--ms-tr);}
+.ms-filter-fab:hover{background:linear-gradient(135deg,#3a8ae0,#2266cc);box-shadow:0 6px 24px rgba(45,125,210,0.55);transform:translateY(-2px);}
+.ms-filter-panel{position:fixed;bottom:80px;right:24px;z-index:410;background:#fff;border:1px solid var(--ms-border);border-radius:14px;padding:16px;box-shadow:0 12px 40px rgba(15,30,80,0.18);width:260px;display:none;animation:dropIn 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+.ms-filter-panel.open{display:block;}
+.ms-filter-panel label{font-size:11px;font-weight:700;color:var(--ms-muted);display:block;margin-bottom:4px;}
+.ms-filter-panel input,.ms-filter-panel select{width:100%;font-size:12px;border:1px solid var(--ms-border);border-radius:7px;padding:6px 10px;color:var(--ms-text);transition:var(--ms-tr);margin-bottom:10px;}
+.ms-filter-panel input:focus,.ms-filter-panel select:focus{border-color:var(--ms-blue);outline:none;box-shadow:0 0 0 3px rgba(45,125,210,0.12);}
+.ms-filter-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.ms-filter-panel-header span{font-size:12px;font-weight:800;color:var(--ms-text);}
+.ms-filter-panel-header button{background:none;border:none;cursor:pointer;color:var(--ms-muted);font-size:15px;padding:0;}
+.ms-filter-panel-header button:hover{color:var(--ms-text);}
+</style>
+
+<body>
+<main class="ms-page">
+<%
+  /* ── normalise variable name: route may pass subTask or subtask ── */
+  if(typeof subTask==='undefined' && typeof subtask!=='undefined') var subTask=subtask;
+  if(typeof subTask==='undefined') var subTask={};
+
+  let bgMap={"On Time":"on-time","Approaching Due Date":"approaching","Due Today":"due-today","Delayed":"delayed","Escalation":"escalation"};
+  let ytsCount=0,ongoingCount=0,completedCount=0;
+  if(Object.values(subTask).length>0){
+    for(let i=0;i<Object.values(subTask).length;i++){
+      if(subTask[i].Status==='YTS') ytsCount++;
+      else if(subTask[i].Status==='Completed') completedCount++;
+      else ongoingCount++;
+    }
+  }
+%>
+
+<!-- TOOLBAR -->
+<div class="ms-toolbar">
+  <div class="ms-toolbar-left">
+    <div class="ms-page-title"><i class="bi bi-diagram-3-fill"></i> Subtask List</div>
+    <div class="ms-field-selector" id="fieldSelector">
+      <div class="ms-field-trigger" id="fieldTrigger"><i class="bi bi-layout-three-columns"></i> Columns <i class="bi bi-chevron-down" style="font-size:9px;"></i></div>
+      <div class="ms-field-panel" id="fieldPanel">
+        <div class="ms-field-panel-header"><span>Show / Hide Columns</span><div style="display:flex;gap:6px;"><button onclick="selectAllColumns()">Select All</button><button onclick="unselectAllColumns()" style="color:#e53e3e;">Unselect All</button></div></div>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="0" checked> S.No</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="1" checked> Subtask ID</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="2" checked> Subtask Name</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="3" checked> Task ID</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="4" checked> Milestone</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="5" checked> Owner</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="6" checked> Start Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="7" checked> End Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="8" checked> Due Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="9" checked> Status</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="10" checked> Total Time</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle" data-col="11" checked> Delivery Status</label>
+      </div>
+    </div>
+  </div>
+  <div class="ms-toolbar-right">
+    <div class="dropdown">
+      <button class="ms-btn ms-btn-primary dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-cloud-download"></i> Export</button>
+      <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1">
+        <li><a href="/api/downloadSubTask" id="ExportLink" class="dropdown-item rounded-2" style="font-size:12.5px;"><i class="bi bi-filetype-xlsx text-success me-2"></i> Excel</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="ms-tabs-wrap">
+  <div class="ms-tabs">
+    <button class="ms-tab active" onclick="switchTab('yts',this)"><i class="bi bi-hourglass-split"></i> YTS <span class="ms-tab-count"><%= ytsCount %></span></button>
+    <button class="ms-tab" onclick="switchTab('ongoing',this)"><i class="bi bi-play-circle"></i> Ongoing <span class="ms-tab-count"><%= ongoingCount %></span></button>
+    <button class="ms-tab" onclick="switchTab('completed',this)"><i class="bi bi-check-circle"></i> Completed <span class="ms-tab-count"><%= completedCount %></span></button>
+  </div>
+</div>
+
+<!-- YTS -->
+<div class="ms-tab-pane" id="pane-yts">
+  <div class="ms-table-card"><div class="ms-table-scroll"><table class="ms-table" id="ST_YTS">
+    <thead><tr>
+      <th style="width:54px;">S.No <div class="col-resize-handle"></div></th>
+      <th>Subtask ID <div class="col-resize-handle"></div></th>
+      <th>Subtask Name <div class="col-resize-handle"></div></th>
+      <th>Task ID <div class="col-resize-handle"></div></th>
+      <th>Milestone <div class="col-resize-handle"></div></th>
+      <th>Owner <div class="col-resize-handle"></div></th>
+      <th>Start Date <div class="col-resize-handle"></div></th>
+      <th>End Date <div class="col-resize-handle"></div></th>
+      <th>Due Date <div class="col-resize-handle"></div></th>
+      <th>Status <div class="col-resize-handle"></div></th>
+      <th>Total Time <div class="col-resize-handle"></div></th>
+      <th>Delivery Status</th>
+    </tr></thead>
+    <tbody>
+      <% let slNo=1,hasYTS=false; for(let i=0;i<Object.values(subTask).length;i++){ if(subTask[i].Status==='YTS'){ hasYTS=true; let dd=subTask[i].f_DueDate||subTask[i].DueDate||"",ed=subTask[i].f_EndDate||'',ds=compareDates(dd,ed,subTask[i].Status),dlvCls=ds?bgMap[ds]:''; %>
+      <tr class="ms-data-row">
+        <td class="td-sno"><div class="d-flex align-items-center gap-1"><div class="ms-row-toggle" onclick="toggleDetail(this)"><i class="bi bi-plus-lg"></i></div><%= slNo %></div></td>
+        <td class="text-nowrap"><a href="/SubTask/<%= subTask[i].SubTaskName %>"><%= subTask[i].SubTaskName %></a></td>
+        <td title="<%= subTask[i].SubTaskLabel||'' %>"><%= subTask[i].SubTaskLabel?subTask[i].SubTaskLabel.slice(0,20):'-' %></td>
+        <td><a href="/ViewTask/<%= subTask[i].Customer %>/<%= subTask[i].Milestone_Name %>/<%= subTask[i].Task_Name %>"><%= subTask[i].Task_Name %></a></td>
+        <td><a href="/ViewMilestone/<%= subTask[i].Customer %>/<%= subTask[i].idProjects %>/<%= subTask[i].Milestone_Name %>"><%= subTask[i].Milestone_Name %></a></td>
+        <td><p class="Owner text-truncate m-0" style="max-width:110px;" data-userID="<%= subTask[i].Owner %>"><%= subTask[i].Full_Name %></p></td>
+        <td><%= subTask[i].StartDate||'-' %></td><td><%= subTask[i].EndDate||'-' %></td><td><%= subTask[i].DueDate||'-' %></td>
+        <td><span class="ms-badge ms-badge-yts"><%= subTask[i].Status %></span></td>
+        <td class="text-nowrap"><%= secondsToMinutes(subTask[i].TotalTime) %></td>
+        <td><% if(ds){ %><span class="ms-delivery <%= dlvCls %>"><i class="bi bi-circle-fill"></i><%= ds %></span><% }else{ %>—<% } %></td>
+      </tr>
+      <tr class="ms-detail-row" style="display:none;"><td colspan="12"><div class="ms-detail-grid">
+        <div class="ms-detail-item"><label>Subtask ID</label><span><%= subTask[i].SubTaskName %></span></div>
+        <div class="ms-detail-item"><label>Name</label><span><%= subTask[i].SubTaskLabel||'-' %></span></div>
+        <div class="ms-detail-item"><label>Task</label><span><%= subTask[i].Task_Name %></span></div>
+        <div class="ms-detail-item"><label>Milestone</label><span><%= subTask[i].Milestone_Name %></span></div>
+        <div class="ms-detail-item"><label>Customer</label><span><%= subTask[i].Customer %></span></div>
+        <div class="ms-detail-item"><label>Owner</label><span><%= subTask[i].Full_Name %></span></div>
+        <div class="ms-detail-item"><label>Type</label><span><%= subTask[i].Type||'-' %></span></div>
+        <div class="ms-detail-item"><label>Due Date</label><span><%= subTask[i].DueDate||'-' %></span></div>
+      </div></td></tr>
+      <% slNo++; } } if(!hasYTS){ %><tr><td colspan="12"><div class="ms-empty"><div class="ms-empty-icon"><i class="bi bi-inbox"></i></div><p>No YTS subtasks</p></div></td></tr><% } %>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- ONGOING -->
+<div class="ms-tab-pane" id="pane-ongoing" style="display:none;">
+  <div class="ms-table-card"><div class="ms-table-scroll"><table class="ms-table" id="ST_Ongoing">
+    <thead><tr>
+      <th style="width:54px;">S.No <div class="col-resize-handle"></div></th>
+      <th>Subtask ID <div class="col-resize-handle"></div></th>
+      <th>Subtask Name <div class="col-resize-handle"></div></th>
+      <th>Task ID <div class="col-resize-handle"></div></th>
+      <th>Milestone <div class="col-resize-handle"></div></th>
+      <th>Owner <div class="col-resize-handle"></div></th>
+      <th>Start Date <div class="col-resize-handle"></div></th>
+      <th>End Date <div class="col-resize-handle"></div></th>
+      <th>Due Date <div class="col-resize-handle"></div></th>
+      <th>Status <div class="col-resize-handle"></div></th>
+      <th>Total Time <div class="col-resize-handle"></div></th>
+      <th>Delivery Status</th>
+    </tr></thead>
+    <tbody>
+      <% slNo=1; let hasOngoing=false; for(let i=0;i<Object.values(subTask).length;i++){ if(subTask[i].Status!=='YTS'&&subTask[i].Status!=='Completed'){ hasOngoing=true; let dd=subTask[i].f_DueDate||subTask[i].DueDate||"",ed=subTask[i].f_EndDate||'',ds=compareDates(dd,ed,subTask[i].Status),dlvCls=ds?bgMap[ds]:''; %>
+      <tr class="ms-data-row">
+        <td class="td-sno"><div class="d-flex align-items-center gap-1"><div class="ms-row-toggle" onclick="toggleDetail(this)"><i class="bi bi-plus-lg"></i></div><%= slNo %></div></td>
+        <td class="text-nowrap"><a href="/SubTask/<%= subTask[i].SubTaskName %>"><%= subTask[i].SubTaskName %></a></td>
+        <td title="<%= subTask[i].SubTaskLabel||'' %>"><%= subTask[i].SubTaskLabel?subTask[i].SubTaskLabel.slice(0,20):'-' %></td>
+        <td><a href="/ViewTask/<%= subTask[i].Customer %>/<%= subTask[i].Milestone_Name %>/<%= subTask[i].Task_Name %>"><%= subTask[i].Task_Name %></a></td>
+        <td><a href="/ViewMilestone/<%= subTask[i].Customer %>/<%= subTask[i].idProjects %>/<%= subTask[i].Milestone_Name %>"><%= subTask[i].Milestone_Name %></a></td>
+        <td><p class="Owner text-truncate m-0" style="max-width:110px;" data-userID="<%= subTask[i].Owner %>"><%= subTask[i].Full_Name %></p></td>
+        <td><%= subTask[i].StartDate||'-' %></td><td><%= subTask[i].EndDate||'-' %></td><td><%= subTask[i].DueDate||'-' %></td>
+        <td><span class="ms-badge ms-badge-wip"><%= subTask[i].Status %></span></td>
+        <td class="text-nowrap"><%= secondsToMinutes(subTask[i].TotalTime) %></td>
+        <td><% if(ds){ %><span class="ms-delivery <%= dlvCls %>"><i class="bi bi-circle-fill"></i><%= ds %></span><% }else{ %>—<% } %></td>
+      </tr>
+      <tr class="ms-detail-row" style="display:none;"><td colspan="12"><div class="ms-detail-grid">
+        <div class="ms-detail-item"><label>Subtask ID</label><span><%= subTask[i].SubTaskName %></span></div>
+        <div class="ms-detail-item"><label>Name</label><span><%= subTask[i].SubTaskLabel||'-' %></span></div>
+        <div class="ms-detail-item"><label>Task</label><span><%= subTask[i].Task_Name %></span></div>
+        <div class="ms-detail-item"><label>Milestone</label><span><%= subTask[i].Milestone_Name %></span></div>
+        <div class="ms-detail-item"><label>Customer</label><span><%= subTask[i].Customer %></span></div>
+        <div class="ms-detail-item"><label>Owner</label><span><%= subTask[i].Full_Name %></span></div>
+        <div class="ms-detail-item"><label>Start Date</label><span><%= subTask[i].StartDate||'-' %></span></div>
+        <div class="ms-detail-item"><label>Due Date</label><span><%= subTask[i].DueDate||'-' %></span></div>
+      </div></td></tr>
+      <% slNo++; } } if(!hasOngoing){ %><tr><td colspan="12"><div class="ms-empty"><div class="ms-empty-icon"><i class="bi bi-inbox"></i></div><p>No ongoing subtasks</p></div></td></tr><% } %>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- COMPLETED -->
+<div class="ms-tab-pane" id="pane-completed" style="display:none;">
+  <div class="ms-table-card"><div class="ms-table-scroll"><table class="ms-table" id="ST_Completed">
+    <thead><tr>
+      <th style="width:54px;">S.No <div class="col-resize-handle"></div></th>
+      <th>Subtask ID <div class="col-resize-handle"></div></th>
+      <th>Subtask Name <div class="col-resize-handle"></div></th>
+      <th>Task ID <div class="col-resize-handle"></div></th>
+      <th>Milestone <div class="col-resize-handle"></div></th>
+      <th>Owner <div class="col-resize-handle"></div></th>
+      <th>Start Date <div class="col-resize-handle"></div></th>
+      <th>End Date <div class="col-resize-handle"></div></th>
+      <th>Due Date <div class="col-resize-handle"></div></th>
+      <th>Status <div class="col-resize-handle"></div></th>
+      <th>Total Time <div class="col-resize-handle"></div></th>
+      <th>Delivery Status</th>
+    </tr></thead>
+    <tbody>
+      <% slNo=1; let hasCompleted=false; for(let i=0;i<Object.values(subTask).length;i++){ if(subTask[i].Status==='Completed'){ hasCompleted=true; let dd=subTask[i].f_DueDate||subTask[i].DueDate||"",ed=subTask[i].f_EndDate||'',ds=compareDates(dd,ed,subTask[i].Status),dlvCls=ds?bgMap[ds]:''; %>
+      <tr class="ms-data-row">
+        <td class="td-sno"><div class="d-flex align-items-center gap-1"><div class="ms-row-toggle" onclick="toggleDetail(this)"><i class="bi bi-plus-lg"></i></div><%= slNo %></div></td>
+        <td class="text-nowrap"><a href="/SubTask/<%= subTask[i].SubTaskName %>"><%= subTask[i].SubTaskName %></a></td>
+        <td title="<%= subTask[i].SubTaskLabel||'' %>"><%= subTask[i].SubTaskLabel?subTask[i].SubTaskLabel.slice(0,20):'-' %></td>
+        <td><a href="/ViewTask/<%= subTask[i].Customer %>/<%= subTask[i].Milestone_Name %>/<%= subTask[i].Task_Name %>"><%= subTask[i].Task_Name %></a></td>
+        <td><a href="/ViewMilestone/<%= subTask[i].Customer %>/<%= subTask[i].idProjects %>/<%= subTask[i].Milestone_Name %>"><%= subTask[i].Milestone_Name %></a></td>
+        <td><p class="Owner text-truncate m-0" style="max-width:110px;" data-userID="<%= subTask[i].Owner %>"><%= subTask[i].Full_Name %></p></td>
+        <td><%= subTask[i].StartDate||'-' %></td><td><%= subTask[i].EndDate||'-' %></td><td><%= subTask[i].DueDate||'-' %></td>
+        <td><span class="ms-badge ms-badge-completed"><%= subTask[i].Status %></span></td>
+        <td class="text-nowrap"><%= secondsToMinutes(subTask[i].TotalTime) %></td>
+        <td><% if(ds){ %><span class="ms-delivery <%= dlvCls %>"><i class="bi bi-circle-fill"></i><%= ds %></span><% }else{ %>—<% } %></td>
+      </tr>
+      <tr class="ms-detail-row" style="display:none;"><td colspan="12"><div class="ms-detail-grid">
+        <div class="ms-detail-item"><label>Subtask ID</label><span><%= subTask[i].SubTaskName %></span></div>
+        <div class="ms-detail-item"><label>Name</label><span><%= subTask[i].SubTaskLabel||'-' %></span></div>
+        <div class="ms-detail-item"><label>Task</label><span><%= subTask[i].Task_Name %></span></div>
+        <div class="ms-detail-item"><label>Milestone</label><span><%= subTask[i].Milestone_Name %></span></div>
+        <div class="ms-detail-item"><label>Customer</label><span><%= subTask[i].Customer %></span></div>
+        <div class="ms-detail-item"><label>Owner</label><span><%= subTask[i].Full_Name %></span></div>
+        <div class="ms-detail-item"><label>Start Date</label><span><%= subTask[i].StartDate||'-' %></span></div>
+        <div class="ms-detail-item"><label>End Date</label><span><%= subTask[i].EndDate||'-' %></span></div>
+        <div class="ms-detail-item"><label>Due Date</label><span><%= subTask[i].DueDate||'-' %></span></div>
+        <div class="ms-detail-item"><label>Total Time</label><span><%= secondsToMinutes(subTask[i].TotalTime) %></span></div>
+      </div></td></tr>
+      <% slNo++; } } if(!hasCompleted){ %><tr><td colspan="12"><div class="ms-empty"><div class="ms-empty-icon"><i class="bi bi-inbox"></i></div><p>No completed subtasks</p></div></td></tr><% } %>
+    </tbody>
+  </table></div></div>
+</div>
+
+<!-- FILTER -->
+<button class="ms-filter-fab" id="filterFab"><i class="bi bi-funnel-fill"></i> Filter</button>
+<form action="/<%= userData.Role %>/SubTask_List" method="get">
+  <div class="ms-filter-panel" id="filterPanel">
+    <div class="ms-filter-panel-header"><span><i class="bi bi-funnel me-1"></i> Filters</span><button type="button" id="filterClose"><i class="bi bi-x-lg"></i></button></div>
+    <label>Project ID</label><input type="search" name="Project_ID" placeholder="Last 4 digits…">
+    <label>Subtask ID</label><input type="search" name="SubTaskName" placeholder="Enter Subtask ID">
+    <label>Milestone ID</label><input type="search" name="Milestone_Name" placeholder="Enter Milestone ID">
+    <label>Status</label>
+    <select name="Status"><option value="">All</option>
+      <% if(typeof FilterData!=='undefined'&&FilterData.Status){ for(let i=0;i<FilterData.Status.length;i++){ %><option value="<%= FilterData.Status[i] %>"><%= FilterData.Status[i] %></option><% } } %>
+    </select>
+    <button type="submit" class="ms-btn ms-btn-primary w-100 justify-content-center mt-1"><i class="bi bi-check2"></i> Apply Filters</button>
+  </div>
+</form>
+
+</main></body>
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script>
+(function(){var m=document.querySelector('main.ms-page');if(m){m.addEventListener('mousedown',function(e){var t=e.target.tagName.toLowerCase();if(['a','button','input','select'].indexOf(t)===-1)e.stopPropagation();})}})();
+function switchTab(n,b){document.querySelectorAll('.ms-tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.ms-tab-pane').forEach(function(p){p.style.display='none';});b.classList.add('active');document.getElementById('pane-'+n).style.display='';}
+function toggleDetail(el){var dr=el.closest('tr'),nr=dr.nextElementSibling,ic=el.querySelector('i');if(!nr||!nr.classList.contains('ms-detail-row'))return;var ih=(nr.style.display==='none'||nr.style.display==='');nr.style.display=ih?'table-row':'none';if(ih){var td=nr.querySelector('td');if(td){td.style.display='';var v=0;document.querySelectorAll('.col-toggle').forEach(function(c){if(c.checked)v++;});td.colSpan=v||12;}}ic.className=ih?'bi bi-dash-lg':'bi bi-plus-lg';el.style.background=ih?'var(--ms-blue)':'';el.style.color=ih?'#fff':'';}
+(function(){function a(){var h={};document.querySelectorAll('.col-toggle').forEach(function(cb){if(!cb.checked)h[parseInt(cb.getAttribute('data-col'))]=true;});document.querySelectorAll('.ms-table').forEach(function(t){t.querySelectorAll('tr').forEach(function(r){if(r.classList.contains('ms-detail-row')){var td=r.querySelector('td');if(td){var v=0;document.querySelectorAll('.col-toggle').forEach(function(c){if(c.checked)v++;});td.colSpan=v||1;}return;}r.querySelectorAll('th,td').forEach(function(c,i){c.style.display=h[i]?'none':'';});});})}document.querySelectorAll('.col-toggle').forEach(function(cb){cb.addEventListener('change',a);});
+window.selectAllColumns=function(){document.querySelectorAll('.col-toggle').forEach(function(cb){cb.checked=true;});a();};
+window.unselectAllColumns=function(){document.querySelectorAll('.col-toggle').forEach(function(cb){cb.checked=false;});a();};
+})();
+document.getElementById('fieldTrigger').addEventListener('click',function(e){e.stopPropagation();document.getElementById('fieldPanel').classList.toggle('open');});
+document.addEventListener('click',function(e){var fs=document.getElementById('fieldSelector');if(fs&&!fs.contains(e.target))document.getElementById('fieldPanel').classList.remove('open');var fp=document.getElementById('filterPanel'),ff=document.getElementById('filterFab');if(fp&&ff&&!fp.contains(e.target)&&!ff.contains(e.target))fp.classList.remove('open');});
+(function(){var r=null,sx=0,sw=0;document.querySelectorAll('.col-resize-handle').forEach(function(h){h.addEventListener('mousedown',function(e){e.preventDefault();r=h.parentElement;sx=e.pageX;sw=r.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';});});document.addEventListener('mousemove',function(e){if(!r)return;var nw=Math.max(60,sw+(e.pageX-sx));r.style.minWidth=nw+'px';r.style.width=nw+'px';});document.addEventListener('mouseup',function(){if(r){r=null;document.body.style.cursor='';document.body.style.userSelect='';}});})();
+(function(){document.querySelectorAll('.ms-table thead tr th').forEach(function(th){if(th.querySelector('.col-resize-handle')||th.querySelector('input'))return;th.addEventListener('click',function(){var tbl=th.closest('table'),idx=Array.from(th.parentElement.children).indexOf(th),asc=th.dataset.sort!=='asc';tbl.querySelectorAll('thead tr th').forEach(function(t){t.dataset.sort='';});th.dataset.sort=asc?'asc':'desc';var rows=Array.from(tbl.querySelectorAll('tbody tr.ms-data-row'));rows.sort(function(a,b){var av=(a.cells[idx]||{}).textContent.trim(),bv=(b.cells[idx]||{}).textContent.trim();return asc?av.localeCompare(bv,undefined,{numeric:true}):bv.localeCompare(av,undefined,{numeric:true});});var tbody=tbl.querySelector('tbody');rows.forEach(function(row){var d=row.nextElementSibling;tbody.appendChild(row);if(d&&d.classList.contains('ms-detail-row'))tbody.appendChild(d);});});});})();
+document.getElementById('filterFab').addEventListener('click',function(){document.getElementById('filterPanel').classList.toggle('open');});
+document.getElementById('filterClose').addEventListener('click',function(){document.getElementById('filterPanel').classList.remove('open');});
+document.addEventListener('DOMContentLoaded',function(){var params=getUrlParams();document.querySelectorAll('#filterPanel select').forEach(function(sel){for(var k in params){if(k===sel.name){var o=sel.querySelector('option[value="'+params[k]+'"]');if(o)o.selected=true;}}});document.querySelectorAll('#filterPanel input[type="search"]').forEach(function(inp){for(var k in params){if(k===inp.name)inp.value=params[k];}});var el=document.getElementById('ExportLink');if(el){var b=el.getAttribute('href'),qs='?';for(var k in params){qs+=k+'='+params[k]+'&';}el.setAttribute('href',b+qs);}});
+</script>

@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= Customer %> - Project</title>
+    <%- include('../partials/dependencies') %>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary:        #1a56db;
+            --primary-dark:   #1344b5;
+            --primary-light:  #ebf0ff;
+            --accent:         #0ea5e9;
+            --success:        #10b981;
+            --warning:        #f59e0b;
+            --danger:         #ef4444;
+            --info:           #6366f1;
+            --surface:        #ffffff;
+            --surface-2:      #f8fafc;
+            --surface-3:      #f1f5f9;
+            --border:         #e2e8f0;
+            --border-strong:  #cbd5e1;
+            --text-primary:   #0f172a;
+            --text-secondary: #475569;
+            --text-muted:     #94a3b8;
+            --shadow-sm:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md:      0 4px 12px rgba(0,0,0,.07), 0 2px 6px rgba(0,0,0,.05);
+            --shadow-lg:      0 10px 30px rgba(0,0,0,.09), 0 4px 12px rgba(0,0,0,.06);
+            --radius-sm:      6px;
+            --radius-md:      10px;
+            --radius-lg:      14px;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--surface-2); color: var(--text-primary); font-size: 13px; line-height: 1.55; }
+
+        /* ── Page Header ── */
+        .page-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow-sm); }
+        .page-header-left { display: flex; align-items: center; gap: 10px; }
+        .page-header-icon { width: 38px; height: 38px; background: var(--primary-light); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 17px; flex-shrink: 0; }
+        .job-id-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; line-height: 1; margin-bottom: 2px; }
+        .job-id-value { font-size: 15px; font-weight: 700; color: var(--text-primary); font-family: 'DM Mono', monospace; letter-spacing: -.01em; }
+        .header-divider { width: 1px; height: 32px; background: var(--border); }
+        .status-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .03em; }
+        .status-chip.active    { background:#dcfce7; color:#15803d; }
+        .status-chip.pending   { background:#fef3c7; color:#b45309; }
+        .status-chip.completed { background:#dbeafe; color:#1d4ed8; }
+        .status-chip.cancelled { background:#fee2e2; color:#b91c1c; }
+        .status-chip::before { content:''; width:6px; height:6px; border-radius:50%; background: currentColor; }
+        .btn-edit { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-secondary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+        .btn-edit:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); text-decoration: none; }
+
+        /* ── Tab Navigation ── */
+        .tab-nav-wrapper { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; overflow-x: auto; }
+        .tab-nav-wrapper::-webkit-scrollbar { height: 0; }
+        .nav-tabs-custom { display: flex; gap: 0; border: none; flex-wrap: nowrap; list-style: none; margin: 0; padding: 0; }
+        .nav-tabs-custom .nav-item { flex-shrink: 0; }
+        .nav-tabs-custom .nav-link { display: flex; align-items: center; gap: 5px; padding: 11px 16px; border: none; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: all .15s; border-radius: 0; position: relative; }
+        .nav-tabs-custom .nav-link:hover { color: var(--primary); background: var(--primary-light); }
+        .nav-tabs-custom .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; background: transparent; }
+
+        /* ── Tab Content ── */
+        .tab-content-wrapper { padding: 16px 20px; }
+
+        /* ── Section Cards ── */
+        .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 16px; overflow: hidden; }
+        .section-card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #1a56db 0%, #1344b5 100%); color: #fff; }
+        .section-card-title { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+        .section-card-actions { display: flex; align-items: center; gap: 6px; }
+        .btn-card-action { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1.5px solid rgba(255,255,255,.5); border-radius: var(--radius-sm); background: rgba(255,255,255,.12); color: #fff; font-size: 11px; font-weight: 500; cursor: pointer; transition: all .15s; text-decoration: none; font-family: 'DM Sans', sans-serif; }
+        .btn-card-action:hover { background: rgba(255,255,255,.25); color: #fff; text-decoration: none; }
+        .btn-card-action.d-none { display: none !important; }
+
+        /* ── Info Grid ── */
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0; }
+        .info-field { display: flex; align-items: flex-start; padding: 10px 16px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); gap: 10px; }
+        .info-field:nth-child(even) { background: var(--surface-2); }
+        .info-field-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; min-width: 110px; padding-top: 1px; flex-shrink: 0; }
+        .info-field-value { font-size: 13px; font-weight: 500; color: var(--text-primary); word-break: break-word; }
+
+        /* ── Stats Row ── */
+        .stats-row { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+        .stat-item { flex: 1; padding: 14px 18px; border-right: 1px solid var(--border); text-align: center; }
+        .stat-item:last-child { border-right: none; }
+        .stat-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 3px; }
+        .stat-value { font-size: 16px; font-weight: 700; color: var(--text-primary); font-family: 'DM Mono', monospace; }
+        .stat-value.revenue  { color: var(--primary); }
+        .stat-value.invoiced { color: var(--warning); }
+        .stat-value.received { color: var(--success); }
+
+        /* ── Tables ── */
+        .data-table-wrapper { overflow-x: auto; }
+        .data-table-wrapper.scrollable { max-height: 340px; overflow-y: auto; }
+        .data-table-wrapper.scrollable::-webkit-scrollbar { width: 5px; height: 5px; }
+        .data-table-wrapper.scrollable::-webkit-scrollbar-track { background: var(--surface-3); }
+        .data-table-wrapper.scrollable::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .data-table thead th { background: linear-gradient(135deg, #1a56db 0%, #1344b5 100%); color: #fff; font-size: 11px; font-weight: 600; padding: 10px 12px; text-align: left; white-space: nowrap; position: sticky; top: 0; z-index: 2; border: none; letter-spacing: .03em; }
+        .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+        .data-table tbody tr:last-child { border-bottom: none; }
+        .data-table tbody tr:hover { background: var(--primary-light); }
+        .data-table tbody tr.negative-qty { background: #fff5f5; }
+        .data-table tbody tr.negative-qty:hover { background: #fee2e2; }
+        .data-table td { padding: 9px 12px; vertical-align: middle; border: none; color: var(--text-primary); }
+        .data-table td a { color: var(--primary); text-decoration: none; font-weight: 500; }
+        .data-table td a:hover { text-decoration: underline; }
+
+        /* ── Delivery Status Badges ── */
+        .delivery-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+        .delivery-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+        .delivery-badge.on-time      { background:#dcfce7; color:#15803d; }
+        .delivery-badge.approaching  { background:#fef3c7; color:#b45309; }
+        .delivery-badge.due-today    { background:#dbeafe; color:#1d4ed8; }
+        .delivery-badge.delayed      { background:#fee2e2; color:#b91c1c; }
+        .delivery-badge.escalation   { background:#fce7f3; color:#9d174d; }
+
+        /* ── Estimate Status ── */
+        .est-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .est-badge.pending   { background:#fef3c7; color:#b45309; }
+        .est-badge.reserved  { background:#dbeafe; color:#1d4ed8; }
+        .est-badge.invoiced  { background:#f3e8ff; color:#7e22ce; }
+        .est-badge.received  { background:#dcfce7; color:#15803d; }
+        .est-badge.rejected  { background:#fee2e2; color:#b91c1c; }
+        .est-badge.credit    { background:#e0f2fe; color:#0369a1; }
+
+        /* ── Action Buttons in tables ── */
+        .btn-tbl { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent; transition: all .12s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+        .btn-tbl-success { border-color: var(--success); color: var(--success); background: transparent; }
+        .btn-tbl-success:hover { background: #dcfce7; }
+        .btn-tbl-danger  { border-color: var(--danger);  color: var(--danger);  background: transparent; }
+        .btn-tbl-danger:hover  { background: #fee2e2; }
+        .btn-tbl-primary { border-color: var(--primary); color: var(--primary); background: transparent; }
+        .btn-tbl-primary:hover { background: var(--primary-light); }
+        .btn-tbl-info    { border-color: var(--info); color: var(--info); background: transparent; }
+        .btn-tbl-info:hover    { background: #ede9fe; }
+
+        /* ── Footages Section ── */
+        .footage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 16px; }
+        .footage-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; text-align: center; }
+        .footage-item-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+        .footage-item-value { font-size: 18px; font-weight: 700; color: var(--primary); font-family: 'DM Mono', monospace; }
+
+        /* ── Comments ── */
+        .comment-item { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+        .comment-author { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--text-primary); }
+        .comment-date { font-size: 11px; color: var(--text-muted); }
+        .comment-body { padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.55; border-left: 3px solid var(--border); background: var(--surface-2); }
+        .comment-body.owner-comment { border-left-color: var(--primary); background: var(--primary-light); }
+
+        /* ── Attachments ── */
+        .qg-tab { position: relative; }
+        .qg-tab input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+        .qg-tab__label { display: flex; align-items: center; gap: 6px; padding: 9px 16px; cursor: pointer; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border); background: var(--surface-2); user-select: none; transition: background .12s; }
+        .qg-tab__label:hover { background: var(--primary-light); }
+        .qg-tab__content { display: none; background: var(--surface); }
+        .qg-tab input[type="checkbox"]:checked ~ .qg-tab__content { display: block; }
+
+        /* ── Empty State ── */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; text-align: center; }
+        .empty-state img { opacity: .6; }
+        .empty-state p { margin-top: 12px; color: var(--text-muted); font-size: 13px; }
+
+        /* ── Sub-tabs ── */
+        .sub-tabs { padding: 12px 16px 0; }
+        .sub-nav-tabs { border-bottom: 1px solid var(--border); }
+        .sub-nav-tabs .nav-link { font-size: 12px; padding: 7px 14px; color: var(--text-muted); border: none; border-bottom: 2px solid transparent; background: none; cursor: pointer; }
+        .sub-nav-tabs .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+        /* ── Inline pill summary ── */
+        .pill-summary { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+        .pill-revenue  { background: #f8fafc; color: var(--text-primary); border: 1px solid var(--border); }
+        .pill-invoiced { background: #fef3c7; color: #b45309; }
+        .pill-received { background: #dcfce7; color: #15803d; }
+
+        /* ── Checkbox improvements ── */
+        .form-check-input { cursor: pointer; border-color: var(--border-strong); }
+        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+
+        /* ── Modal improvements ── */
+        .modal-content { border: none; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); font-family: 'DM Sans', sans-serif; }
+        .modal-header { border-bottom: 1px solid var(--border); background: var(--surface-2); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 14px 18px; }
+        .modal-title { font-weight: 700; font-size: 14px; }
+        .modal-body { padding: 18px; }
+        .modal-footer { border-top: 1px solid var(--border); padding: 12px 18px; }
+        .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+        .form-control, .form-select { font-size: 12.5px; border-color: var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+
+        /* ── Buttons ── */
+        .btn-primary { background: var(--primary); border-color: var(--primary); font-size: 12.5px; font-weight: 600; font-family: 'DM Sans', sans-serif; border-radius: var(--radius-sm); }
+        .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+        .btn-secondary { font-size: 12.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; border-radius: var(--radius-sm); }
+
+        /* ── Score badge ── */
+        .score-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 700; }
+        .score-95   { background:#dcfce7; color:#15803d; }
+        .score-90   { background:#d1fae5; color:#065f46; }
+        .score-80   { background:#fef3c7; color:#b45309; }
+        .score-75   { background:#ffedd5; color:#c2410c; }
+        .score-low  { background:#fee2e2; color:#b91c1c; }
+        .score-none { background:#f1f5f9; color:#64748b; }
+
+        /* misc */
+        p.col > span { font-weight: 600; }
+        .file-progress { width:100%; background:#ddd; }
+        .progress-bar { width:0; height:20px; background:#4CAF50; text-align:center; line-height:20px; color:#fff; }
+        .data-table tbody tr:nth-child(even):not(:hover) { background: var(--surface-2); }
+        .data-table tbody tr:nth-child(even).negative-qty:not(:hover) { background: #fff5f5; }
+
+        @media (max-width:768px) {
+            .tab-content-wrapper { padding: 12px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .footage-grid { grid-template-columns: 1fr 1fr; }
+            .stats-row { flex-wrap: wrap; }
+            .stat-item { min-width: 120px; }
+        }
+
+        /* ── Collapsible section cards ── */
+.section-card-header { cursor: pointer; user-select: none; }
+.section-card-header .collapse-icon {
+    margin-left: auto;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    transition: transform 0.22s ease;
+    flex-shrink: 0;
+}
+.section-card-header.collapsed .collapse-icon { transform: rotate(-90deg); }
+.section-card-body-wrap {
+    transition: max-height 0.3s ease, opacity 0.22s ease;
+    overflow: hidden;
+    max-height: 2000px;
+    opacity: 1;
+}
+.section-card-body-wrap.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+    </style>
+</head>
+
+<% if (userData.Role=="Employee") { %>
+    <%- include('../partials/Employee-header',{userData:userData}) %>
+<% } else if(userData.Role=="Admin") { %>
+    <%- include('../partials/Admin-header',{userData:userData}) %>
+<% } else if(userData.Role=="PMO") { %>
+    <%- include('../partials/PMO-header',{userData:userData}) %>
+<% } if(userData.Role=="Manager") { %>
+    <%- include('../partials/Manager-header',{userData:userData}) %>
+<% } %>
+
+<body>
+<%
+let bgColour = "";
+let bgMap = {
+    "On Time":              "on-time",
+    "Approaching Due Date": "approaching",
+    "Due Today":            "due-today",
+    "Delayed":              "delayed",
+    "Escalation":           "escalation",
+};
+function deliveryBadge(label) {
+    if (!label) return '<span class="text-muted">—</span>';
+    const cls = bgMap[label] || '';
+    return `<span class="delivery-badge ${cls}">${label}</span>`;
+}
+%>
+
+<!-- ══ Page Header ══ -->
+<div class="page-header">
+    <div class="page-header-left">
+        <div class="page-header-icon"><i class="bi bi-folder2-open"></i></div>
+        <div>
+            <div class="job-id-label"><%= Customer !== 'AT&T' ? 'Job ID' : 'CFAS ID' %></div>
+            <div class="job-id-value">
+                <% if(Customer !== 'AT&T') { %>
+                    <span id="JOB_ID"><%= ProjectData.JOB_ID %><%= ProjectData.Job_Name ? ' — '+ProjectData.Job_Name : '' %></span>
+                <% } else { %>
+                    <span id="CFAS_ID"><%= ProjectData.CFAS_ID %><%= ProjectData.Job_Name ? ' — '+ProjectData.Job_Name : '' %></span>
+                <% } %>
+            </div>
+        </div>
+        <div class="header-divider"></div>
+        <div>
+            <div class="job-id-label">Status</div>
+            <%
+            const s = (ProjectData.Status||'').toLowerCase();
+            let sClass = s.includes('active')||s.includes('ongoing') ? 'active'
+                       : s.includes('complet') ? 'completed'
+                       : s.includes('cancel') ? 'cancelled'
+                       : 'pending';
+            %>
+            <span id="Status" class="status-chip <%= sClass %>"><%= ProjectData.Status %></span>
+        </div>
+    </div>
+    <div>
+        <a href="/PMO/editProject/<%= Customer %>/<%= ProjectData.idProjects %>" class="btn-edit" id="editButton">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+    </div>
+</div>
+
+<!-- ══ Tab Navigation ══ -->
+<div class="tab-nav-wrapper">
+    <ol class="nav-tabs-custom" id="projectTab" role="tablist">
+        <li class="nav-item"><button class="nav-link active" id="Project-Info-tab" data-bs-toggle="tab" data-bs-target="#projectInfo-tab-pane" type="button" role="tab" aria-selected="true"><i class="bi bi-info-circle"></i> Project Info</button></li>
+        <li class="nav-item"><button class="nav-link" id="Milestine-tab" data-bs-toggle="tab" data-bs-target="#milestone-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-flag"></i> Milestone</button></li>
+        <li class="nav-item"><button class="nav-link" id="Prod-tab" data-bs-toggle="tab" data-bs-target="#Prod-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-gear"></i> Production</button></li>
+        <li class="nav-item"><button class="nav-link" id="QC-tab" data-bs-toggle="tab" data-bs-target="#qc-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-shield-check"></i> QC</button></li>
+        <li class="nav-item"><button class="nav-link" id="Sub-Task-tab" data-bs-toggle="tab" data-bs-target="#sub-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-diagram-3"></i> Subtask</button></li>
+        <li class="nav-item"><button class="nav-link" id="Markup-Task-tab" data-bs-toggle="tab" data-bs-target="#markup-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-pencil-square"></i> Markup</button></li>
+        <li class="nav-item"><button class="nav-link" id="Task-tab" data-bs-toggle="tab" data-bs-target="#CQC-task-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-clipboard-check"></i> USQC/CQC</button></li>
+        <li class="nav-item"><button class="nav-link" id="Timesheet-Task-tab" data-bs-toggle="tab" data-bs-target="#timeSheet-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-clock-history"></i> Time Sheet</button></li>
+        <li class="nav-item"><button class="nav-link" id="Attachments-tab" data-bs-toggle="tab" data-bs-target="#Attachments-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-paperclip"></i> Attachments</button></li>
+        <li class="nav-item"><button class="nav-link" id="Active-Task-tab" data-bs-toggle="tab" data-bs-target="#activeTask-tab-pane" type="button" role="tab" aria-selected="false"><i class="bi bi-lightning-charge"></i> Active Task</button></li>
+    </ol>
+</div>
+
+<!-- ══ Tab Content ══ -->
+<div class="tab-content tab-content-wrapper" id="myTabContent">
+
+    <!-- ── Project Info ── -->
+    <div class="tab-pane fade show active" id="projectInfo-tab-pane" role="tabpanel">
+
+        <!-- Info Fields -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title"><i class="bi bi-card-list"></i> Project Details</div>
+            </div>
+            <% if(Customer == 'AT&T') { %>
+            <div class="info-grid">
+                <div class="info-field"><span class="info-field-label">CFAS-ID</span><span class="info-field-value" id="JOB_ID"><%= ProjectData.CFAS_ID %></span></div>
+                <div class="info-field"><span class="info-field-label">DA Number</span><span class="info-field-value" id="DANumber"><%= ProjectData.DANumber %></span></div>
+                <div class="info-field"><span class="info-field-label">SOW</span><span class="info-field-value" id="SOW"><%= ProjectData.SOW %></span></div>
+                <div class="info-field"><span class="info-field-label">CILLI Code</span><span class="info-field-value" id="CILLICode"><%= ProjectData.CILLICode || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">Permit</span><span class="info-field-value" id="Permit"><%= ProjectData.Permit %></span></div>
+                <div class="info-field"><span class="info-field-label">Wire Center</span><span class="info-field-value" id="WireCenter"><%= ProjectData.WireCenter || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">NPPAX No</span><span class="info-field-value" id="NPPAXNo"><%= ProjectData.NPPAXNo %></span></div>
+                <div class="info-field"><span class="info-field-label">PFP Address</span><span class="info-field-value" id="PFPAddress"><%= ProjectData.PFPAddress || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">PSA Number</span><span class="info-field-value" id="PSANumber"><%= ProjectData.PSANumber || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">State</span><span class="info-field-value"><%= ProjectData.State || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">F1 CFAS-ID</span><span class="info-field-value"><%= ProjectData.F1_CFAS_ID || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">F2 CFAS-ID</span><span class="info-field-value"><%= ProjectData.F2_CFAS_ID || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">AT&T Score</span><span class="info-field-value"><%= ProjectData.Score %></span></div>
+                <div class="info-field"><span class="info-field-label">Total Time</span><span class="info-field-value"><%= secondsToMinutes(ProjectTotalTime) %></span></div>
+                <div class="info-field"><span class="info-field-label">Received Date</span><span class="info-field-value" id="n_ReceivedDate"><%= ProjectData.ReceivedDate %></span></div>
+                <div class="info-field"><span class="info-field-label">Due Date</span><span class="info-field-value" id="n_DueDate"><%= ProjectData.DueDate %></span></div>
+                <div class="info-field"><span class="info-field-label">Submitted Date</span><span class="info-field-value" id="n_ApprovedDate"><%= ProjectData.SubmittedDate || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">Approved Date</span><span class="info-field-value"><%= ProjectData.ApprovedDate || '—' %></span></div>
+            </div>
+            <% } else { %>
+            <div class="info-grid">
+                <div class="info-field"><span class="info-field-label">JOB ID</span><span class="info-field-value" id="JOB_ID"><%= ProjectData.JOB_ID %></span></div>
+                <div class="info-field"><span class="info-field-label">SOW</span><span class="info-field-value" id="SOW"><%= ProjectData.SOW %></span></div>
+                <div class="info-field"><span class="info-field-label"><%if(ProjectData.Program=='MasTec-Comcast'){%>State<%}else{%>Region<%}%></span><span class="info-field-value"><%= ProjectData.Region || '—' %></span></div>
+                <% if (ProjectData.Program=="MasTec-Comcast") { %><div class="info-field"><span class="info-field-label">Region ID</span><span class="info-field-value" id="Region_ID"><%= ProjectData.Region_ID || '—' %></span></div><% } %>
+                <% if (ProjectData.Program=="MasTec-Windstream") { %>
+                <div class="info-field"><span class="info-field-label">Work Order #</span><span class="info-field-value"><%= ProjectData.EPMCode || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">Exchange</span><span class="info-field-value"><%= ProjectData.Exchange || '—' %></span></div>
+                <% } else if(ProjectData.Program!="MasTec-Comcast") { %>
+                <div class="info-field"><span class="info-field-label">Division</span><span class="info-field-value" id="Division"><%= ProjectData.Division || '—' %></span></div>
+                <% } %>
+                <%if(Customer!="Mastec"){%><div class="info-field"><span class="info-field-label">Total Footage (EST)</span><span class="info-field-value" id="Total_Est"><%= ProjectData.Total_Est %> ft</span></div><%}%>
+                <%if(Customer=="Mastec" && ProjectData.Program!="MasTec-Windstream"){%>
+                <% if (ProjectData.Program!="MasTec-Comcast") { %><div class="info-field"><span class="info-field-label">DA Number</span><span class="info-field-value"><%= ProjectData.DA_Number || '—' %></span></div><%}%>
+                <div class="info-field"><span class="info-field-label"><%if(ProjectData.Program=='MasTec-Comcast'){%>Parent JB#<%}else{%>Project #<%}%></span><span class="info-field-value" id="Project_No"><%= ProjectData.Project_No || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label"><%if(ProjectData.Program=='MasTec-Comcast'){%>Market/Area<%}else{%>Market ID<%}%></span><span class="info-field-value" id="Market_ID"><%= ProjectData.Market_ID || '—' %></span></div>
+                <% if (ProjectData.Program!="MasTec-Comcast") { %><div class="info-field"><span class="info-field-label">Market Order</span><span class="info-field-value" id="Market_Order"><%= ProjectData.Market_Order || '—' %></span></div><%}%>
+                <%}%>
+                <div class="info-field"><span class="info-field-label">Total Time</span><span class="info-field-value"><%= secondsToMinutes(ProjectTotalTime) %></span></div>
+                <div class="info-field"><span class="info-field-label">Received Date</span><span class="info-field-value" id="n_ReceivedDate"><%= ProjectData.ReceivedDate %></span></div>
+                <div class="info-field"><span class="info-field-label">Due Date</span><span class="info-field-value" id="n_DueDate"><%= ProjectData.DueDate %></span></div>
+                <div class="info-field"><span class="info-field-label">Submitted Date</span><span class="info-field-value" id="n_ApprovedDate"><%= ProjectData.SubmittedDate || '—' %></span></div>
+                <div class="info-field"><span class="info-field-label">Approved Date</span><span class="info-field-value"><%= ProjectData.ApprovedDate || '—' %></span></div>
+            </div>
+            <% if(Customer=="ATX" && ProjectData.SOW=="Design-HLD" || ProjectData.SOW=="Design-LLD") { %>
+            <div class="info-grid" style="border-top:1px solid var(--border);">
+                <div class="info-field"><span class="info-field-label">Aerial (Act)</span><span class="info-field-value" id="Arial"><%= ProjectData.Arial %></span></div>
+                <div class="info-field"><span class="info-field-label">Buried (Act)</span><span class="info-field-value" id="Biried"><%= ProjectData.Buried %></span></div>
+                <div class="info-field"><span class="info-field-label">Total (Act)</span><span class="info-field-value" id="Total"><%= ProjectData.Arial + ProjectData.Buried %></span></div>
+            </div>
+            <% } %>
+            <% } %>
+            <div class="row ms-0 rounded-3" id="Note"></div>
+        </div>
+
+        <!-- Footages & Passing -->
+        <% if (ProjectData.Program!="MasTec-Windstream" && ProjectData.Program!="MasTec-Comcast") { %>
+        <div class="section-card">
+            <div class="section-card-header"><div class="section-card-title"><i class="bi bi-rulers"></i> Footages &amp; Passing</div></div>
+            <div class="footage-grid">
+                <%if(Customer=="AT&T"){%>
+                <div class="footage-item"><div class="footage-item-label">Buried Footage</div><div class="footage-item-value"><%= ProjectData.UG_Fib_Act %></div></div>
+                <div class="footage-item"><div class="footage-item-label">Aerial Footage</div><div class="footage-item-value"><%= ProjectData.Air_Fib_Act %></div></div>
+                <div class="footage-item"><div class="footage-item-label">Total Footage</div><div class="footage-item-value"><%= ProjectData.Total_Fib_Act %></div></div>
+                <div class="footage-item"><div class="footage-item-label">No of FBT's</div><div class="footage-item-value"><%= ProjectData.FBTS %></div></div>
+                <div class="footage-item"><div class="footage-item-label">Home Passing</div><div class="footage-item-value"><%= ProjectData.Total_Home_Passing %></div></div>
+                <div class="footage-item"><div class="footage-item-label">No of Permits</div><div class="footage-item-value"><%= ProjectData.No_Permits %></div></div>
+                <div class="footage-item"><div class="footage-item-label">Total Poles</div><div class="footage-item-value"><%= ProjectData.Total_Poles || '0' %></div></div>
+                <div class="footage-item"><div class="footage-item-label">PLA Poles</div><div class="footage-item-value"><%= ProjectData.PLA_Poles || '0' %></div></div>
+                <%}else{%>
+                <div class="footage-item"><div class="footage-item-label">Buried Footage</div><div class="footage-item-value"><%= ProjectData.Buried %></div></div>
+                <div class="footage-item"><div class="footage-item-label">Aerial Footage</div><div class="footage-item-value"><%= ProjectData.Arial %></div></div>
+                <div class="footage-item"><div class="footage-item-label">RE Footages</div><div class="footage-item-value"><%= ProjectData.Real_End %></div></div>
+                <div class="footage-item"><div class="footage-item-label">Total Footage</div><div class="footage-item-value"><%= ProjectData.Total_Footage %></div></div>
+                <div class="footage-item"><div class="footage-item-label">Home Passing</div><div class="footage-item-value"><%= ProjectData.Total_Home_Passing %></div></div>
+                <div class="footage-item"><div class="footage-item-label">No of ROLT's</div><div class="footage-item-value"><%= ProjectData.No_ROLTs %></div></div>
+                <div class="footage-item"><div class="footage-item-label">No of Actives</div><div class="footage-item-value"><%= ProjectData.Total_Actives %></div></div>
+                <%}%>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Estimates / Invoicing -->
+        <%
+        let TotalApproved=0, TotalInvoiced=0, TotalPaymentReceived=0, RejectedTotal=0;
+        let ApprovedQuantity=0, AmountReceived=0, RejectedQuantity=0, ApprovedUnitPrice=0, RejectedUnitPrice=0, TotalWorkDone=0;
+        for(let index=0; index < Object.values(Estimates).length; index++) {
+            if(Estimates[index].Status!="Rejected" && Estimates[index].Status!="Credit"){
+                TotalApproved += Estimates[index].Quantity * Estimates[index].UnitPrice;
+                ApprovedQuantity += Estimates[index].Quantity;
+                ApprovedUnitPrice += Estimates[index].UnitPrice;
+                AmountReceived += Estimates[index]["Amount Received"];
+            }
+            if(Estimates[index].Status=="Invoiced"){ TotalInvoiced += Estimates[index].Quantity * Estimates[index].UnitPrice; }
+            if(Estimates[index].Status=="Payment Received"){ TotalPaymentReceived += Estimates[index].Quantity * Estimates[index].UnitPrice; }
+            if(Estimates[index].Status==="Rejected"){ RejectedTotal += Estimates[index].Quantity * Estimates[index].UnitPrice; RejectedQuantity += Estimates[index].Quantity; RejectedUnitPrice += Estimates[index].UnitPrice; }
+        }
+        for(let index=0; index < Object.values(MonthlyWorkdone).length; index++){
+            TotalWorkDone += MonthlyWorkdone[index].Quantity * MonthlyWorkdone[index].UnitPrice;
+        }
+        function getIndianFinancialYearAndQuarter(dateString) {
+            const date = new Date(new Date(dateString).toLocaleDateString("en-CA"));
+            const year = date.getFullYear(); const month = date.getMonth() + 1;
+            const fyStartYear = month >= 4 ? year : year - 1;
+            const fyEndYear = fyStartYear + 1;
+            const financialYear = `FY ${fyStartYear}-${fyEndYear}`;
+            let quarter = "";
+            if (month >= 4 && month <= 6) quarter = "Q1";
+            else if (month >= 7 && month <= 9) quarter = "Q2";
+            else if (month >= 10 && month <= 12) quarter = "Q3";
+            else quarter = "Q4";
+            return financialYear + "/" + quarter;
+        }
+        %>
+
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title">
+                    <i class="bi bi-receipt"></i> Estimates / Invoicing
+                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                    <span class="pill-summary pill-revenue ms-2">Revenue: <strong>$<%=parseFloat(TotalApproved).toFixed(2)%></strong></span>
+                    <span class="pill-summary pill-invoiced ms-1">Invoiced: <strong>$<%=parseFloat(TotalInvoiced).toFixed(2)%></strong></span>
+                    <span class="pill-summary pill-received ms-1">Received: <strong>$<%=parseFloat(TotalPaymentReceived).toFixed(2)%></strong></span>
+                    <%}%>
+                </div>
+                <div class="section-card-actions <%= userData.Role!='PMO' ? 'visually-hidden' : '' %>">
+                    <button type="button" class="btn-card-action d-none estBulkBtn estimatesTriggerBtn" id="estBulk-Reserved-Btn" data-action="Bulk-Reserved" data-bs-toggle="modal" data-bs-target="#ReservedEstimatesDialog" data-estimatesId=""><i class="bi bi-check-circle"></i> Reserve</button>
+                    <button type="button" class="btn-card-action d-none estBulkBtn estimatesTriggerBtn" id="estBulk-Rejected-Btn" data-action="Bulk-Rejected" data-bs-toggle="modal" data-bs-target="#RejectedDialog" data-estimatesId=""><i class="bi bi-x-circle"></i> Reject</button>
+                    <button type="button" class="btn-card-action d-none estBulkBtn estimatesTriggerBtn" id="estBulk-Invoiced-Btn" data-action="Bulk-Invoiced" data-bs-toggle="modal" data-bs-target="#InvoicedEstimatesDialog" data-estimatesId=""><i class="bi bi-receipt-cutoff"></i> Invoice</button>
+                    <button type="button" class="btn-card-action d-none estBulkBtn estimatesTriggerBtn" id="estBulk-Payment-Received-Btn" data-action="Bulk-Payment-Received" data-bs-toggle="modal" data-bs-target="#PaymentReceivedDialog" data-estimatesId=""><i class="bi bi-coin"></i> Payment</button>
+                    <% if (Object.values(Estimates).length>0) { %>
+                    <a href="/api/downloadEstimates/?Customer=<%= encodeURIComponent(Customer) %>&Program=<%= encodeURIComponent(ProjectData.Program) %>&Job_ID=<%= encodeURIComponent(ProjectData.CFAS_ID?ProjectData.CFAS_ID:ProjectData.JOB_ID) %>" class="btn-card-action"><i class="bi bi-cloud-arrow-down-fill"></i> Export</a>
+                    <%}%>
+                    <button class="btn-card-action visually-hidden" data-bs-toggle="modal" data-bs-target="#EstimatesDialog"><i class="bi bi-plus-circle"></i> Add</button>
+                </div>
+            </div>
+
+            <% if (Object.values(Estimates).length>0) { let slNo=1; %>
+            <div class="sub-tabs">
+                <ul class="nav sub-nav-tabs" id="Estimates" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" id="Reserved-Info-tab" data-bs-toggle="tab" data-bs-target="#Reserved-tab-pane" type="button" role="tab" aria-selected="true">Pending / Reserved</button></li>
+                    <li class="nav-item"><button class="nav-link" id="Rejected-tab" data-bs-toggle="tab" data-bs-target="#Rejected-tab-pane" type="button" role="tab" aria-selected="false">Rejected</button></li>
+                </ul>
+            </div>
+
+            <div class="tab-content">
+                <!-- Pending/Reserved tab -->
+                <div class="tab-pane fade show active" id="Reserved-tab-pane" role="tabpanel">
+                    <div class="data-table-wrapper scrollable">
+                        <%const nonPayment = Estimates.filter(e => e.Status !== "Payment Received" && e.Status !== "Rejected" && e.Status !== "Credit").map(e => e.Status);
+                        const allSameStatus = nonPayment.length > 0 && new Set(nonPayment).size === 1;%>
+                        <table class="data-table" id="Project-List">
+                            <thead>
+                                <tr>
+                                    <th><%if(allSameStatus && nonPayment.length>1){%><input type="checkbox" name="Est-Select-All" id="Est-Select-All" class="form-check-input"><%}%></th>
+                                    <th>#</th>
+                                    <th>Item</th>
+                                    <th>Region</th>
+                                    <th>UOM</th>
+                                    <th>QTY</th>
+                                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                                    <th>Unit Price</th>
+                                    <th>Total Revenue</th>
+                                    <%}%>
+                                    <th>Status</th>
+                                    <th>Reserved Date</th>
+                                    <th>INV #</th>
+                                    <th>INV Date</th>
+                                    <th>Amt Rcv Date</th>
+                                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                                    <th>Amt Received</th>
+                                    <th>Outstanding</th>
+                                    <th>Remarks</th>
+                                    <%}%>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for(let index=0; index < Object.values(Estimates).length; index++) { %>
+                                <% if (Estimates[index].Status !== "Rejected") {
+                                    let dots = Estimates[index].Description.substring(0,13).length > 12 ? "..." : ""; %>
+                                <tr class="<% if(parseInt(Estimates[index].Quantity)<0){%>negative-qty<%}%>">
+                                    <td>
+                                        <%if(Estimates[index].Status!="Payment Received" && Estimates[index].Status!="Credit"){%>
+                                        <input type="checkbox" name="Est-Select" id="Est-Select-<%=slNo%>" class="Est-row-check form-check-input"
+                                            data-id="<%=Estimates[index].idestimates%>" data-code="<%=Estimates[index].Item%>"
+                                            data-qty="<%=Estimates[index].Quantity%>" data-status="<%=Estimates[index].Status%>"
+                                            data-totalRevenue="<%=Estimates[index].Quantity*Estimates[index].UnitPrice%>">
+                                        <%}else{%><i class="bi bi-lock-fill text-muted"></i><%}%>
+                                    </td>
+                                    <td><%=slNo++%></td>
+                                    <td class="text-nowrap" style="font-family:'DM Mono',monospace;font-size:11.5px;"><%=Estimates[index].Item%></td>
+                                    <td class="text-nowrap"><%=Estimates[index].Region%></td>
+                                    <td class="text-nowrap"><%=Estimates[index].UOM%></td>
+                                    <td><%=Number(Estimates[index].Quantity).toFixed(2)%></td>
+                                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                                    <td>$<%=parseFloat(Estimates[index].UnitPrice).toFixed(2)%></td>
+                                    <td>$<%=parseFloat(Estimates[index].Quantity*Estimates[index].UnitPrice).toFixed(2)%></td>
+                                    <%}%>
+                                    <td>
+                                        <%
+                                        const sVal = Estimates[index].Status.toLowerCase().replace(/\s/g,'');
+                                        const sCls = sVal==='pending'?'pending':sVal==='reserved'?'reserved':sVal==='invoiced'?'invoiced':sVal==='paymentreceived'?'received':sVal==='credit'?'credit':'rejected';
+                                        %>
+                                        <span class="est-badge <%=sCls%>"><%=Estimates[index].Status%></span>
+                                        <%if(Estimates[index].Status=="Credit"){%>
+                                        <button type="button" class="btn p-0 m-0 ms-1"
+                                            data-cnNumber="<%=Estimates[index].creditNoteNumber%>"
+                                            data-cnDate="<%=Estimates[index].creditNoteDate%>"
+                                            data-estID="<%=Estimates[index].idestimates%>"
+                                            data-item="<%=Estimates[index].Item%>"
+                                            data-qty="<%=Estimates[index].Quantity%>"
+                                            data-invNumber="<%=Estimates[index]["Invoice Number"]%>"
+                                            data-cnAttachment="<%=Estimates[index].creditNotePath%>"
+                                            data-bs-toggle="modal" data-bs-target="#creditNoteInfoModal">
+                                            <i class="bi bi-info-circle text-info"></i>
+                                        </button>
+                                        <%}%>
+                                    </td>
+                                    <td class="text-nowrap"><%=Estimates[index].ApprovedDate||'—'%></td>
+                                    <td class="text-nowrap">
+                                        <%
+                                        const invoiceNumber = Estimates[index]["Invoice Number"] || "—";
+                                        const invoicePath = Estimates[index].invoicePath;
+                                        %>
+                                        <%if(invoicePath){%><a href="<%=invoicePath%>" target="_blank"><%=invoiceNumber%></a><%}else{%><%=invoiceNumber%><%}%>
+                                    </td>
+                                    <td class="text-nowrap"><%=Estimates[index]["Invoiced_Date"]||'—'%></td>
+                                    <td class="text-nowrap"><%=Estimates[index]["Payment Received Date"]||'—'%></td>
+                                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                                    <td class="text-nowrap">
+                                        <%=Estimates[index]["Amount Received"] ? '$'+parseFloat(Estimates[index]["Amount Received"]).toFixed(2) : '—'%>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <%
+                                        const outstanding = (Estimates[index].Quantity * Estimates[index].UnitPrice) - (Estimates[index]["Amount Received"] || 0);
+                                        %>
+                                        <span style="color:<%=outstanding>0?'var(--danger)':'var(--success)'%>;font-weight:600;">
+                                            $<%=parseFloat(outstanding).toFixed(2)%>
+                                        </span>
+                                    </td>
+                                    <td class="text-nowrap"><%=Estimates[index].Remark||'—'%></td>
+                                    <%}%>
+                                    <td>
+                                        <div class="d-flex gap-1 flex-wrap">
+                                        <%if(Estimates[index].Status=="Pending"){%>
+                                        <button type="button" class="btn-tbl btn-tbl-success estimatesTriggerBtn" data-estimatesId="<%-Estimates[index].idestimates%>" data-action="Reserved" data-bs-toggle="modal" data-bs-target="#ReservedEstimatesDialog"><i class="bi bi-check-circle"></i> Reserve</button>
+                                        <button type="button" class="btn-tbl btn-tbl-danger estimatesTriggerBtn" data-estimatesId="<%-Estimates[index].idestimates%>" data-action="Rejected" data-bs-toggle="modal" data-bs-target="#RejectedDialog"><i class="bi bi-x-circle"></i> Reject</button>
+                                        <%}%>
+                                        <%if(Estimates[index].Status=="Reserved"){%>
+                                        <button type="button" class="btn-tbl btn-tbl-primary estimatesTriggerBtn" data-estimatesId="<%-Estimates[index].idestimates%>" data-action="Invoiced" data-bs-toggle="modal" data-bs-target="#InvoicedEstimatesDialog"><i class="bi bi-arrow-right-circle"></i> Invoice</button>
+                                        <%}%>
+                                        <%if(Estimates[index].Status=="Invoiced"){%>
+                                        <button type="button" class="btn-tbl btn-tbl-success estimatesTriggerBtn" data-estimatesId="<%-Estimates[index].idestimates%>" data-action="Payment Received" data-bs-toggle="modal" data-totalRevenue="<%=Estimates[index].Quantity*Estimates[index].UnitPrice%>" data-bs-target="#PaymentReceivedDialog"><i class="bi bi-coin"></i> Payment</button>
+                                        <%}%>
+                                        <%if(Estimates[index].Status=="Payment Received"){%>
+                                        <button type="button" class="btn-tbl btn-tbl-info"
+                                            data-estimatesId="<%-Estimates[index].idestimates%>"
+                                            data-bs-toggle="modal" data-bs-target="#ViewPaymentDialog">
+                                            <i class="bi bi-eye"></i> View Payment
+                                        </button>
+                                        <button type="button" class="btn-tbl btn-tbl-success estimatesTriggerBtn"
+                                            data-estimatesId="<%-Estimates[index].idestimates%>"
+                                            data-action="Payment Received"
+                                            data-bs-toggle="modal"
+                                            data-totalRevenue="<%=Estimates[index].Quantity*Estimates[index].UnitPrice%>"
+                                            data-bs-target="#PaymentReceivedDialog">
+                                            <i class="bi bi-plus-circle"></i> New Payment
+                                        </button>
+                                        <%}%>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <%}%>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Rejected tab -->
+                <div class="tab-pane fade" id="Rejected-tab-pane" role="tabpanel">
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th><th>Item</th><th>Region</th><th>UOM</th><th>QTY</th>
+                                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%><th>Unit Price</th><th>Total Revenue</th><%}%>
+                                    <th>Status</th><th>Rejected Date</th><th>Rejection Comment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% slNo=1;
+                                const rejectedCount = Estimates.filter(e => e.Status === "Rejected").length;
+                                if(rejectedCount===0){ %>
+                                <tr><td colspan="<%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>11<%}else{%>9<%}%>" class="text-center py-4 text-muted">No rejected estimates found</td></tr>
+                                <% }else{
+                                    for(let index=0; index < Object.values(Estimates).length; index++) {
+                                        if(Estimates[index].Status == "Rejected") {
+                                            let dots = Estimates[index].Description.substring(0,30).length > 29 ? "..." : null;
+                                %>
+                                <tr>
+                                    <td><%=slNo++%></td>
+                                    <td style="font-family:'DM Mono',monospace;font-size:11.5px;"><%=Estimates[index].Item%></td>
+                                    <td><%=Estimates[index].Region%></td>
+                                    <td><%=Estimates[index].UOM%></td>
+                                    <td class="text-end"><%=Estimates[index].Quantity%></td>
+                                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                                    <td class="text-end">$<%=parseFloat(Estimates[index].UnitPrice).toFixed(2)%></td>
+                                    <td class="text-end">$<%=parseFloat(Estimates[index].Quantity*Estimates[index].UnitPrice).toFixed(2)%></td>
+                                    <%}%>
+                                    <td><span class="est-badge rejected"><%=Estimates[index].Status%></span></td>
+                                    <td class="text-nowrap"><%=Estimates[index]["Rejected Date"]||'—'%></td>
+                                    <td><%=Estimates[index]["Rejection Comment"]||'—'%></td>
+                                </tr>
+                                <%}%><% } %>
+                                <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                                <tr class="fw-bold" style="background:var(--primary-light);">
+                                    <td colspan="5" class="text-center fw-bold">Total</td>
+                                    <td class="text-end fw-bold"><%=RejectedQuantity%></td>
+                                    <td class="text-end fw-bold">$<%=parseFloat(RejectedTotal).toFixed(2)%></td>
+                                    <td colspan="4"></td>
+                                </tr>
+                                <% } %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <% }else{ %>
+            <div class="empty-state"><i class="bi bi-receipt text-muted" style="font-size:40px;"></i><p>No estimates found</p></div>
+            <% } %>
+        </div>
+
+        <!-- Work Done -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title">
+                    <i class="bi bi-check2-circle"></i> Work Done
+                    <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                    <span class="pill-summary pill-revenue ms-2">Revenue: <strong>$<%=parseFloat(TotalWorkDone).toFixed(2)%></strong></span>
+                    <%}%>
+                </div>
+                <div class="section-card-actions <%= userData.Role!='PMO' ? 'visually-hidden' : '' %>">
+                    <button type="button" class="btn-card-action visually-hidden" id="moveToEstimateBtn"><i class="bi bi-chevron-double-up"></i> Move to Estimates</button>
+                    <% if (Object.values(MonthlyWorkdone).length>0) { %>
+                    <a href="/api/downloadWorkDone/?WD_Customer=<%= encodeURIComponent(Customer) %>&WD_Program=<%= encodeURIComponent(ProjectData.Program) %>&Job_ID=<%= encodeURIComponent(ProjectData.CFAS_ID?ProjectData.CFAS_ID:ProjectData.JOB_ID) %>&idProjects=<%=encodeURIComponent(ProjectData.idProjects)%>" class="btn-card-action"><i class="bi bi-cloud-arrow-down-fill"></i> Export</a>
+                    <%}%>
+                    <button class="btn-card-action" data-bs-toggle="modal" data-bs-target="#WorkDoneDialog"><i class="bi bi-plus-circle"></i> Add</button>
+                </div>
+            </div>
+            <% if (Object.values(MonthlyWorkdone).length>0) { %>
+            <div class="data-table-wrapper scrollable">
+                <%const noOfYes = MonthlyWorkdone.filter(item => item.MovedToEstimate == "No");%>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th><%if(noOfYes.length>1){%><input type="checkbox" name="WD-Select-All" id="WD-Select-All" class="form-check-input"><%}%></th>
+                            <th>#</th><th>Item</th><th>Region</th><th>UOM</th><th>Description</th><th>QTY</th><th>Accounted Month</th>
+                            <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%><th>Unit Price</th><th>Total Revenue</th><%}%>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% slNo=1; for(let index=0; index < Object.values(MonthlyWorkdone).length; index++) {
+                            let dots = MonthlyWorkdone[index].Description.substring(0,13).length > 12 ? "..." : "";
+                        %>
+                        <tr class="<% if(parseInt(MonthlyWorkdone[index].Quantity)<0){%>negative-qty<%}%>">
+                            <td><% if(MonthlyWorkdone[index].MovedToEstimate==="No"){%><input type="checkbox" name="WD-Select" id="WD-Select-<%=slNo%>" class="WD-row-check form-check-input" data-id="<%=MonthlyWorkdone[index].idmonthlyworkdone%>" data-code="<%=MonthlyWorkdone[index].Item%>" data-qty="<%=MonthlyWorkdone[index].Quantity%>"><%}else{%><i class="bi bi-lock-fill text-muted"></i><%}%></td>
+                            <td><%=slNo++%></td>
+                            <td style="font-family:'DM Mono',monospace;font-size:11.5px;"><%=MonthlyWorkdone[index].Item%></td>
+                            <td><%=MonthlyWorkdone[index].Region%></td>
+                            <td><%=MonthlyWorkdone[index].UOM%></td>
+                            <td title="<%=MonthlyWorkdone[index].Description%>"><%=MonthlyWorkdone[index].Description.substring(0,60)+dots%></td>
+                            <td><%=MonthlyWorkdone[index].Quantity%></td>
+                            <td><%=MonthlyWorkdone[index].month_year%></td>
+                            <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                            <td>$<%=parseFloat(MonthlyWorkdone[index].UnitPrice).toFixed(2)%></td>
+                            <td>$<%=parseFloat(MonthlyWorkdone[index].Quantity*MonthlyWorkdone[index].UnitPrice).toFixed(2)%></td>
+                            <%}%>
+                        </tr>
+                        <%}%>
+                    </tbody>
+                </table>
+            </div>
+            <%}else{%>
+            <div class="empty-state"><i class="bi bi-check2-circle text-muted" style="font-size:40px;"></i><p>No work done records found</p></div>
+            <%}%>
+        </div>
+
+        <!-- Comments -->
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title"><i class="bi bi-chat-dots"></i> Comments</div>
+                <button class="btn-card-action" type="button" data-bs-toggle="modal" data-bs-target="#AddNoteDialog" id="AddNoteBtn"><i class="bi bi-plus-circle"></i> Add</button>
+            </div>
+            <div id="NoteArea">
+                <% if (Object.keys(Comments).length) { %>
+                <% Object.keys(Comments).forEach(function(groupKey) { %>
+                <div class="comment-item">
+                    <div class="comment-meta">
+                        <span class="comment-author"><i class="bi bi-person-fill"></i> <%= Comments[groupKey].Author_Name %></span>
+                        <span class="comment-date"><i class="bi bi-calendar3"></i> <%= Comments[groupKey].On %></span>
+                        <% for (const key in Comments[groupKey]) { %>
+                            <% if (key.startsWith('attachment') && Comments[groupKey][key]!='') { %>
+                            <a href="/public/uploads/ReferenceDoc/<%= Comments[groupKey][key] %>" download class="text-decoration-none" style="font-size:12px;color:var(--text-muted);"><i class="bi bi-paperclip"></i></a>
+                            <% } %>
+                        <% } %>
+                        <% if(userData.Employee_ID==Comments[groupKey].Author_ID) { %>
+                        <i class="bi bi-trash3-fill deleteBtn" style="color:var(--danger);cursor:pointer;font-size:13px;" data-project-id="<%= ProjectData.idProjects %>" data-comment-id="<%= groupKey %>" data-customer="<%= Customer %>"></i>
+                        <% } %>
+                    </div>
+                    <% for (const key in Comments[groupKey]) { %>
+                        <% if (key.startsWith('Note')) { %>
+                        <div class="comment-body <%= userData.Employee_ID==Comments[groupKey].Author_ID ? 'owner-comment' : '' %>"><%- Comments[groupKey][key] %></div>
+                        <% } %>
+                    <% } %>
+                </div>
+                <% }); %>
+                <% }else{ %>
+                <div class="empty-state"><img src="../../../static/images/co-workers-animate.svg" alt="No Comments" width="220"><p>No comments yet</p></div>
+                <%}%>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Milestone ── -->
+    <div class="tab-pane fade" id="milestone-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title"><i class="bi bi-flag"></i> Milestones</div>
+                <div class="section-card-actions"><button class="btn-card-action <%if(userData.Role!='PMO'){%>d-none<%}%>" data-bs-toggle="modal" data-bs-target="#createMilestoneModal"><i class="bi bi-plus"></i> Add Milestone</button></div>
+            </div>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">#</th><th rowspan="2">Milestone</th>
+                            <th colspan="2" style="text-align:center;">Production TGT</th>
+                            <th colspan="2" style="text-align:center;">Production ACT</th>
+                            <th colspan="2" style="text-align:center;">QC TGT</th>
+                            <th colspan="2" style="text-align:center;">QC ACT</th>
+                            <th rowspan="2">Due Date</th><th rowspan="2">Owner</th><th rowspan="2">Status</th><th rowspan="2">Delivery</th>
+                        </tr>
+                        <tr><th>Start</th><th>End</th><th>Start</th><th>End</th><th>Start</th><th>End</th><th>Start</th><th>End</th></tr>
+                    </thead>
+                    <tbody>
+                        <% if (Object.values(Milestone).length) { %>
+                        <% for(let index=0; index < Object.values(Milestone).length; index++) { %>
+                        <% let mDueDate = Milestone[index].f_Due_Date ? Milestone[index].f_Due_Date : Milestone[index].f_QC_TGT_End_Date;
+                        let mTemp = compareDates(mDueDate, Milestone[index].f_QC_ACT_End_Date, Milestone[index].Milestone_Status); %>
+                        <tr>
+                            <td><%= index+1 %></td>
+                            <td class="text-nowrap"><img src="../../../static/icons/Gray-dot.png" width="12" height="12" id="MilestoneStatus-<%= Milestone[index].Milestone_Name %>"> <a href="/ViewMilestone/<%= Customer %>/<%= Milestone[index].idProjects %>/<%= Milestone[index].Milestone_Name %>"><%= Milestone[index].Milestone_Name %></a></td>
+                            <td class="text-nowrap"><%= Milestone[index].Prod_TGT_Start_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].Prod_TGT_End_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].Prod_ACT_Start_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].Prod_ACT_End_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].QC_TGT_Start_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].QC_TGT_End_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].QC_ACT_Start_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].QC_ACT_End_Date||'—' %></td>
+                            <td class="text-nowrap"><%= Milestone[index].Due_Date||'—' %></td>
+                            <td class="text-nowrap"><span class="Owner" style="max-width:120px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-UserID="<%= Milestone[index].Owner %>"><%= Milestone[index].Full_Name||'—' %></span></td>
+                            <td><%= Milestone[index].Milestone_Status||'—' %></td>
+                            <td><%- deliveryBadge(mTemp) %></td>
+                        </tr>
+                        <% } %>
+                        <% }else{ %><tr><td colspan="14" class="text-center py-4 text-muted">No milestones found</td></tr><% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Production ── -->
+    <div class="tab-pane fade" id="Prod-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title"><i class="bi bi-gear"></i> Production Tasks</div>
+                <div class="section-card-actions"><button class="btn-card-action <%if(userData.Role=='Employee'){%>d-none<%}%>" data-bs-toggle="modal" data-bs-target="#create-Prot-Task-Modal"><i class="bi bi-plus"></i> Add Task</button></div>
+            </div>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Task ID</th><th>Task Name</th><th>Milestone</th><th>Owner</th><th>Start</th><th>End</th><th>Due</th><th>Status</th><th>Time</th><th>Delivery</th></tr></thead>
+                    <tbody>
+                        <% slNo=1; %>
+                        <% for(let index=0; index < Object.values(Task).length; index++) { %>
+                        <% if (Task[index].Type=='Production') { %>
+                        <% let tDueDate=Task[index].f_DueDate, tEndDate=Task[index].f_EndDate?Task[index].f_EndDate:"", tTemp=compareDates(tDueDate,tEndDate,Task[index].Status); %>
+                        <tr>
+                            <td><%= slNo %></td>
+                            <td class="text-nowrap"><img src="../../../static/icons/Gray-dot.png" width="12" height="12" id="TaskStatus-<%= Task[index].TaskName %>"> <a href="/ViewTask/<%= Customer %>/<%= Task[index].Milestone_Name %>/<%= Task[index].TaskName %>"><%= Task[index].TaskName %></a></td>
+                            <td><span class="Owner" style="max-width:140px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= Task[index].TaskLabel||'' %>"><%= Task[index].TaskLabel||'—' %></span></td>
+                            <td class="text-nowrap"><a href="/ViewMilestone/<%= Customer %>/<%= Task[index].idProjects %>/<%= Task[index].Milestone_Name %>"><%= Task[index].Milestone_Name %></a></td>
+                            <td class="text-nowrap"><span class="Owner" style="max-width:120px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-UserID="<%= Task[index].Owner %>"><%= Task[index].Full_Name %></span></td>
+                            <td class="text-nowrap"><%= Task[index].StartDate||'—' %></td>
+                            <td class="text-nowrap"><%= Task[index].EndDate||'—' %></td>
+                            <td class="text-nowrap"><%= Task[index].DueDate||'—' %></td>
+                            <td><%= Task[index].Status %></td>
+                            <td class="text-nowrap"><%= secondsToMinutes(Task[index].TotalTime) %></td>
+                            <td><%- deliveryBadge(tTemp) %></td>
+                        </tr>
+                        <% slNo++; } %><% } %>
+                        <% if(slNo===1){ %><tr><td colspan="11" class="text-center py-4 text-muted">No production tasks</td></tr><% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── QC ── -->
+    <div class="tab-pane fade" id="qc-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title"><i class="bi bi-shield-check"></i> QC Tasks</div>
+                <div class="section-card-actions"><button class="btn-card-action <%if(userData.Role=='Employee'){%>d-none<%}%>" data-bs-toggle="modal" data-bs-target="#create-QC-Task-Modal"><i class="bi bi-plus"></i> Add Task</button></div>
+            </div>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Task ID</th><th>Task Name</th><th>Prod Name</th><th>Milestone</th><th>Owner</th><th>Start</th><th>End</th><th>Due</th><th>Status</th><th>Time</th><th>Delivery</th></tr></thead>
+                    <tbody>
+                        <% slNo=1; %>
+                        <% for(let index=0; index < Object.values(Task).length; index++) { %>
+                        <% if (Task[index].Type=='IQC' || Task[index].Type=='RQC') { %>
+                        <% let qDueDate=Task[index].f_DueDate, qEndDate=Task[index].f_EndDate?Task[index].f_EndDate:"", qTemp=compareDates(qDueDate,qEndDate,Task[index].Status); %>
+                        <tr>
+                            <td><%= slNo %></td>
+                            <td class="text-nowrap"><img src="../../../static/icons/Gray-dot.png" width="12" height="12" id="TaskStatus-<%= Task[index].TaskName %>"> <a href="/ViewTask/<%= Customer %>/<%= Task[index].Milestone_Name %>/<%= Task[index].TaskName %>"><%= Task[index].TaskName %></a></td>
+                            <td><span class="Owner" style="max-width:130px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= Task[index].TaskLabel||'—' %></span></td>
+                            <td><%= Task[index].Production_Name||'—' %></td>
+                            <td class="text-nowrap"><a href="/ViewMilestone/<%= Customer %>/<%= Task[index].idProjects %>/<%= Task[index].Milestone_Name %>"><%= Task[index].Milestone_Name %></a></td>
+                            <td class="text-nowrap"><span class="Owner" style="max-width:110px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-UserID="<%= Task[index].Owner %>"><%= Task[index].Full_Name %></span></td>
+                            <td class="text-nowrap"><%= Task[index].StartDate||'—' %></td>
+                            <td class="text-nowrap"><%= Task[index].EndDate||'—' %></td>
+                            <td class="text-nowrap"><%= Task[index].DueDate||'—' %></td>
+                            <td><%= Task[index].Status %></td>
+                            <td class="text-nowrap"><%= secondsToMinutes(Task[index].TotalTime) %></td>
+                            <td><%- deliveryBadge(qTemp) %></td>
+                        </tr>
+                        <% slNo++; } %><% } %>
+                        <% if(slNo===1){ %><tr><td colspan="12" class="text-center py-4 text-muted">No QC tasks</td></tr><% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── USQC/CQC ── -->
+    <div class="tab-pane fade" id="CQC-task-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title"><i class="bi bi-clipboard-check"></i> USQC / CQC Tasks</div>
+                <div class="section-card-actions"><button class="btn-card-action <%if(userData.Role!='PMO'){%>d-none<%}%>" data-bs-toggle="modal" data-bs-target="#create-CQC-Task-Modal"><i class="bi bi-plus"></i> Add Task</button></div>
+            </div>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Task ID</th><th>Task Name</th><th>Milestone</th><th>Owner</th><th>Start</th><th>End</th><th>Score</th><th>Status</th><th>Time</th><th>Delivery</th></tr></thead>
+                    <tbody>
+                        <% slNo=1; %>
+                        <% for(let index=0; index < Object.values(Task).length; index++) { %>
+                        <% if (Task[index].Type=='CQC' || Task[index].Type=='USQC') { %>
+                        <% let cqcDue=Task[index].f_DueDate, cqcEnd=Task[index].f_EndDate?Task[index].f_EndDate:"", cqcTemp=compareDates(cqcDue,cqcEnd,Task[index].Status);
+                        let scoreCls="score-none", tempScore=parseFloat(Task[index].Score);
+                        if(!isNaN(tempScore)){ if(tempScore>=95) scoreCls="score-95"; else if(tempScore>=90) scoreCls="score-90"; else if(tempScore>=80) scoreCls="score-80"; else if(tempScore>=75) scoreCls="score-75"; else scoreCls="score-low"; } %>
+                        <tr>
+                            <td><%= slNo %></td>
+                            <td class="text-nowrap"><img src="../../../static/icons/Gray-dot.png" width="12" height="12" id="TaskStatus-<%= Task[index].TaskName %>"> <a href="/ViewTask/<%= Customer %>/<%= Task[index].Milestone_Name %>/<%= Task[index].TaskName %>"><%= Task[index].TaskName %></a></td>
+                            <td><span class="Owner" style="max-width:130px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= Task[index].TaskLabel||'—' %></span></td>
+                            <td class="text-nowrap"><a href="/ViewMilestone/<%= Customer %>/<%= Task[index].idProjects %>/<%= Task[index].Milestone_Name %>"><%= Task[index].Milestone_Name %></a></td>
+                            <td class="text-nowrap"><span class="Owner" style="max-width:110px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-UserID="<%= Task[index].Owner %>"><%= Task[index].Full_Name %></span></td>
+                            <td class="text-nowrap"><%= Task[index].StartDate||'—' %></td>
+                            <td class="text-nowrap"><%= Task[index].EndDate||'—' %></td>
+                            <td><span class="score-badge <%=scoreCls%>"><%= Task[index].Score||'Not Scored' %></span></td>
+                            <td><%= Task[index].Status %></td>
+                            <td class="text-nowrap"><%= secondsToMinutes(Task[index].TotalTime) %></td>
+                            <td><%- deliveryBadge(cqcTemp) %></td>
+                        </tr>
+                        <% slNo++; } %><% } %>
+                        <% if(slNo===1){ %><tr><td colspan="11" class="text-center py-4 text-muted">No USQC/CQC tasks</td></tr><% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Subtask ── -->
+    <div class="tab-pane fade" id="sub-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header"><div class="section-card-title"><i class="bi bi-diagram-3"></i> Subtasks</div></div>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Subtask ID</th><th>Subtask Name</th><th>Task Name</th><th>Owner</th><th>Start</th><th>End</th><th>Due</th><th>Status</th><th>Time</th><th>Delivery</th></tr></thead>
+                    <tbody>
+                        <% if(Object.values(subtask).length>0){ %>
+                        <% for(let index=0; index < Object.values(subtask).length; index++) { %>
+                        <% let stDue=subtask[index].f_DueDate, stEnd=subtask[index].f_EndDate?subtask[index].f_EndDate:"", stTemp=compareDates(stDue,stEnd,subtask[index].Status); %>
+                        <tr>
+                            <td><%= index+1 %></td>
+                            <td class="text-nowrap"><img src="../../../static/icons/Gray-dot.png" width="12" height="12" id="TaskStatus-<%= subtask[index].SubTaskName %>"> <a href="/SubTask/<%= subtask[index].SubTaskName %>"><%= subtask[index].SubTaskName %></a></td>
+                            <td><span class="Owner" style="max-width:130px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= subtask[index].SubTaskLabel||'—' %></span></td>
+                            <td class="text-nowrap"><a href="/ViewTask/<%= subtask[index].Customer %>/<%= subtask[index].Milestone_Name %>/<%= subtask[index].Task_Name %>"><%= subtask[index].Task_Name %></a></td>
+                            <td class="text-nowrap"><span class="Owner" style="max-width:110px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-UserID="<%= subtask[index].Owner %>"><%= subtask[index].Full_Name %></span></td>
+                            <td class="text-nowrap"><%= subtask[index].StartDate %></td>
+                            <td class="text-nowrap"><%= subtask[index].EndDate %></td>
+                            <td class="text-nowrap"><%= subtask[index].DueDate %></td>
+                            <td><%= subtask[index].Status %></td>
+                            <td class="text-nowrap"><%= secondsToMinutes(subtask[index].TotalTime) %></td>
+                            <td><%- deliveryBadge(stTemp) %></td>
+                        </tr>
+                        <% } %>
+                        <% }else{ %><tr><td colspan="11" class="text-center py-4 text-muted">No subtasks</td></tr><% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Markup ── -->
+    <div class="tab-pane fade" id="markup-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header"><div class="section-card-title"><i class="bi bi-pencil-square"></i> Markup</div></div>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Markup Name</th><th>Task Name</th><th>Job ID</th><th>Owner</th><th>Start</th><th>End</th><th>Due</th><th>Status</th><th>Time</th><th>Delivery</th></tr></thead>
+                    <tbody>
+                        <% if (Object.values(markup).length>0) { %>
+                        <% for(let index=0; index < Object.values(markup).length; index++) { %>
+                        <% let mkDue=markup[index].f_DueDate, mkEnd=markup[index].f_EndDate?markup[index].f_EndDate:"", mkTemp=compareDates(mkDue,mkEnd,markup[index].Status); %>
+                        <tr>
+                            <td><%= index+1 %></td>
+                            <td><img src="../../../static/icons/Gray-dot.png" width="12" height="12" id="TaskStatus-<%= markup[index].Sub_Task_Name %>"> <a href="/Markup/<%= markup[index].Sub_Task_Name %>"><%= markup[index].Sub_Task_Name %></a><% if(markup[index].TaskLabel){ %><span title="<%= markup[index].TaskLabel %>" style="display:block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text-muted);"><%= markup[index].TaskLabel %></span><% } %></td>
+                            <td><%= markup[index].Task_Name %></td>
+                            <td><%= markup[index].Project_ID %></td>
+                            <td><span class="Owner" style="max-width:110px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-UserID="<%= markup[index].Owner %>"><%= markup[index].Full_Name %></span></td>
+                            <td class="text-nowrap"><%= markup[index].StartDate||'—' %></td>
+                            <td class="text-nowrap"><%= markup[index].EndDate||'—' %></td>
+                            <td class="text-nowrap"><%= markup[index].DueDate||'—' %></td>
+                            <td><%= markup[index].Status %></td>
+                            <td class="text-nowrap"><%= secondsToMinutes(markup[index].TotalTime) %></td>
+                            <td><%- deliveryBadge(mkTemp) %></td>
+                        </tr>
+                        <% } %>
+                        <% }else{ %><tr><td colspan="11" class="text-center py-4 text-muted">No markup records</td></tr><% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Time Sheet ── -->
+    <div class="tab-pane fade" id="timeSheet-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header"><div class="section-card-title"><i class="bi bi-clock-history"></i> Time Sheet</div></div>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>User ID</th><th>User Name</th><th>Task ID</th><th>Task Name</th><th>Milestone</th><th>Start Time</th><th>End Time</th><th>Duration</th></tr></thead>
+                    <tbody>
+                        <% if (Object.values(Log).length>0) { %>
+                        <% for(let index=0; index < Object.values(Log).length; index++) { %>
+                        <tr>
+                            <td><%= index+1 %></td>
+                            <td style="font-family:'DM Mono',monospace;font-size:11.5px;"><span class="Owner" data-UserID="<%= Log[index].UserID %>"><%= Log[index].UserID %></span></td>
+                            <td><%= Log[index].Full_Name %></td>
+                            <td style="font-family:'DM Mono',monospace;font-size:11.5px;"><%= Log[index].TaskName %></td>
+                            <td><span style="max-width:140px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= Log[index].TaskLabel||'' %>"><%= Log[index].TaskLabel||'—' %></span></td>
+                            <td><%= Log[index].Milestone_Name %></td>
+                            <td class="text-nowrap"><%= Log[index].startTime %></td>
+                            <td class="text-nowrap"><%= Log[index].endTime %></td>
+                            <td class="text-nowrap"><%= secondsToMinutes(Log[index].duration) %></td>
+                        </tr>
+                        <% } %>
+                        <% }else{ %><tr><td colspan="9" class="text-center py-4 text-muted">No time log entries</td></tr><% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Attachments ── -->
+    <div class="tab-pane fade" id="Attachments-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title"><i class="bi bi-paperclip"></i> Attachments</div>
+                <div class="section-card-actions">
+                    <button type="button" class="btn-card-action visually-hidden" id="zipDownload"><i class="bi bi-file-zip"></i> Download ZIP</button>
+                    <button type="button" class="btn-card-action" data-bs-toggle="modal" data-bs-target="#AttachmentDialog"><i class="bi bi-cloud-arrow-up"></i> Upload</button>
+                </div>
+            </div>
+            <div id="hierarchy" style="padding:4px 0;">
+                <%if(!Object.values(hierarchy).length){%>
+                <div class="empty-state"><img src="/static/images/Empty.svg" alt="" width="260"><p>No attachments yet</p></div>
+                <%}%>
+                <% if(Object.values(hierarchy).length){ %>
+                <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:8px 16px;background:linear-gradient(135deg,#1a56db,#1344b5);color:#fff;font-size:11px;font-weight:600;letter-spacing:.04em;gap:12px;align-items:center;">
+                    <div></div><div>File Name</div><div>Size</div><div>Date</div><div>Type</div><div>Owner</div><div style="text-align:center;">Del</div>
+                </div>
+                <% } %>
+                <% for (let project in hierarchy) { %>
+                <div class="project">
+                    <div class="qg-tab shadow-sm">
+                        <label for="<%=project%>" class="qg-tab__label"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:16px;"></i> <%=project%></label>
+                        <input type="checkbox" name="accordion-<%=project%>" id="<%=project%>" class="position-absolute opacity-0" checked>
+                        <div class="qg-tab__content">
+                            <% if (hierarchy[project].attachments.length > 0) { %>
+                            <% hierarchy[project].attachments.forEach(attachment => { %>
+                            <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                            </div>
+                            <% }) %>
+                            <% } %>
+                            <% for (let milestone in hierarchy[project].milestones) { %>
+                            <div class="milestone qg-tab shadow-sm w-100 p-0 m-0">
+                                <label for="<%=milestone%>" class="qg-tab__label" style="padding-left:2.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:14px;"></i> <%=milestone%></label>
+                                <input type="checkbox" name="accordion-<%=milestone%>" id="<%=milestone%>" class="position-absolute opacity-0">
+                                <div class="qg-tab__content">
+                                    <div>
+                                        <%let milestoneGroup={};
+                                        hierarchy[project].milestones[milestone].attachments.forEach(attachment => {
+                                            if(!milestoneGroup[attachment.category]) milestoneGroup[attachment.category]=[];
+                                            milestoneGroup[attachment.category].push(attachment);
+                                        });
+                                        let FinalCount=Object.keys(milestoneGroup).filter(entry=>entry!="Milestone-Input").length;
+                                        %>
+                                        <% for (let category in milestoneGroup) { %>
+                                        <%if(category=="Milestone-Input"){%>
+                                        <div class="milestone qg-tab shadow-sm w-100 p-0 m-0">
+                                            <label for="<%=milestone+category%>" class="qg-tab__label" style="padding-left:3.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:13px;"></i> <%=(category!="Milestone-Input")?category.split("-")[3]:"Inputs"%></label>
+                                            <input type="checkbox" name="accordion-<%=milestone+category%>" id="<%=milestone+category%>" class="position-absolute opacity-0">
+                                            <div class="qg-tab__content">
+                                                <% milestoneGroup[category].forEach(attachment=>{%>
+                                                <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                    <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                    <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                    <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                    <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                    <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                </div>
+                                                <% })%>
+                                            </div>
+                                        </div>
+                                        <%}%>
+                                        <%}%>
+                                        <%if(FinalCount){%>
+                                        <div class="milestone qg-tab shadow-sm w-100 p-0 m-0">
+                                            <label for="<%=milestone+'Main'%>" class="qg-tab__label" style="padding-left:3.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:13px;"></i> Final Deliverables</label>
+                                            <input type="checkbox" name="accordion-<%=milestone+'Main'%>" id="<%=milestone+'Main'%>" class="position-absolute opacity-0">
+                                            <div class="qg-tab__content">
+                                                <% for (let category in milestoneGroup) { %>
+                                                <%if(category!="Milestone-Input"){%>
+                                                <div class="milestone qg-tab shadow-sm w-100 p-0 m-0">
+                                                    <label for="<%=milestone+category%>" class="qg-tab__label" style="padding-left:4.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:12px;"></i> <%=(category!="Milestone-Input")?category.split("-")[3]:"Inputs"%></label>
+                                                    <input type="checkbox" name="accordion-<%=milestone+category%>" id="<%=milestone+category%>" class="position-absolute opacity-0">
+                                                    <div class="qg-tab__content">
+                                                        <% milestoneGroup[category].forEach(attachment=>{%>
+                                                        <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                            <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                            <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                            <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                            <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                            <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                        </div>
+                                                        <% })%>
+                                                    </div>
+                                                </div>
+                                                <%}%>
+                                                <%}%>
+                                            </div>
+                                        </div>
+                                        <%}%>
+                                    </div>
+                                    <% for (let task in hierarchy[project].milestones[milestone].tasks) { %>
+                                    <div class="task qg-tab shadow-sm w-100 p-0 m-0">
+                                        <label for="<%=task%>" class="qg-tab__label" style="padding-left:3.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:13px;"></i> <%=task%></label>
+                                        <input type="checkbox" name="accordion-<%=task%>" id="<%=task%>" class="position-absolute opacity-0">
+                                        <div class="qg-tab__content">
+                                            <div>
+                                                <% hierarchy[project].milestones[milestone].tasks[task].attachments.forEach(attachment => { %>
+                                                <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                    <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                    <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                    <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                    <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                    <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                </div>
+                                                <% }) %>
+                                            </div>
+                                            <% for (let subtask in hierarchy[project].milestones[milestone].tasks[task].subtasks) { %>
+                                            <div class="subtask qg-tab shadow-sm w-100 p-0 m-0">
+                                                <input type="checkbox" name="accordion-<%=subtask%>" id="<%=subtask%>" class="position-absolute opacity-0">
+                                                <label for="<%=subtask%>" class="qg-tab__label" style="padding-left:4.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:12px;"></i> <%=subtask%></label>
+                                                <div class="qg-tab__content">
+                                                    <div>
+                                                        <% hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].attachments.forEach(attachment => { %>
+                                                        <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                            <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                            <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                            <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                            <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                            <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                        </div>
+                                                        <% }) %>
+                                                    </div>
+                                                    <% for (let sub_subtask in hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].subtasks) { %>
+                                                    <div class="subtask qg-tab shadow-sm w-100 p-0 m-0">
+                                                        <input type="checkbox" name="accordion-<%=sub_subtask%>" id="<%=sub_subtask%>" class="position-absolute opacity-0">
+                                                        <label for="<%=sub_subtask%>" class="qg-tab__label" style="padding-left:5.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:11px;"></i> <%=sub_subtask%></label>
+                                                        <div class="qg-tab__content">
+                                                            <div>
+                                                                <% hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].subtasks[sub_subtask].attachments.forEach(attachment => { %>
+                                                                <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                                    <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                                    <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                                    <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                                    <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                                    <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                                </div>
+                                                                <% }) %>
+                                                            </div>
+                                                            <% for (let markup in hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].subtasks[sub_subtask].markup) { %>
+                                                            <div class="markup qg-tab shadow-sm w-100 p-0 m-0">
+                                                                <% if (hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].subtasks[sub_subtask].markup[markup].attachments.length > 0) { %>
+                                                                <input type="checkbox" name="accordion-<%=markup%>" id="<%=markup%>" class="position-absolute opacity-0">
+                                                                <label for="<%=markup%>" class="qg-tab__label" style="padding-left:7rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:10px;"></i> <%=markup%></label>
+                                                                <div class="qg-tab__content">
+                                                                    <% hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].subtasks[sub_subtask].markup[markup].attachments.forEach(attachment => { %>
+                                                                    <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                                        <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                                        <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                                        <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                                        <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                                        <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                                    </div>
+                                                                    <% }) %>
+                                                                </div>
+                                                                <% } %>
+                                                            </div>
+                                                            <% } %>
+                                                        </div>
+                                                    </div>
+                                                    <% } %>
+                                                    <% for (let markup in hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].markup) { %>
+                                                    <div class="markup qg-tab shadow-sm w-100 p-0 m-0">
+                                                        <% if (hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].markup[markup].attachments.length > 0) { %>
+                                                        <input type="checkbox" name="accordion-<%=markup%>" id="<%=markup%>" class="position-absolute opacity-0">
+                                                        <label for="<%=markup%>" class="qg-tab__label" style="padding-left:6rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:11px;"></i> <%=markup%></label>
+                                                        <div class="qg-tab__content">
+                                                            <% hierarchy[project].milestones[milestone].tasks[task].subtasks[subtask].markup[markup].attachments.forEach(attachment => { %>
+                                                            <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                                <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                                <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                                <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                                <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                                <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                            </div>
+                                                            <% }) %>
+                                                        </div>
+                                                        <% } %>
+                                                    </div>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            <% } %>
+                                            <% for (let markup in hierarchy[project].milestones[milestone].tasks[task].markup) { %>
+                                            <div class="subtask qg-tab shadow-sm w-100 p-0 m-0">
+                                                <% if (hierarchy[project].milestones[milestone].tasks[task].markup[markup].attachments.length > 0) { %>
+                                                <input type="checkbox" name="accordion-<%=markup%>" id="<%=markup%>" class="position-absolute opacity-0">
+                                                <label for="<%=markup%>" class="qg-tab__label" style="padding-left:4.5rem;"><i class="bi bi-folder-fill" style="color:#f59e0b;font-size:12px;"></i> <%=markup%></label>
+                                                <div class="qg-tab__content">
+                                                    <% hierarchy[project].milestones[milestone].tasks[task].markup[markup].attachments.forEach(attachment => { %>
+                                                    <div style="display:grid;grid-template-columns:24px 1fr 80px 110px 60px 120px 44px;padding:7px 16px;border-bottom:1px solid var(--border);gap:12px;align-items:center;font-size:12px;" class="searchList">
+                                                        <div></div><div><a href="../../..<%=attachment.path%>" target="_blank"><%=attachment.name%></a></div>
+                                                        <div><%=attachment.Size%> MB</div><div><%=attachment.Created_Date%></div>
+                                                        <div><img width="22" height="22" src="/static/icons/<%=attachment.Type.substring(1)%>.png" alt="<%=attachment.Type%>"/></div>
+                                                        <div class="text-nowrap" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%=attachment.OwnerName%></div>
+                                                        <div style="text-align:center;"><i class="bi bi-trash3-fill archive-btn <%if(attachment.Owner!=userData.Employee_ID){%>visually-hidden<%}%>" style="color:var(--text-muted);cursor:pointer;" data-fileID="<%=attachment.ID%>"></i></div>
+                                                    </div>
+                                                    <% }) %>
+                                                </div>
+                                                <% } %>
+                                            </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Active Task ── -->
+    <div class="tab-pane fade" id="activeTask-tab-pane" role="tabpanel">
+        <div class="section-card">
+            <div class="section-card-header"><div class="section-card-title"><i class="bi bi-lightning-charge"></i> Active Tasks</div></div>
+            <div class="data-table-wrapper">
+                <table class="data-table" id="activeTaskTable">
+                    <thead><tr><th>#</th><th>User Name</th><th>Task ID</th><th>Task Name</th><th>Milestone</th><th>Start Time</th><th>Duration</th></tr></thead>
+                    <tbody><tr><td colspan="7" class="text-center py-4 text-muted">No active tasks</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /tab-content -->
+</body>
+
+<!-- ══════════════════ MODALS ══════════════════ -->
+<% let Checklist=GetChecklist(Customer,ProjectData.SOW)%>
+
+<!-- Comments Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="AddNoteDialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title"><i class="bi bi-chat-dots me-2"></i>Add Comment</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <textarea name="CommentInput" class="form-control" id="CommentInput" rows="4" placeholder="Enter your comment here..."></textarea>
+                <input type="hidden" name="attachmentType" id="attachmentType">
+                <input type="hidden" name="attachmentLocation" id="attachmentLocation">
+                <input type="hidden" name="Customer" id="Customer" value="<%= Customer %>">
+                <input type="hidden" name="idProjects" id="idProjects" value="<%= ProjectData.idProjects %>">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="this.disabled=true;" id="addCommentBtn"><i class="bi bi-send me-1"></i>Add Comment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attachments Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="AttachmentDialog" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title"><i class="bi bi-cloud-arrow-up me-2"></i>Upload Attachment</h5><button type="button" class="btn-close modal-close-btn" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div style="background:var(--surface-2);border-radius:var(--radius-md);padding:8px 14px;margin-bottom:10px;"><div class="d-flex justify-content-between" style="font-size:12px;font-weight:600;color:var(--text-muted);"><span style="width:50%;">File Name</span><span style="width:20%;">Size</span><span style="width:30%;">Progress</span></div></div>
+                <ul id="filelist" class="list-group list-group-flush mb-2"><li class="list-group-item text-center text-muted" style="font-size:12px;">No files selected</li></ul>
+                <div id="container" style="text-align:center;"></div>
+            </div>
+            <div class="modal-footer">
+                <input type="file" id="fileInput" class="form-control form-control-sm w-50" name="file" multiple>
+                <button type="button" class="btn btn-primary" id="startUpload"><i class="bi bi-cloud-arrow-up me-1"></i>Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Milestone Modal -->
+<div class="modal fade" id="createMilestoneModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header"><h1 class="modal-title fs-5"><i class="bi bi-flag me-2"></i>Create Milestone</h1><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form action="/PMO/CreateMilestone/<%= Customer %>" method="post" id="createMilestoneForm" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+                <div class="modal-body">
+                    <input type="hidden" id="ID" name="ID" value="<%= ProjectData.idProjects %>" readonly required>
+                    <% if(Customer=='AT&T') { %><input type="hidden" id="Project_ID" name="Project_ID" value="<%= ProjectData.CFAS_ID %>" readonly required>
+                    <%}else{%><input type="hidden" id="Project_ID" name="Project_ID" value="<%= ProjectData.JOB_ID %>" readonly required><%}%>
+                    <div class="row g-3">
+                        <div class="row g-3">
+                            <div class="col-md"><label class="form-label">Milestone Name</label><select name="Milestone_Name" id="Milestone_Name" data-customer="<%=Customer%>" class="form-select" required><option value="" selected>Choose Milestone</option><%if(MilestoneNameList){%><% for(let index=0; index < Object.values(MilestoneNameList).length; index++){%><option value="<%= MilestoneNameList[index] %>"><%= MilestoneNameList[index] %></option><% } %><%}%></select></div>
+                            <div class="col-md"><label class="form-label">Milestone Due Date</label><input type="date" class="today-date form-control border" id="Due_Date" data-for="milestone" name="Due_Date" data-parentID="<%= ProjectData.JOB_ID?ProjectData.JOB_ID:ProjectData.CFAS_ID %>" required></div>
+                            <div class="col-md"><label class="form-label">Owner</label><select name="Owner" id="milestone_owner" class="form-select" required><option value="" selected>Choose Owner</option><optgroup label="PMO"><% for(let index=0; index < Object.values(Owners).length; index++){%><% if(Owners[index].Role=="PMO") { %><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><% } %><% } %></optgroup><optgroup label="Manager"><% for(let index=0; index < Object.values(Owners).length; index++){%><% if(Owners[index].Role=="Manager") { %><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><% } %><% } %></optgroup><optgroup label="Engineers"><% for(let index=0; index < Object.values(Owners).length; index++){%><% if(Owners[index].Role=="Employee") { %><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><% } %><% } %></optgroup></select></div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md"><label class="form-label">Prod TGT Start</label><input type="date" class="today-date form-control border" id="Prod_TGT_Start_Date" name="Prod_TGT_Start_Date" required></div>
+                            <div class="col-md"><label class="form-label">Prod TGT End</label><input type="date" class="today-date form-control border" id="Prod_TGT_End_Date" name="Prod_TGT_End_Date" required></div>
+                            <div class="col-md"><label class="form-label">QC TGT Start</label><input type="date" class="today-date form-control border" id="QC_TGT_Start_Date" name="QC_TGT_Start_Date" required></div>
+                            <div class="col-md"><label class="form-label">QC TGT End</label><input type="date" class="today-date form-control border" id="QC_TGT_End_Date" name="QC_TGT_End_Date" required></div>
+                        </div>
+                        <div class="row visually-hidden" id="PermitInfoContainer">
+                            <div class="col-md"><label class="form-label">City</label><input type="text" class="form-control border" id="City" name="City" minlength="2"></div>
+                            <div class="col-md"><label class="form-label">DOT</label><input type="text" class="form-control border" id="Dot" name="Dot" minlength="2"></div>
+                            <div class="col-md"><label class="form-label">Power</label><input type="text" class="form-control border" id="Power" name="Power" minlength="2"></div>
+                            <div class="col-md"><label class="form-label">County-1</label><input type="text" class="form-control border" id="County_1" name="County_1" minlength="2"></div>
+                            <div class="col-md"><label class="form-label">County-2</label><input type="text" class="form-control border" id="County_2" name="County_2" minlength="2"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex">
+                    <div class="btn-group visually-hidden" role="group" id="Billing_Category_Container">
+                        <input type="radio" class="btn-check" name="Billing_Category" id="option1" autocomplete="off" value="Billable" required><label class="btn btn-outline-secondary" for="option1">Billable</label>
+                        <input type="radio" class="btn-check" name="Billing_Category" id="option2" autocomplete="off" value="Non-Billable" required><label class="btn btn-outline-secondary" for="option2">Non-Billable</label>
+                    </div>
+                    <div class="ms-auto d-flex gap-2"><button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Create Milestone</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Production Task Modal -->
+<div class="modal fade" id="create-Prot-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header"><h1 class="modal-title fs-5"><i class="bi bi-gear me-2"></i>Create Production Task</h1><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form action="/CreateTask" method="post" id="TAskCraetionForm" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+                <div class="modal-body">
+                    <input type="hidden" id="ID" name="ID" value="<%= ProjectData.idProjects %>" readonly required>
+                    <div class="row g-3">
+                        <div class="col-md"><label class="form-label">Milestone</label><select name="Milestone_Name" id="Milestone_Name" class="form-select" required><option value="" selected>Choose Milestone</option><% for(let index=0; index < Object.values(Milestone).length; index++) { %><option value="<%= Milestone[index].Milestone_Name %>"><%= Milestone[index].Milestone_Name %></option><% } %></select></div>
+                        <div class="col-md"><label class="form-label">Task Label</label><input type="text" class="form-control" id="TaskLabel" name="TaskLabel" required minlength="2"></div>
+                        <div class="col-md"><label class="form-label">Owner</label><select name="Owner" id="milestone_owner" class="form-select" required><option value="" selected>Choose Owner</option><optgroup label="PMO"><%for(let index=0;index<Object.values(Owners).length;index++){%><%if(Owners[index].Role=="PMO"){%><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Manager"><%for(let index=0;index<Object.values(Owners).length;index++){%><%if(Owners[index].Role=="Manager"){%><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Engineers"><%for(let index=0;index<Object.values(Owners).length;index++){%><%if(Owners[index].Role=="Employee"){%><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><%}%><%}%></optgroup></select></div>
+                        <div class="col-md"><label class="form-label">Task Due Date</label><input type="date" class="today-date form-control border" id="DueDate" name="DueDate" required></div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md"><label class="form-label">QC-Checklist</label><select name="QC_Name" id="QC_Name" class="form-select" required><option value="" selected>Select QC-Checklist</option><%for(let index=0;index<Object.keys(QC_List).length;index++){%><option <%if(Checklist==QC_List[index].Checklist_Name){%>selected<%}%> value="<%=QC_List[index].Checklist_Name%>"><%=QC_List[index].Checklist_Name%></option><%}%></select></div>
+                        <div class="col-md"><input type="hidden" name="Type" id="Type" value="Production"><label class="form-label">Note / Remarks</label><input type="text" class="form-control" id="Remark" name="Remark"></div>
+                        <div class="QC_Due_Date_Container col-md"><label class="form-label">QC Due Date</label><input type="date" class="today-date form-control border" id="QC_Due_Date" name="QC_Due_Date"></div>
+                        <div class="col text-center align-content-center"><p class="form-label d-block">Auto QC</p><input type="radio" class="btn-check" name="autoQC" id="autoQC1" autocomplete="off" value="1" required><label class="btn btn-outline-success btn-sm" for="autoQC1">Yes</label><input type="radio" class="btn-check" name="autoQC" id="autoQC2" autocomplete="off" value="0"><label class="btn btn-outline-danger btn-sm" for="autoQC2">No</label></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="col-md"><div class="form-check form-switch"><label class="form-check-label" for="requiredQC">Need a checklist?</label><input class="form-check-input" type="checkbox" role="switch" id="requiredQC" name="requiredQC" value="1" checked></div></div>
+                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create QC Task Modal -->
+<div class="modal fade" id="create-QC-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header"><h1 class="modal-title fs-5"><i class="bi bi-shield-check me-2"></i>Create QC Task</h1><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form action="/CreateTask" method="post" id="createQCTaskForm" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+                <div class="modal-body">
+                    <input type="hidden" id="ID" name="ID" value="<%= ProjectData.idProjects %>" readonly required>
+                    <div class="row g-3">
+                        <div class="col-md"><label class="form-label">Milestone</label><select name="Milestone_Name" id="Milestone_Name" class="form-select" required><option value="" selected>Choose Milestone</option><%for(let index=0;index<Object.values(Milestone).length;index++){%><option value="<%= Milestone[index].Milestone_Name %>"><%= Milestone[index].Milestone_Name %></option><%}%></select></div>
+                        <div class="col-md visually-hidden"><%if(Customer=='AT&T'){%><input type="text" class="form-control" id="Project_ID" name="Project_ID" value="<%= ProjectData.CFAS_ID %>" readonly required><%}else{%><input type="text" class="form-control" id="Project_ID" name="Project_ID" value="<%= ProjectData.JOB_ID %>" readonly required><%}%></div>
+                        <div class="col-md"><label class="form-label">QC Type</label><select name="Type" id="Type" class="form-select" required><option value="" selected>Select QC Type</option><option value="IQC">IQC</option><option value="RQC">RQC</option></select></div>
+                        <div class="col-md"><label class="form-label">Production Task</label><select name="Prod_Task" id="Prod_Task" class="form-select" required><option value="" selected>Select Production Task</option><%for(let index=0;index<Object.values(Task).length;index++){%><%if(Task[index].Type=='Production'&&(Task[index].Status=="Completed"||Task[index].Status=="Ready for QC")){%><option value="<%= Task[index].TaskName %>"><%= Task[index].TaskName+" - "+Task[index].TaskLabel %></option><%}%><%}%></select></div>
+                        <div class="col-md"><label class="form-label">Task Name</label><input type="text" class="form-control" id="TaskLabel" name="TaskLabel"></div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md"><label class="form-label">Owner</label><select name="Owner" id="milestone_owner" class="form-select" required><option value="" selected>Choose Owner</option><optgroup label="PMO"><%for(let index=0;index<Object.values(Owners).length;index++){%><%if(Owners[index].Role=="PMO"){%><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Manager"><%for(let index=0;index<Object.values(Owners).length;index++){%><%if(Owners[index].Role=="Manager"){%><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><%}%><%}%></optgroup><optgroup label="Engineers"><%for(let index=0;index<Object.values(Owners).length;index++){%><%if(Owners[index].Role=="Employee"){%><option value="<%= Owners[index].Employee_ID %>"><%= Owners[index].Full_Name %></option><%}%><%}%></optgroup></select></div>
+                        <div class="col-md"><label class="form-label">QC-Checklist</label><select name="QC_Name" id="QC_Name" class="form-select" required><option value="" selected>Select QC-Checklist</option><%for(let index=0;index<Object.keys(QC_List).length;index++){%><option <%if(Checklist==QC_List[index].Checklist_Name){%>selected<%}%> value="<%=QC_List[index].Checklist_Name%>"><%=QC_List[index].Checklist_Name%></option><%}%></select></div>
+                        <div class="col-md"><label class="form-label">Due Date</label><input type="date" class="today-date form-control border" id="DueDate" name="DueDate"></div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Create Task</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create USQC/CQC Modal -->
+<div class="modal fade" id="create-CQC-Task-Modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header"><h1 class="modal-title fs-5"><i class="bi bi-clipboard-check me-2"></i>Create USQC/CQC Task</h1><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form action="/CreateTask" method="post" id="createQCTaskForm" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col visually-hidden"><%if(Customer=='AT&T'){%><input type="text" class="form-control" id="Project_ID" name="Project_ID" value="<%= ProjectData.CFAS_ID %>" readonly required><%}else{%><input type="text" class="form-control" id="Project_ID" name="Project_ID" value="<%= ProjectData.JOB_ID %>" readonly required><%}%></div>
+                        <div class="col-md"><label class="form-label">Task Type</label><select name="Type" id="Type" class="form-select" required><option value="" selected>Choose Type</option><option value="USQC">USQC</option><option value="CQC">CQC</option></select></div>
+                        <div class="col-md"><input type="hidden" id="ID" name="ID" value="<%= ProjectData.idProjects %>" readonly required><label class="form-label">Milestone</label><select name="Milestone_Name" id="Milestone_Name" class="form-select" required><option value="" selected>Choose Milestone</option><%for(let index=0;index<Object.values(Milestone).length;index++){%><option value="<%= Milestone[index].Milestone_Name %>"><%= Milestone[index].Milestone_Name %></option><%}%></select></div>
+                        <div class="col-md"><label class="form-label">Task Name</label><input type="text" class="form-control border" id="TaskLabel" name="TaskLabel"></div>
+                        <div class="col-md"><label class="form-label">Due Date</label><input type="date" class="today-date form-control border" id="DueDate" name="DueDate" required></div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md"><label class="form-label">Note / Remarks</label><input type="text" class="form-control border" id="Remark" name="Remark"></div>
+                        <div class="col-md" id="ScoreContainer"><label class="form-label">Customer Score</label><input type="text" class="form-control border" id="Score" name="Score" required></div>
+                        <div class="col-md text-center align-content-center"><p class="form-label d-block">Scored from Customer?</p><input type="radio" class="btn-check" name="ScoreRadio" id="Score1" autocomplete="off" value="1" required><label class="btn btn-outline-success" for="Score1">Yes</label><input type="radio" class="btn-check" name="ScoreRadio" id="Score0" autocomplete="off" value="0" required><label class="btn btn-outline-danger" for="Score0">No</label></div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Create Task</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Estimates Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="EstimatesDialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Add Estimate</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form action="/PMO/AddEstimate" method="post" id="AddEstimate">
+                <div class="modal-body">
+                    <input type="hidden" name="idProject" id="idProject" value="<%=ProjectData.idProjects%>">
+                    <input type="hidden" name="Job_ID" id="Job_ID" value="<%=ProjectData.CFAS_ID?ProjectData.CFAS_ID:ProjectData.JOB_ID%>">
+                    <input type="hidden" name="Program" id="Program" value="<%=ProjectData.Program%>">
+                    <input type="hidden" name="idratecard" id="idratecard" value="">
+                    <div class="row g-2">
+                        <div class="col-md"><label class="form-label">Region</label><select id="Region" class="form-select" required><%for(let index=0;index<Object.values(Region).length;index++){%><option value="<%=Region[index].Region%>"><%=Region[index].Region%></option><%}%></select></div>
+                        <div class="col-md"><label class="form-label">Item</label><input list="item-list" id="Item" name="Item" class="form-control" required><datalist id="item-list"><%for(let index=0;index<Object.values(RateCard).length;index++){%><option value="<%=RateCard[index].Item%>"><%}%></datalist></div>
+                        <div class="col-md"><label class="form-label">UOM</label><input type="text" class="form-control" name="UOM" id="UOM" value="" readonly></div>
+                        <div class="col-md"><label class="form-label">Quantity</label><input type="text" class="form-control" name="Quantity" id="Quantity" value="1" pattern="^-?(?:[1-9]\d*)?$" required></div>
+                    </div>
+                    <div class="mt-2"><label class="form-label">Description</label><input type="text" class="form-control" name="Description" id="Description" value="" readonly></div>
+                </div>
+                <div class="modal-footer"><button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="submit" class="btn btn-primary">Add Estimate</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reserved Estimates Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="ReservedEstimatesDialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Approval Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><label for="estimateApproveDate" class="form-label">Select Reserved Date</label><input type="date" class="max-today form-control mb-3 border" name="estimateApproveDate" id="estimateApproveDate"><button class="btn btn-primary btn-sm estimateSubmitBtn" id="estimateSubmitBtn1" type="button">Submit</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Invoiced Estimates Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="InvoicedEstimatesDialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Invoice Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <label for="estimateInvoicedNumber" class="form-label">Invoice Number <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-title="Case Sensitive"></i></label>
+                <input type="text" class="form-control mb-2 border" name="estimateInvoicedNumber" id="estimateInvoicedNumber" pattern="[A-Z]{4}/\d{2}-\d{2}/\d{4}" placeholder="QGKA/25-26/0505">
+                <p class="visually-hidden text-danger small" id="invMessage">Date and Invoice auto-filled from an existing invoice.</p>
+                <label for="estimateInvoicedDate" class="form-label">Invoiced Date</label>
+                <input type="date" class="max-today form-control mb-2 border" name="estimateInvoicedDate" id="estimateInvoicedDate">
+                <a href="#" id="existingInvoice" target="_blank" class="d-block visually-hidden small mb-2">Click here to see the existing Invoice</a>
+                <label for="invoiceFile" class="form-label">Select Invoice PDF</label>
+                <input class="form-control form-control-sm mb-2" id="invoiceFile" name="invoiceFile" type="file" accept="application/pdf">
+                <button class="btn btn-primary btn-sm estimateSubmitBtn mt-1" id="estimateSubmitBtn2" type="button">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Received Modal (New Payment) -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="PaymentReceivedDialog" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Payment Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="estimatesConfirmationContainer"></div>
+                <label for="estimatePaymentDate" class="form-label">Payment Received Date</label>
+                <input type="date" class="max-today form-control mb-2 border" name="estimatePaymentDate" id="estimatePaymentDate">
+                <%if(userData.Designation=="Head-OSP Design" && userData.Role=="PMO"){%>
+                <div class="alert alert-primary d-flex align-items-center visually-hidden small"><i class="bi bi-info-circle me-2"></i>Total amount of $<span id="TotalPaymentReceivedLabel">0.0</span> received on the above date.</div>
+                <%}%>
+            </div>
+            <div class="modal-footer justify-content-center"><button class="btn btn-primary estimateSubmitBtn" id="estimateSubmitBtn3" type="button">Submit</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- View Payment Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="ViewPaymentDialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewPaymentTitle">
+                    <i class="bi bi-eye me-2"></i>Payment Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Invoice Number</th>
+                                <th>Amount</th>
+                                <th>Payment Received Date</th>
+                                <th>Remark</th>
+                            </tr>
+                        </thead>
+                        <tbody id="viewPaymentBody">
+                            <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rejected Dialog -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="RejectedDialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Rejection Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <label for="estimateRejectedDate" class="form-label">Rejected Date</label>
+                <input type="date" class="max-today form-control mb-2 border" name="estimateRejectedDate" id="estimateRejectedDate">
+                <label for="estimateRejectedComment" class="form-label">Rejection Comment</label>
+                <input type="text" class="form-control mb-3 border" name="estimateRejectedComment" id="estimateRejectedComment" placeholder="Enter rejection reason">
+                <button class="btn btn-danger btn-sm estimateSubmitBtn" id="estimateSubmitBtn4" type="button">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Work Done Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="WorkDoneDialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title"><i class="bi bi-check2-circle me-2"></i>Add Monthly Work Done</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form method="post" id="AddWorkDone">
+                <div class="modal-body">
+                    <input type="hidden" name="idProject" id="idProject" value="<%=ProjectData.idProjects%>">
+                    <input type="hidden" name="Job_ID" id="Job_ID" value="<%=ProjectData.CFAS_ID?ProjectData.CFAS_ID:ProjectData.JOB_ID%>">
+                    <input type="hidden" name="Program" id="Program" value="<%=ProjectData.Program%>">
+                    <input type="hidden" name="idratecard" id="idratecard" value="">
+                    <div class="row g-2">
+                        <div class="col-md"><label class="form-label">Region</label><select id="Region" class="form-select" required><%for(let index=0;index<Object.values(Region).length;index++){%><option value="<%=Region[index].Region%>"><%=Region[index].Region%></option><%}%></select></div>
+                        <div class="col-md"><label class="form-label">Item</label><input list="WD_item-list" id="WD_Item" name="Item" class="form-control" required><datalist id="WD_item-list"><%for(let index=0;index<Object.values(RateCard).length;index++){%><option value="<%=RateCard[index].Item%>"><%}%></datalist></div>
+                        <div class="col-md"><label class="form-label">UOM</label><input type="text" class="form-control" name="UOM" id="UOM" value="" readonly required></div>
+                        <div class="col-md"><label class="form-label">Quantity</label><input type="text" class="form-control" name="Quantity" id="Quantity" value="1" pattern="^-?(?:[1-9]\d*)?$" required></div>
+                    </div>
+                    <div class="row g-2 mt-1">
+                        <div class="col-md"><label class="form-label">Description</label><input type="text" class="form-control" name="Description" id="Description" value="" readonly></div>
+                        <div class="col-md"><label class="form-label">Accounted Month</label><input type="month" class="max-this-month form-control border" name="WorkedMonth" id="WorkedMonth" required></div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="reset" class="btn btn-secondary">Clear</button><button type="submit" class="btn btn-primary">Add Work Done</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Move to Estimates Dialog -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="MoveToEstimatesDialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><p class="fw-bold mb-2">Monthly Work Done → Estimates</p><label for="estimateBulkApproveDate" class="form-label">Select Common Reserved Date</label><input type="date" class="max-today form-control mb-3 border" name="estimateBulkApproveDate" id="estimateBulkApproveDate"><button class="btn btn-primary btn-sm moveToEstimateBtn" id="moveToEstimateBtn1" type="button">Submit</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Credit Note Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="creditNoteModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" id="creditNoteForm">
+                <div class="modal-header"><p class="modal-title fw-bold fs-6 m-0">Add Credit Note</p><button type="reset" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" name="Estimates_ID" id="Estimates_ID" readonly required>
+                    <div class="mb-2"><label class="form-label">Invoice Number</label><input type="text" name="invoiceNumber" id="invoiceNumber" class="form-control border" readonly required></div>
+                    <div class="mb-2"><label class="form-label">Credit Note Number</label><input type="text" name="creditNoteNumber" id="creditNoteNumber" class="form-control border" minlength="5" required></div>
+                    <div class="row g-2 mb-2"><div class="col"><label class="form-label">Line Item</label><input type="text" name="Item" id="Item" class="form-control border" readonly required></div><div class="col"><label class="form-label">Quantity</label><input type="text" name="Qty" id="Qty" class="form-control border" readonly required></div></div>
+                    <div class="row g-2 mb-2"><div class="col"><label class="form-label">Credit Note Date</label><input type="date" class="max-today form-control border" name="creditNoteDate" id="creditNoteDate" required></div><div class="col"><label class="form-label">Amount ($)</label><input type="number" name="creditNoteAmount" id="creditNoteAmount" class="form-control border" min="1" required></div></div>
+                    <button class="btn btn-primary btn-sm" id="addCreditNote" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Credit Note Info Modal -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="creditNoteInfoModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><p class="modal-title fw-bold fs-6 m-0">Credit Note Details</p><button type="reset" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" name="Estimates_ID" id="Estimates_ID" readonly required>
+                <div class="row g-2 mb-2"><div class="col"><label class="form-label">Invoice Number</label><input type="text" name="invoiceNumber" id="invoiceNumber" class="form-control border" readonly required></div><div class="col"><label class="form-label">Credit Note Number</label><input type="text" name="creditNoteNumber" id="creditNoteNumber" class="form-control border" readonly required></div></div>
+                <div class="row g-2 mb-2"><div class="col"><label class="form-label">Line Item</label><input type="text" name="Item" id="Item" class="form-control border" readonly required></div><div class="col"><label class="form-label">Quantity</label><input type="text" name="Qty" id="Qty" class="form-control border" readonly required></div></div>
+                <div class="row g-2 mb-2"><div class="col"><label class="form-label">Credit Note Date</label><input type="date" class="max-today form-control border" name="creditNoteDate" id="creditNoteDate" readonly required></div><div class="col align-content-end"><a href="#" target="_blank" rel="noopener noreferrer" id="creditNoteAttachment" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-eye me-1"></i>View Attachment</a></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Partial Payment Confirmation Modal -->
+<div class="modal fade" id="partialPaymentModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><p class="modal-title fw-bold fs-6 m-0">Partial Payment Confirmation</p><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="table-responsive"><table class="data-table table-sm table-bordered align-middle" style="font-size:12px;"><thead class="bg-primary text-white"><tr><th>Sl.No</th><th>Item</th><th>Total Qty</th><th>Total Value</th><th>Settled Qty</th><th>Settled Amt</th><th>Outstanding Qty</th><th>Outstanding Amt</th></tr></thead><tbody id="partialLineItemsBody"></tbody></table></div>
+                <div class="alert alert-primary d-flex align-items-center gap-2 mt-2 small"><i class="bi bi-info-circle"></i>Outstanding quantity will be added as a new line item with the same invoice details.</div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button class="btn btn-success btn-sm" id="confirmPartialPayment">Confirm Partial Payment</button></div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script src="/static/js/CreateProject.js"></script>
+<script>
+$(document).ready(function () {
+    $(".QC_Due_Date_Container").hide();
+    $("#ScoreContainer").hide();
+    $('input[type="radio"][name="autoQC"]').on('click', function () {
+        if ($(this).val() === '1') { $('.QC_Due_Date_Container').show(); $('#QC_Due_Date').attr('required', true); }
+        else { $('.QC_Due_Date_Container').hide(); $('#QC_Due_Date').attr('required', false); }
+    });
+    $('input[type="radio"][name="ScoreRadio"]').on('click', function () {
+        if ($(this).val() === '1') { $('#ScoreContainer').show(); $('#Score').attr('required', true); $('#Score').val(null); }
+        else { $('#ScoreContainer').hide(); $('#Score').attr('required', false); $('#Score').val("Not-Scored"); }
+    });
+    $("#Score").change(function(){ if(parseFloat($(this).val())>=100){ alert("Customer Score can't exceed 100%."); $(this).val(null); } });
+
+    let Customer="<%- Customer %>";
+    let Project_ID='<%= ProjectData.JOB_ID?ProjectData.JOB_ID:ProjectData.CFAS_ID %>';
+    let ID='<%=ProjectData.idProjects%>';
+    setInterval(()=>{ socket.emit("getAllActiveStatus",{Project:Project_ID,Customer:Customer,ResponseFor:"Project",idProjects:ID}); },2000);
+
+    const datalist = document.getElementById('item-list');
+    const region = document.getElementById('Region');
+    const input = document.getElementById('Item');
+    input.addEventListener('blur', function () {
+        const temp=region.value; const value=input.value.trim().toLowerCase();
+        const normalizedOptions=Array.from(datalist.options).map(o=>o.value.toLowerCase());
+        if (!normalizedOptions.includes(value)) { input.value=''; document.getElementById("AddEstimate").reset(); region.value=temp; }
+    });
+    let isEstimatesItemChanged=false;
+    input.addEventListener('change', async function () {
+        const temp=region.value; const value=input.value.trim().toLowerCase();
+        const normalizedOptions=Array.from(datalist.options).map(o=>o.value.toLowerCase());
+        if (!normalizedOptions.includes(value)) { input.value=''; document.getElementById("AddEstimate").reset(); region.value=temp; alert("Invalid Labor Code for the selected project."); }
+        else {
+            await axios.get("/api/getRateCardInfo",{params:{Item:input.value,Region:region.value}}).then(res=>{
+                const {Description,UOM,idratecard}=res.data;
+                document.getElementById("Description").value=Description; document.getElementById("UOM").value=UOM; document.getElementById("idratecard").value=idratecard; isEstimatesItemChanged=true;
+            }).catch(er=>{ if(er.response.data=="Not Found") alert("Oops! We couldn't find that code in our system."); else { alert("Something Went Wrong, Try Again..!"); console.log(er); } document.getElementById("AddEstimate").reset(); });
+        }
+    });
+    document.querySelector("#AddEstimate #Region").addEventListener('change',function(){ if(isEstimatesItemChanged){ document.getElementById("AddEstimate").reset(); isEstimatesItemChanged=false; } });
+
+    let isWorkDoneItemChanged=false;
+    document.getElementById("WD_Item").addEventListener('change',async function(e){
+        const temp=document.querySelector("#AddWorkDone #Region").value;
+        const value=document.querySelector("#AddWorkDone #WD_Item").value.trim().toLowerCase();
+        const normalizedOptions=Array.from(document.querySelector("#AddWorkDone #WD_item-list").options).map(o=>o.value.toLowerCase());
+        if (!normalizedOptions.includes(value)) { e.target.value=''; document.getElementById("AddWorkDone").reset(); region.value=temp; alert("Invalid Labor Code for the selected project."); }
+        else {
+            await axios.get("/api/getRateCardInfo",{params:{Item:e.target.value,Region:temp}}).then(res=>{
+                const {Description,UOM,idratecard}=res.data;
+                document.querySelector("#AddWorkDone #Description").value=Description; document.querySelector("#AddWorkDone #UOM").value=UOM; document.querySelector("#AddWorkDone #idratecard").value=idratecard; isWorkDoneItemChanged=true;
+            }).catch(er=>{ if(er.response.data=="Not Found") alert("Oops! We couldn't find that code in our system."); else { alert("Something Went Wrong, Try Again..!"); console.log(er); } document.getElementById("AddWorkDone").reset(); });
+        }
+    });
+    document.querySelector("#AddWorkDone #Region").addEventListener('change',function(){ if(isWorkDoneItemChanged){ document.getElementById("AddWorkDone").reset(); isWorkDoneItemChanged=false; } });
+
+    const estimatesTriggerBtn=document.querySelectorAll(".estimatesTriggerBtn");
+    let estimateApproveDate=null, estimateInvoicedDate=null, estimateInvoicedNumber=null;
+    let estimatePaymentDate=null, estimateAmountReceived=null, estimateRejectedDate=null, estimateRejectedComment=null;
+    let estimatesID=null, Action=null, TotalAmount=0;
+
+    document.getElementById("estimateApproveDate").addEventListener("change",(e)=>{ estimateApproveDate=e.target.value; });
+    document.getElementById("estimateInvoicedDate").addEventListener("change",(e)=>{ estimateInvoicedDate=e.target.value; });
+    let isInvoiceExist=false, existingInvoicePath=null;
+    document.getElementById("estimateInvoicedNumber").addEventListener("change",async(e)=>{
+        isInvoiceExist=false;
+        if(e.target.value.length>14){
+            const invDetails=await axios.get("/api/getInvoice",{params:{invNo:e.target.value}});
+            if(invDetails.status==200){
+                isInvoiceExist=true; estimateInvoicedDate=invDetails.data.invDate; existingInvoicePath=invDetails.data.invoicePath;
+                document.getElementById("estimateInvoicedDate").value=invDetails.data.invDate;
+                document.getElementById("estimateInvoicedDate").setAttribute("disabled","");
+                document.getElementById("invoiceFile").setAttribute("disabled",""); document.getElementById("invoiceFile").classList.add("visually-hidden");
+                document.querySelector("label[for='invoiceFile']").classList.add("visually-hidden");
+                document.getElementById("existingInvoice").setAttribute("href",invDetails.data.invoicePath); document.getElementById("existingInvoice").classList.remove("visually-hidden");
+                document.getElementById("invMessage").classList.remove("visually-hidden");
+            }else{
+                isInvoiceExist=false; estimateInvoicedDate=null; existingInvoicePath=null;
+                document.getElementById("estimateInvoicedDate").value=null; document.getElementById("estimateInvoicedDate").removeAttribute("disabled");
+                document.getElementById("invMessage").classList.add("visually-hidden");
+                document.getElementById("invoiceFile").removeAttribute("disabled"); document.getElementById("invoiceFile").classList.remove("visually-hidden");
+                document.querySelector("label[for='invoiceFile']").classList.remove("visually-hidden");
+                document.getElementById("existingInvoice").classList.add("visually-hidden"); document.getElementById("existingInvoice").setAttribute("href","#");
+            }
+        }
+        estimateInvoicedNumber=e.target.value;
+    });
+    document.getElementById("estimatePaymentDate").addEventListener("change",(e)=>{ estimatePaymentDate=e.target.value; });
+    document.getElementById("estimateRejectedDate").addEventListener("change",(e)=>{ estimateRejectedDate=e.target.value; });
+    document.getElementById("estimateRejectedComment").addEventListener("change",(e)=>{ estimateRejectedComment=e.target.value; });
+
+    document.getElementById("PaymentReceivedDialog").addEventListener('show.bs.modal',async event=>{
+        const button=event.relatedTarget;
+        const recipient=button.getAttribute('data-totalRevenue');
+        const estID=button.dataset.estimatesid;
+        const estDetails=await axios.get("/api/getEstimateDetails",{params:{Estimates_ID:estID}});
+        const container=document.querySelector(".estimatesConfirmationContainer");
+        container.innerHTML="";
+        const header=["Sl.No","Item","Total Qty","Received Qty","Payment Received"];
+        const headRow=document.createElement("div");
+        headRow.classList.add("row","rounded","bg-primary","bg-gradient","border","m-1","fw-bold","text-light");
+        header.forEach((text,index)=>{ const col=document.createElement("div"); col.className=`p-2 ${["col-2","col-3","col-2","col-2","col-3"][index]}`; col.textContent=text; headRow.appendChild(col); });
+        container.appendChild(headRow);
+        estDetails.data.forEach((estimate,index)=>{
+            const div=document.createElement("div");
+            div.classList.add("border","rounded","row","m-1","estimate-row","bg-gradient","bg-light","align-items-center");
+            div.dataset.id=estimate.idestimates; div.dataset.totalQty=estimate.Quantity; div.dataset.totalValue=estimate.TotalValue;
+            div.innerHTML=`<div class="col-2 p-2">${index+1}</div><div class="col-3 p-2">${estimate.Item}</div><div class="col-2 p-2">${parseFloat(estimate.Quantity).toFixed(2)}</div><div class="col-2 p-2"><input class="form-control form-control-sm bg-white border received-qty" type="number" min="1" value="${parseFloat(estimate.Quantity).toFixed(2)}" readonly><div class="valid-feedback qty-valid-msg"></div><div class="invalid-feedback qty-invalid-msg"></div></div><div class="col-3 p-2 input-group w-25"><span class="input-group-text px-2 py-1">$</span><input class="form-control form-control-sm bg-white border received-amount" type="number" min="1" value="${estimate.TotalValue}"><div class="valid-feedback amount-valid-msg"></div><div class="invalid-feedback amount-invalid-msg"></div></div>`;
+            container.appendChild(div);
+        });
+        TotalAmount=parseFloat(recipient).toFixed(2);
+        if(document.getElementById("TotalPaymentReceivedLabel")) document.getElementById("TotalPaymentReceivedLabel").innerText=TotalAmount;
+        document.querySelectorAll(".received-amount").forEach(amountInput=>{
+            amountInput.addEventListener("input",(e)=>{
+                const col=e.target.closest(".col-3"); const Qty=col.parentElement.dataset.totalQty; const TotalValue=col.parentElement.dataset.totalValue; const unitPrice=TotalValue/Qty;
+                const qtyInput=col?.previousElementSibling?.querySelector(".received-qty")||col?.nextElementSibling?.querySelector(".received-qty");
+                if(qtyInput) qtyInput.value=e.target.value/unitPrice;
+            });
+        });
+    });
+
+    function collectAndValidate(){
+        const rows=document.querySelectorAll(".estimate-row"); const errors=[], partials=[], payload=[];
+        rows.forEach((row,index)=>{
+            const inputQty=row.querySelector(".received-qty"), inputAmount=row.querySelector(".received-amount");
+            const invalidQtyMsg=row.querySelector(".qty-invalid-msg"), validQtyMsg=row.querySelector(".qty-valid-msg");
+            const invalidAmountMsg=row.querySelector(".amount-invalid-msg"), validAmountMsg=row.querySelector(".amount-valid-msg");
+            const totalQty=Number(row.dataset.totalQty), totalValue=Number(row.dataset.totalValue);
+            let receivedQty=Number(inputQty.value), receivedAmount=Number(inputAmount.value);
+            inputQty.classList.remove("is-invalid","is-valid"); validQtyMsg.textContent=""; invalidQtyMsg.textContent="";
+            inputAmount.classList.remove("is-invalid","is-valid"); validAmountMsg.textContent=""; invalidAmountMsg.textContent="";
+            if(isNaN(receivedQty)) receivedQty=1;
+            if(receivedQty<1){ errors.push(`Row ${index+1}: Qty must be > 0`); inputQty.classList.add("is-invalid"); invalidQtyMsg.textContent="Qty must be > 0"; return; }
+            if(receivedAmount<1){ errors.push(`Row ${index+1}: Amount cannot be Zero/Negative`); inputAmount.classList.add("is-invalid"); invalidAmountMsg.textContent="Amount cannot be Zero/Negative"; return; }
+            if(receivedQty>totalQty){ errors.push(`Row ${index+1}: Received qty exceeds total`); inputQty.classList.add("is-invalid"); invalidQtyMsg.textContent="Received qty exceeds total"; inputAmount.classList.add("is-invalid"); invalidAmountMsg.textContent="Received amount exceeds total value."; return; }
+            if((receivedQty<totalQty)||(receivedAmount<totalValue)){ partials.push({id:row.dataset.id,Item:row.children[1].textContent,receivedQty,totalQty,totalValue}); inputQty.classList.add("is-invalid"); invalidQtyMsg.textContent="Partial Payment"; inputAmount.classList.add("is-invalid"); invalidAmountMsg.textContent="Partial Payment"; payload.push({id:row.dataset.id,receivedQty,totalQty,isPartial:true,pendingQty:totalQty-receivedQty}); return; }
+            inputQty.classList.add("is-valid");
+            payload.push({id:row.dataset.id,receivedQty,totalQty,isPartial:false});
+        });
+        return {errors,partials,payload};
+    }
+
+    let isPartialPaymentConfirmed=false;
+    document.querySelectorAll(".estimateSubmitBtn").forEach(btn=>{
+        btn.addEventListener("click",(e)=>{
+            if(Action==="Reserved"||Action==="Bulk-Reserved"){
+                if(!estimateApproveDate){ alert("Please fill all fields."); return; }
+                axios.post("/api/updateEstimates",{ID:estimatesID,Action:Action,ApprovedDate:estimateApproveDate}).then(res=>{ window.location.reload(); }).catch(er=>{ console.log(er); toasts.push(er.response.data); });
+            }
+            if(Action==="Invoiced"||Action==="Bulk-Invoiced"){
+                const pattern=/^[A-Z]{4}\/\d{2}-\d{2}\/\d{4}$/; const invoiceFile=document.getElementById("invoiceFile");
+                if(invoiceFile.files.length===0 && isInvoiceExist==false){ alert('Please select an Invoice before submitting.'); return; }
+                if(!estimateInvoicedDate||!estimateInvoicedNumber||!pattern.test(estimateInvoicedNumber)){ alert("Kindly fill all fields in the required format."); return; }
+                const formData=new FormData();
+                formData.append("ID",estimatesID); formData.append("Action",Action); formData.append("Invoice_Number",estimateInvoicedNumber); formData.append("Invoiced_Date",estimateInvoicedDate);
+                if(isInvoiceExist) formData.append("invoicePath",existingInvoicePath);
+                formData.append("invoicePdf",invoiceFile.files[0]);
+                axios.post("/api/updateEstimates",formData).then(res=>{ window.location.reload(); }).catch(er=>{ console.log(er); toasts.push(er.response.data); });
+            }
+            if(Action==="Rejected"||Action==="Bulk-Rejected"){
+                if(!estimateRejectedComment&&!estimateRejectedDate){ alert("Please fill all fields."); return; }
+                axios.post("/api/updateEstimates",{ID:estimatesID,Action:Action,Rejection_Comment:estimateRejectedComment,Rejected_Date:estimateRejectedDate}).then(res=>{ window.location.reload(); }).catch(er=>{ console.log(er); toasts.push(er.response.data); });
+            }
+            if(Action==="Payment Received"||Action==="Bulk-Payment-Received"){
+                if(!estimatePaymentDate){ alert("Please fill all mandatory fields..."); return; }
+                const{errors,partials,payload}=collectAndValidate();
+                if(errors.length) return;
+                if(partials.length){
+                    const tbody=document.getElementById("partialLineItemsBody"); tbody.innerHTML="";
+                    partials.forEach((item,index)=>{ const unitPrice=item.totalValue/item.totalQty; const tr=document.createElement("tr"); tr.innerHTML=`<td>${index+1}</td><td>${item.Item}</td><td>${parseFloat(item.totalQty).toFixed(2)}</td><td>${parseFloat(item.totalValue).toFixed(2)}</td><td>${parseFloat(item.receivedQty).toFixed(2)}</td><td>${parseFloat(item.receivedQty*unitPrice).toFixed(2)}</td><td>${parseFloat(item.totalQty-item.receivedQty).toFixed(2)}</td><td>${parseFloat((item.totalQty-item.receivedQty)*unitPrice).toFixed(2)}</td>`; tbody.appendChild(tr); });
+                    const modal=bootstrap.Modal.getOrCreateInstance(document.getElementById("partialPaymentModal")); modal.show();
+                }
+                if(partials.length&&isPartialPaymentConfirmed){
+                    axios.post("/api/updateEstimates",{ID:estimatesID,Action:Action,Amount_Received:estimateAmountReceived,Payment_Received_Date:estimatePaymentDate,partialPayment:payload}).then(res=>{ window.location.reload(); }).catch(er=>{ console.log(er); toasts.push(er.response.data); });
+                }else if(partials.length==0){
+                    axios.post("/api/updateEstimates",{ID:estimatesID,Action:Action,Amount_Received:estimateAmountReceived,Payment_Received_Date:estimatePaymentDate}).then(res=>{ window.location.reload(); }).catch(er=>{ console.log(er); toasts.push(er.response.data); });
+                }
+            }
+        });
+    });
+    estimatesTriggerBtn.forEach(button=>{ button.addEventListener("click",(e)=>{ Action=e.target.getAttribute("data-action"); estimatesID=e.target.getAttribute("data-estimatesId"); }); });
+    document.getElementById("confirmPartialPayment").addEventListener("click",()=>{ isPartialPaymentConfirmed=true; document.getElementById("estimateSubmitBtn3").click(); });
+
+    let ProjectDueDate=('<%= ProjectData.DueDate %>');
+    let ProjectReceivedDate=('<%= ProjectData.ReceivedDate %>');
+    var Prod_TGT_Start_Date=document.getElementById('Prod_TGT_Start_Date');
+    var Prod_TGT_End_Date=document.getElementById('Prod_TGT_End_Date');
+    var QC_TGT_Start_Date=document.getElementById('QC_TGT_Start_Date');
+    var QC_TGT_End_Date=document.getElementById('QC_TGT_End_Date');
+    var Milestone_Due_Date=document.getElementById('Due_Date');
+    [Prod_TGT_Start_Date,Prod_TGT_End_Date,QC_TGT_Start_Date,QC_TGT_End_Date,Milestone_Due_Date].forEach(input=>{
+        input.addEventListener('change',()=>{ validateDate(Milestone_Due_Date.value,Prod_TGT_Start_Date.value,Prod_TGT_End_Date.value,QC_TGT_Start_Date.value,QC_TGT_End_Date.value); });
+    });
+    function validateDate(MDueDate,PSDate,PEDate,QSDate,QEDate){
+        if(MDueDate&&PSDate&&PEDate&&QSDate&&QEDate){
+            if(!(new Date(QEDate)>=new Date(ProjectReceivedDate))&&(new Date(MDueDate)>=new Date(ProjectReceivedDate))&&(new Date(QEDate)>=new Date(QSDate))&&(new Date(QSDate)>=new Date(PEDate))&&(new Date(PEDate)>=new Date(PSDate))&&(new Date(PSDate)>=new Date(ProjectReceivedDate))){
+                Prod_TGT_Start_Date.value=""; Prod_TGT_End_Date.value=""; QC_TGT_Start_Date.value=""; QC_TGT_End_Date.value=""; Milestone_Due_Date.value="";
+                toasts.push({title:"Error",content:"Invalid dates.\nPlease provide dates on or after "+ProjectReceivedDate,style:"error",dismissAfter:'5s'});
+            }
+        }
+    }
+
+    const tgt=document.getElementById("createMilestoneForm");
+    tgt.querySelector("#Milestone_Name").addEventListener("change",function(){
+        if(this.value=="Permit"&&this.getAttribute("data-customer")=="AT&T") document.getElementById("PermitInfoContainer").classList.remove("visually-hidden");
+        else document.getElementById("PermitInfoContainer").classList.add("visually-hidden");
+    });
+
+    $("#requiredQC").change(function(){
+        if($(this).is(":checked")==false){
+            document.getElementById("create-Prot-Task-Modal").querySelector("#QC_Name").removeAttribute("required");
+            document.getElementById("create-Prot-Task-Modal").querySelector("#QC_Name").value=null;
+            document.getElementById("create-Prot-Task-Modal").querySelector("#QC_Name").parentElement.parentElement.classList.add("visually-hidden");
+            document.getElementsByName("autoQC").forEach(e=>{ e.setAttribute("disabled",""); });
+            document.getElementById("autoQC2").setAttribute("checked","checked");
+            document.getElementById("create-Prot-Task-Modal").querySelector("#QC_Due_Date").parentElement.parentElement.classList.add("visually-hidden");
+            $('#QC_Due_Date').attr('required',false);
+        }else{
+            document.getElementById("create-Prot-Task-Modal").querySelector("#QC_Name").setAttribute("required","");
+            document.getElementById("create-Prot-Task-Modal").querySelector("#QC_Name").parentElement.parentElement.classList.remove("visually-hidden");
+            document.getElementById("create-Prot-Task-Modal").querySelector("#QC_Due_Date").parentElement.parentElement.classList.remove("visually-hidden");
+            document.getElementsByName("autoQC").forEach(e=>{ e.removeAttribute("disabled"); });
+            document.getElementById("autoQC2").removeAttribute("checked");
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded',function(){
+        syncArchiveButton();
+        const selectAllCheckbox=document.getElementById('selectAll');
+        const recordCheckboxes=document.querySelectorAll('.record-checkbox');
+        const selectedRecords=[];
+        function updateSelectedRecords(){
+            selectedRecords.length=0;
+            recordCheckboxes.forEach(checkbox=>{ if(checkbox.checked) selectedRecords.push(checkbox.value); });
+            if(selectedRecords.length==0) document.getElementById("zipDownload").classList.add("visually-hidden");
+            else document.getElementById("zipDownload").classList.remove("visually-hidden");
+        }
+        if(selectAllCheckbox){ selectAllCheckbox.addEventListener('change',function(){ const isChecked=this.checked; recordCheckboxes.forEach(cb=>{ cb.checked=isChecked; }); updateSelectedRecords(); }); }
+        if(recordCheckboxes){ recordCheckboxes.forEach(cb=>{ cb.addEventListener('change',function(){ if(!this.checked){ selectAllCheckbox.checked=false; }else{ let all=true; recordCheckboxes.forEach(c=>{ if(!c.checked) all=false; }); if(all) selectAllCheckbox.checked=true; } updateSelectedRecords(); }); }); }
+        document.getElementById("zipDownload").addEventListener("click",()=>{
+            if(selectedRecords.length){
+                axios.post("/api/DocumentCenter/download",{params:{FileID:selectedRecords}},{responseType:'blob'}).then(res=>{
+                    const url=window.URL.createObjectURL(new Blob([res.data],{type:'application/zip'})); const link=document.createElement('a'); link.href=url; link.setAttribute('download','files.zip'); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                }).catch(er=>{ console.log(er); });
+            }
+        });
+    });
+
+    document.querySelector("#createQCTaskForm").querySelector("#Milestone_Name").addEventListener("change",(e)=>{
+        if(e.target.value){
+            axios.get("/api/GetValidProdTask",{params:{Milestone_Name:e.target.value}}).then(result=>{
+                const selectBox=document.getElementById('Prod_Task'); selectBox.innerHTML='<option value="">Select a Production Task</option>';
+                result.data.forEach(task=>{ const option=document.createElement('option'); option.value=task.TaskName; option.textContent=task.TaskName+" - "+task.TaskLabel; selectBox.appendChild(option); });
+            }).catch(er=>{ console.log(er); alert("error"); });
+        }
+    });
+
+    document.querySelector("#createMilestoneModal").querySelector("#Milestone_Name").addEventListener("change",async(e)=>{
+        if(e.target.value){
+            const Project_ID=document.querySelector("#createMilestoneModal").querySelector("#Project_ID").value;
+            const idProject=document.querySelector("#createMilestoneModal").querySelector("#ID").value;
+            axios.get("/api/checkMilestoneExisting",{params:{Milestone_Name:e.target.value,Project_ID:Project_ID,idProject:idProject}}).then(res=>{
+                const container=document.getElementById("Billing_Category_Container");
+                if(res.data===true){ container.classList.remove("visually-hidden"); container.parentElement.classList.add("justify-content-between"); container.querySelectorAll("input[type='radio']").forEach(el=>{ el.setAttribute("required",""); }); }
+                else{ container.parentElement.classList.remove("justify-content-between"); container.classList.add("visually-hidden"); container.querySelectorAll("input[type='radio']").forEach(el=>{ el.removeAttribute("required",""); }); }
+                if(res.data===false){ toasts.push({title:"Error",content:`${e.target.value} milestone is already open, new creation isn't allowed.`,style:"error",dismissAfter:'5s'}); e.target.value=null; }
+            }).catch(er=>{ console.log(er); });
+        }
+    });
+
+    let selected=[], consolidated;
+    const WDSelectAll=document.getElementById("WD-Select-All");
+    const WDRowChecks=document.querySelectorAll(".WD-row-check");
+    WDSelectAll?.addEventListener("change",function(){
+        selected.length=0; WDRowChecks.forEach(cb=>cb.checked=WDSelectAll.checked);
+        const selectedWD=Array.from(WDRowChecks).filter(cb=>cb.checked);
+        selectedWD.forEach(check=>{ selected.push({id:check.dataset.id,code:check.dataset.code,qty:Number(check.dataset.qty)}); });
+        const grouped=selected.reduce((acc,item)=>{ if(!acc[item.code]) acc[item.code]={id:item.id,code:item.code,qty:0}; acc[item.code].qty+=item.qty; return acc; },{});
+        consolidated=Object.values(grouped);
+        if(selected.length===0) document.getElementById("moveToEstimateBtn").classList.add("visually-hidden");
+        else document.getElementById("moveToEstimateBtn").classList.remove("visually-hidden");
+    });
+    document.addEventListener('change',function(e){
+        if(!e.target.classList.contains('WD-row-check')) return;
+        const row={id:e.target.dataset.id,code:e.target.dataset.code,qty:Number(e.target.dataset.qty)};
+        if(e.target.checked) selected.push(row); else selected=selected.filter(item=>item.id!==row.id);
+        const grouped={}; selected.forEach(item=>{ if(!grouped[item.code]) grouped[item.code]={id:item.id,code:item.code,qty:0}; grouped[item.code].qty+=item.qty; });
+        consolidated=Object.values(grouped);
+        const allChecked=Array.from(WDRowChecks).every(r=>r.checked); if(WDSelectAll) WDSelectAll.checked=allChecked;
+        if(selected.length===0) document.getElementById("moveToEstimateBtn").classList.add("visually-hidden");
+        else document.getElementById("moveToEstimateBtn").classList.remove("visually-hidden");
+    });
+    document.getElementById('moveToEstimateBtn').addEventListener('click',async()=>{
+        if(selected.length===0){ alert("No rows selected"); return; }
+        const invalidCodes=consolidated.filter(item=>item.qty<=0);
+        try { if(invalidCodes.length>0){ alert("Invalid selection: Total qty ≤ 0 for: "+invalidCodes.map(i=>i.code).join(", ")); return; } const response=await axios.post('/api/moveWorkDoneToEstimate',{rows:consolidated,selected:selected,ReservedDate:null}); window.location.reload(); }
+        catch(error){ console.error("Error moving to estimates:", error); alert("An error occurred."); window.location.reload(); }
+    });
+
+    const estSelectAll=document.getElementById("Est-Select-All");
+    const estRowChecks=document.querySelectorAll(".Est-row-check");
+    const bulkButtons=document.querySelectorAll(".estBulkBtn");
+    const bulkActions={"Pending":["Reserved","Rejected"],"Reserved":["Invoiced"],"Invoiced":["Payment-Received"],"Rejected":[],"Payment Received":[]};
+    let totalRevenueOfBulkSelected=0;
+    estSelectAll?.addEventListener("change",function(){
+        estRowChecks.forEach(cb=>cb.checked=estSelectAll.checked);
+        const sel=Array.from(estRowChecks).filter(cb=>cb.checked);
+        const Estimates_IDs=sel.map(cb=>cb.dataset.id);
+        if(Estimates_IDs.length>0) bulkButtons.forEach(btn=>{ btn.setAttribute("data-estimatesid",Estimates_IDs.join(",")); });
+        updateBulkButtonVisibility();
+    });
+    estRowChecks.forEach(cb=>{
+        cb.addEventListener("change",function(){
+            const allChecked=Array.from(estRowChecks).every(r=>r.checked); if(estSelectAll) estSelectAll.checked=allChecked;
+            const sel=Array.from(estRowChecks).filter(cb=>cb.checked);
+            const Estimates_IDs=sel.map(cb=>cb.dataset.id);
+            if(Estimates_IDs.length>0) bulkButtons.forEach(btn=>{ btn.setAttribute("data-estimatesid",Estimates_IDs.join(",")); });
+            totalRevenueOfBulkSelected=sel?.reduce((total,cb)=>{ return total+Number(cb.dataset.totalRevenue); },0);
+            updateBulkButtonVisibility();
+        });
+    });
+    function hideAllBulkButtons(){ bulkButtons.forEach(btn=>btn.classList.add("d-none")); }
+    function updateBulkButtonVisibility(){
+        hideAllBulkButtons();
+        const sel=Array.from(estRowChecks).filter(cb=>cb.checked);
+        TotalAmount=sel.filter(cb=>cb.dataset.status=="Invoiced").reduce((total,cb)=>{ return total+Number(cb.dataset.totalrevenue); },0);
+        bulkButtons.forEach(btn=>{ btn.setAttribute("data-totalrevenue",TotalAmount.toFixed(2)); });
+        if(sel.length===0) return;
+        const statuses=sel.map(cb=>cb.dataset.status); const allSame=statuses.every(s=>s===statuses[0]);
+        if(!allSame){ estRowChecks.forEach(cb=>cb.checked=false); if(estSelectAll){ estSelectAll.checked=false; bulkButtons.forEach(btn=>{ btn.setAttribute("data-estimatesid",""); }); } return; }
+        const status=statuses[0]; const actions=bulkActions[status]||[];
+        actions.forEach(action=>{ const btn=document.querySelector(`#estBulk-${action}-Btn`); if(btn) btn.classList.remove("d-none"); });
+    }
+
+    const addWorkDoneForm=document.getElementById("AddWorkDone");
+    addWorkDoneForm.addEventListener("submit",async function(e){
+        e.preventDefault(); const submitBtn=addWorkDoneForm.querySelector("button[type='submit']");
+        const payload={idProject:addWorkDoneForm.querySelector("#idProject").value,Job_ID:addWorkDoneForm.querySelector("#Job_ID").value,Program:addWorkDoneForm.querySelector("#Program").value,idratecard:addWorkDoneForm.querySelector("#idratecard").value,Item:addWorkDoneForm.querySelector("#WD_Item").value,Quantity:addWorkDoneForm.querySelector("#Quantity").value,WorkedMonth:addWorkDoneForm.querySelector("#WorkedMonth").value};
+        submitBtn.disabled=true; submitBtn.innerHTML=`<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Submitting...`;
+        try{ const response=await axios.post("/api/addWorkDone",payload); alert("Please refresh the page to see updated Work Done."); submitBtn.innerText="Add Work Done"; }
+        catch(er){ console.log(er); submitBtn.innerHTML=`Try Again <i class="bi bi-arrow-repeat"></i>`; }
+        finally{ submitBtn.disabled=false; }
+    });
+    addWorkDoneForm.addEventListener("reset",function(){ addWorkDoneForm.querySelector("button[type='submit']").innerHTML="Add Work Done"; });
+
+    const creditNoteModal=document.getElementById('creditNoteModal');
+    if(creditNoteModal){
+        creditNoteModal.addEventListener('show.bs.modal',event=>{
+            const button=event.relatedTarget;
+            creditNoteModal.querySelector("#invoiceNumber").value=button.getAttribute('data-invNumber');
+            creditNoteModal.querySelector("#Estimates_ID").value=button.getAttribute('data-estID');
+            creditNoteModal.querySelector("#Item").value=button.getAttribute('data-item');
+            creditNoteModal.querySelector("#Qty").value=button.getAttribute('data-qty');
+        });
+        creditNoteModal.querySelector("#creditNoteForm").addEventListener("submit",async function(e){
+            e.preventDefault(); const form=creditNoteModal.querySelector("#creditNoteForm"); const submitBtn=form.querySelector("button[type='submit']");
+            const payload={Estimates_ID:form.querySelector("#Estimates_ID").value,creditNoteDate:form.querySelector("#creditNoteDate").value,creditNoteAmount:form.querySelector("#creditNoteAmount").value,creditNoteNumber:form.querySelector("#creditNoteNumber").value};
+            submitBtn.disabled=true; submitBtn.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Submitting...`;
+            try{ const response=await axios.post("/api/addCreditNote",payload); alert("Please refresh to see updated Estimates."); submitBtn.innerText="Submit"; }
+            catch(er){ console.log(er); submitBtn.innerHTML=`Try Again <i class="bi bi-arrow-repeat"></i>`; }
+            finally{ submitBtn.disabled=false; }
+        });
+    }
+
+    const creditNoteInfoModal=document.getElementById('creditNoteInfoModal');
+    if(creditNoteInfoModal){
+        creditNoteInfoModal.addEventListener('show.bs.modal',event=>{
+            const button=event.relatedTarget;
+            creditNoteInfoModal.querySelector("#invoiceNumber").value=button.getAttribute('data-invNumber');
+            creditNoteInfoModal.querySelector("#Estimates_ID").value=button.getAttribute('data-estID');
+            creditNoteInfoModal.querySelector("#Item").value=button.getAttribute('data-item');
+            creditNoteInfoModal.querySelector("#Qty").value=button.getAttribute('data-qty');
+            creditNoteInfoModal.querySelector("#creditNoteNumber").value=button.getAttribute('data-cnNumber');
+            creditNoteInfoModal.querySelector("#creditNoteDate").value=button.getAttribute('data-cnDate');
+            creditNoteInfoModal.querySelector("#creditNoteAttachment").setAttribute("href",button.getAttribute('data-cnAttachment'));
+        });
+    }
+
+    /* ══ View Payment Modal ══ */
+    const viewPaymentDialog=document.getElementById('ViewPaymentDialog');
+    if(viewPaymentDialog){
+        viewPaymentDialog.addEventListener('show.bs.modal', async event => {
+            const button=event.relatedTarget;
+            const estID=button.getAttribute('data-estimatesId');
+            const tbody=document.getElementById('viewPaymentBody');
+            const title=document.getElementById('viewPaymentTitle');
+            tbody.innerHTML='<tr><td colspan="5" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading...</td></tr>';
+            try {
+                const res=await axios.get('/api/getPaymentDetails',{params:{Estimates_ID:estID}});
+                const payments=res.data;
+                const invoiceCount=new Set(payments.map(p=>p.Invoice_Number)).size;
+                title.innerHTML=`<i class="bi bi-eye me-2"></i>Payment Details <small class="text-muted fw-normal" style="font-size:12px;">${payments.length} record${payments.length!==1?'s':''} | ${invoiceCount} invoice${invoiceCount!==1?'s':''}</small>`;
+                if(!payments||payments.length===0){
+                    tbody.innerHTML='<tr><td colspan="5" class="text-center py-4 text-muted">No payment records found</td></tr>';
+                    return;
+                }
+                tbody.innerHTML=payments.map((p,i)=>`
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${p.invoicePath?`<a href="${p.invoicePath}" target="_blank" class="d-inline-flex align-items-center gap-1">${p.Invoice_Number} <i class="bi bi-box-arrow-up-right" style="font-size:11px;"></i></a>`:(p.Invoice_Number||'—')}</td>
+                        <td><strong>$${parseFloat(p.Amount_Received||0).toFixed(2)}</strong></td>
+                        <td class="text-nowrap">${p.Payment_Received_Date||'—'}</td>
+                        <td>${p.Remark||'full'}</td>
+                    </tr>
+                `).join('');
+            } catch(er){
+                console.log(er);
+                tbody.innerHTML='<tr><td colspan="5" class="text-center py-4 text-danger">Error loading payment details</td></tr>';
+            }
+        });
+    }
+});
+
+/* ── Collapsible section cards ── */
+(function(){
+    document.querySelectorAll('.section-card').forEach(function(card) {
+        var header = card.querySelector('.section-card-header');
+        if (!header) return;
+
+        // Add toggle icon to header
+        var icon = document.createElement('i');
+        icon.className = 'bi bi-chevron-down collapse-icon';
+        header.appendChild(icon);
+
+        // Wrap all content after header in a collapsible div
+        var children = Array.from(card.children).filter(function(el) {
+            return !el.classList.contains('section-card-header');
+        });
+        var wrap = document.createElement('div');
+        wrap.className = 'section-card-body-wrap';
+        children.forEach(function(el) { wrap.appendChild(el); });
+        card.appendChild(wrap);
+
+        // Click to toggle
+        header.addEventListener('click', function(e) {
+            // Don't collapse if clicking a button/link inside header
+            if (e.target.closest('button, a, input')) return;
+            header.classList.toggle('collapsed');
+            wrap.classList.toggle('collapsed');
+        });
+    });
+})();
+</script>

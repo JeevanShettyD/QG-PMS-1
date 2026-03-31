@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Note</title>
+    <%- include('../partials/dependencies') %>
+</head>
+
+<% if (userData.Role=="Employee") { %>
+    <%- include('../partials/Employee-header',{userData:userData}) %>
+<% } else if(userData.Role=="Admin") { %>
+    <%- include('../partials/Admin-header',{userData:userData}) %>
+<% } else if(userData.Role=="PMO") { %>
+    <%- include('../partials/PMO-header',{userData:userData}) %>
+<% } if(userData.Role=="Manager") { %>
+    <%- include('../partials/Manager-header',{userData:userData}) %>
+<% } %>
+
+<style>
+/* ══════════════════════════════════════
+   QGPMS DESIGN SYSTEM — Credit Note
+   Same palette as Milestone/Task List
+══════════════════════════════════════ */
+:root {
+  --navy-900: #0f1e36;
+  --navy-800: #152844;
+  --navy-700: #1b3258;
+  --blue-500: #2d7dd2;
+  --blue-400: #4a96e8;
+  --accent:   #00c6ff;
+  --page-bg:  #f0f4fa;
+  --card-bg:  #ffffff;
+  --border:   #e2e8f4;
+  --text:     #1e2d45;
+  --muted:    #7a8aaa;
+  --radius:   10px;
+  --shadow:   0 2px 12px rgba(15,30,80,0.08), 0 6px 24px rgba(15,30,80,0.06);
+  --tr:       all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+body { background: var(--page-bg); }
+
+/* ── Page wrapper ── */
+.cn-page { padding: 16px 20px 60px; }
+
+/* ══════════════════════════════════════
+   PAGE TITLE BAR
+══════════════════════════════════════ */
+.cn-page-title {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.cn-page-title i { color: var(--blue-500); font-size: 17px; }
+.cn-page-title h5 {
+  font-size: 15px; font-weight: 800; color: var(--text); margin: 0;
+  letter-spacing: 0.2px;
+}
+
+/* ══════════════════════════════════════
+   CARD — shared wrapper
+══════════════════════════════════════ */
+.cn-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* ── Card header band ── */
+.cn-card-header {
+  background: linear-gradient(135deg, #eef5ff, #e4effe);
+  border-bottom: 1px solid #d4e4ff;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cn-card-header .ch-title {
+  font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--blue-500);
+  display: flex; align-items: center; gap: 7px;
+}
+.cn-card-header .ch-title i { font-size: 13px; }
+
+/* ── Card body ── */
+.cn-card-body { padding: 16px 18px; }
+
+/* ══════════════════════════════════════
+   SEARCH BAR
+══════════════════════════════════════ */
+.cn-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cn-search-input-group {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+  transition: var(--tr);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  min-width: 280px;
+  max-width: 380px;
+  flex: 1;
+}
+.cn-search-input-group:focus-within {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(45,125,210,0.12);
+}
+.cn-search-input-group .search-icon {
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.cn-search-input-group input {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  font-size: 12.5px;
+  padding: 8px 0;
+  color: var(--text);
+  background: transparent;
+  flex: 1;
+  min-width: 0;
+}
+.cn-search-input-group input::placeholder { color: var(--muted); }
+.cn-search-btn {
+  background: linear-gradient(135deg, var(--blue-500), #1a60b8);
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--tr);
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 5px;
+}
+.cn-search-btn:hover {
+  background: linear-gradient(135deg, #3a8ae0, #2266cc);
+}
+
+/* ══════════════════════════════════════
+   SECTION LABEL — "Line Items…" band
+══════════════════════════════════════ */
+.cn-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--blue-500);
+  background: linear-gradient(90deg, #eef5ff, transparent);
+  border-left: 3px solid var(--blue-500);
+  padding: 5px 14px 5px 12px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 12px;
+}
+
+/* ══════════════════════════════════════
+   ACCORDION — Job groups
+══════════════════════════════════════ */
+.cn-accordion { display: flex; flex-direction: column; gap: 8px; }
+
+.cn-acc-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(15,30,80,0.05);
+  transition: box-shadow 0.2s;
+}
+.cn-acc-item:hover { box-shadow: 0 3px 12px rgba(15,30,80,0.1); }
+
+/* Job header row */
+.cn-acc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8fbff;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.cn-acc-header:hover { background: #eef5ff; }
+
+.cn-acc-check {
+  accent-color: var(--blue-500);
+  width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;
+}
+.cn-acc-job-id {
+  font-size: 12.5px; font-weight: 700; color: var(--text); flex: 1;
+}
+.cn-acc-job-id span {
+  background: rgba(45,125,210,0.1);
+  color: var(--blue-500);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  margin-left: 6px;
+}
+.cn-acc-toggle {
+  background: none; border: none;
+  color: var(--muted); font-size: 11px;
+  cursor: pointer; transition: var(--tr);
+  padding: 4px 6px; border-radius: 6px;
+  display: flex; align-items: center;
+}
+.cn-acc-toggle:hover { background: rgba(45,125,210,0.1); color: var(--blue-500); }
+.cn-acc-toggle.open i { transform: rotate(180deg); }
+.cn-acc-toggle i { transition: transform 0.22s; }
+
+/* Line items table inside accordion */
+.cn-line-table-wrap { overflow-x: auto; }
+.cn-line-table {
+  width: 100%; border-collapse: collapse; font-size: 12.5px;
+}
+.cn-line-table thead tr th {
+  background: linear-gradient(135deg, #1a3060, #1e3a5f);
+  color: rgba(255,255,255,0.9);
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  padding: 8px 12px; white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.cn-line-table thead tr th:last-child { border-right: none; }
+.cn-line-table tbody tr {
+  border-bottom: 1px solid #edf1fa;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+.cn-line-table tbody tr:hover {
+  background: #f0f6ff;
+  box-shadow: inset 3px 0 0 var(--blue-500);
+}
+.cn-line-table tbody tr:last-child { border-bottom: none; }
+.cn-line-table tbody td {
+  padding: 9px 12px; color: var(--text); vertical-align: middle;
+  border-right: 1px solid #f0f4fc;
+}
+.cn-line-table tbody td:last-child { border-right: none; }
+.cn-line-table .td-sno { color: var(--muted); font-weight: 700; font-size: 11px; width: 50px; }
+.cn-line-table .td-value { font-weight: 700; color: #0d6b2a; }
+
+/* ══════════════════════════════════════
+   ADD CREDIT NOTE BUTTON
+══════════════════════════════════════ */
+.cn-add-btn-wrap { padding: 12px 0 4px; display: flex; justify-content: center; }
+.cn-add-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 24px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--blue-500), #1a60b8);
+  color: #fff; font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer; transition: var(--tr);
+  box-shadow: 0 3px 12px rgba(45,125,210,0.35);
+}
+.cn-add-btn:hover {
+  background: linear-gradient(135deg, #3a8ae0, #2266cc);
+  box-shadow: 0 5px 18px rgba(45,125,210,0.5);
+  transform: translateY(-1px);
+}
+.cn-add-btn.visually-hidden { display: none !important; }
+
+/* ══════════════════════════════════════
+   EMPTY / WARNING STATE
+══════════════════════════════════════ */
+.cn-empty {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 32px 20px;
+}
+.cn-empty .ce-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin-bottom: 12px;
+}
+.ce-icon.warning { background: #fff8e6; color: #c07a00; }
+.ce-icon.info    { background: #eef5ff; color: var(--blue-500); }
+.cn-empty p {
+  font-size: 13px; color: var(--muted); font-weight: 500;
+  max-width: 420px; line-height: 1.6; margin: 0;
+}
+
+/* ══════════════════════════════════════
+   CREDIT NOTES HISTORY — nested accordion
+══════════════════════════════════════ */
+.cn-history-acc { display: flex; flex-direction: column; gap: 6px; }
+
+/* Level 1 — Credit Note */
+.cnh-l1 {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 1px 4px rgba(15,30,80,0.04);
+}
+.cnh-l1-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(90deg, #f0f6ff, #f8fbff);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cnh-l1-header:hover { background: #eaf2ff; }
+.cnh-badge {
+  background: linear-gradient(135deg, var(--blue-500), #1a60b8);
+  color: #fff; border-radius: 6px;
+  padding: 3px 10px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.3px; white-space: nowrap;
+}
+.cnh-l1-label {
+  font-size: 12.5px; font-weight: 700; color: var(--text); flex: 1;
+}
+.cnh-toggle {
+  background: none; border: none; color: var(--muted);
+  font-size: 11px; cursor: pointer; padding: 3px 6px;
+  border-radius: 5px; transition: var(--tr);
+}
+.cnh-toggle:hover { background: rgba(45,125,210,0.1); color: var(--blue-500); }
+.cnh-toggle i { transition: transform 0.2s; }
+.cnh-toggle.open i { transform: rotate(180deg); }
+
+/* Level 2 — Invoice */
+.cnh-l2 {
+  border: 1px solid #deeaff;
+  border-radius: 8px;
+  margin: 8px 10px;
+  overflow: hidden;
+  background: #fafcff;
+}
+.cnh-l2-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  background: #f4f8ff;
+  border-bottom: 1px solid #deeaff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cnh-l2-header:hover { background: #eaf2ff; }
+.cnh-inv-badge {
+  background: rgba(45,125,210,0.12);
+  color: var(--blue-500); border-radius: 5px;
+  padding: 2px 8px; font-size: 10px; font-weight: 700;
+}
+.cnh-l2-label { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+
+/* Level 3 — Job */
+.cnh-l3 {
+  border: 1px solid #e8f0ff;
+  border-radius: 7px;
+  margin: 6px 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.cnh-l3-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px;
+  background: #f8faff;
+  border-bottom: 1px solid #e8f0ff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cnh-l3-header:hover { background: #eef5ff; }
+.cnh-job-badge {
+  background: rgba(45,125,210,0.07);
+  color: var(--muted); border-radius: 5px;
+  padding: 2px 8px; font-size: 10px; font-weight: 700;
+}
+.cnh-l3-label { font-size: 11.5px; font-weight: 600; color: var(--text); flex: 1; }
+
+/* ══════════════════════════════════════
+   MODAL — Credit Note Details
+══════════════════════════════════════ */
+#creditNoteInfoModal .modal-content {
+  border-radius: 14px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 12px 48px rgba(15,30,80,0.2) !important;
+  overflow: hidden;
+}
+#creditNoteInfoModal .modal-header {
+  background: linear-gradient(135deg, var(--navy-900), var(--navy-800));
+  padding: 15px 20px;
+  border-bottom: none;
+}
+#creditNoteInfoModal .modal-header p {
+  color: #fff; font-size: 14px; font-weight: 700; margin: 0;
+  display: flex; align-items: center; gap: 8px;
+}
+#creditNoteInfoModal .modal-header p::before {
+  content: '\F2A4';
+  font-family: 'bootstrap-icons';
+  font-size: 15px; color: var(--accent);
+}
+#creditNoteInfoModal .modal-header .btn-close {
+  filter: invert(1); opacity: 0.6;
+}
+#creditNoteInfoModal .modal-header .btn-close:hover { opacity: 1; }
+#creditNoteInfoModal .modal-body { padding: 18px 20px; background: #fafcff; }
+
+/* Modal field labels */
+#creditNoteInfoModal .form-label {
+  font-size: 10.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--muted); display: block; margin-bottom: 5px;
+}
+#creditNoteInfoModal .form-label.required::after {
+  content: ' *'; color: #e74c3c;
+}
+
+/* Modal inputs */
+#creditNoteInfoModal .form-control,
+#creditNoteInfoModal textarea {
+  font-size: 12.5px !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  color: var(--text) !important;
+  background: #fff !important;
+  transition: var(--tr) !important;
+}
+#creditNoteInfoModal .form-control:focus,
+#creditNoteInfoModal textarea:focus {
+  border-color: var(--blue-500) !important;
+  box-shadow: 0 0 0 3px rgba(45,125,210,0.12) !important;
+  outline: none !important;
+}
+#creditNoteInfoModal .form-control[readonly] {
+  background: #f4f7fc !important;
+  color: var(--muted) !important;
+}
+
+/* OTP section */
+.OTP_Section {
+  background: linear-gradient(135deg, #eef5ff, #e8f2ff);
+  border-top: 1px solid #d4e4ff !important;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Modal footer submit btn */
+#creditNoteInfoModal .modal-footer-wrap {
+  padding: 12px 20px 16px;
+  display: flex; justify-content: center;
+  background: #fafcff;
+  border-top: 1px solid var(--border);
+}
+#creditNoteInfoModal .cn-submit-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 28px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--blue-500), #1a60b8);
+  color: #fff; font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer; transition: var(--tr);
+  box-shadow: 0 3px 12px rgba(45,125,210,0.3);
+}
+#creditNoteInfoModal .cn-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3a8ae0, #2266cc);
+  box-shadow: 0 5px 18px rgba(45,125,210,0.45);
+  transform: translateY(-1px);
+}
+#creditNoteInfoModal .cn-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+/* Divider between form sections */
+.cn-modal-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 14px 0;
+}
+
+/* Info note in modal */
+.cn-info-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: #fff8e6; border: 1px solid #ffe0a0;
+  border-radius: 8px; padding: 9px 12px;
+  font-size: 11.5px; color: #8a5c00; margin-bottom: 10px;
+}
+.cn-info-note i { color: #c07a00; flex-shrink: 0; margin-top: 1px; }
+</style>
+
+<body>
+<main class="cn-page">
+
+  <!-- PAGE TITLE -->
+  <div class="cn-page-title">
+    <i class="bi bi-journals"></i>
+    <h5>Credit Note</h5>
+  </div>
+
+  <!-- ══════════════════════════════
+       SEARCH INVOICE
+  ══════════════════════════════ -->
+  <div class="cn-card">
+    <div class="cn-card-header">
+      <span class="ch-title"><i class="bi bi-search"></i> Find Invoice</span>
+    </div>
+    <div class="cn-card-body">
+      <form action="/PMO/CreditNote" method="get">
+        <div class="cn-search-wrap">
+          <div class="cn-search-input-group">
+            <span class="search-icon"><i class="bi bi-receipt"></i></span>
+            <input type="search" name="InvoiceNumber" id="invoiceNumberSearch"
+              placeholder="Enter Invoice No. (e.g. QGKA/25-26/001)"
+              title="Format: QGKA/2*-**/****"
+              pattern="QGKA\/\d{2}-\d{2}\/\d+" required>
+            <button type="submit" class="cn-search-btn">
+              <i class="bi bi-search"></i> Search
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       LINE ITEMS — applicable for CN
+  ══════════════════════════════ -->
+  <% if (Object.keys(estimatesList).length) { %>
+  <div class="cn-card">
+    <div class="cn-card-header">
+      <span class="ch-title"><i class="bi bi-list-check"></i> Line Items Applicable for Credit Note</span>
+    </div>
+    <div class="cn-card-body">
+      <div class="cn-accordion" id="lineItemsAccordion">
+        <% Object.keys(estimatesList).forEach(function(job) { %>
+          <% const estIds = estimatesList[job].map(function(curr){ return curr.idestimates; }); %>
+          <div class="cn-acc-item">
+            <!-- Job header -->
+            <div class="cn-acc-header" onclick="toggleAcc(this)">
+              <input class="cn-acc-check creditNoteCheckBtn project-checkbox"
+                type="checkbox"
+                id="check<%= job %>"
+                data-job="<%= job %>"
+                data-estIds="<%= estIds.join(',') %>"
+                onclick="event.stopPropagation()">
+              <label class="cn-acc-job-id" for="check<%= job %>">
+                <i class="bi bi-briefcase" style="color:var(--muted);font-size:12px;"></i>
+                Job <span>#<%= job %></span>
+              </label>
+              <span style="font-size:11px;color:var(--muted);"><%= estimatesList[job].length %> item<%= estimatesList[job].length!==1?'s':'' %></span>
+              <button type="button" class="cn-acc-toggle open" onclick="event.stopPropagation();toggleAcc(this.closest('.cn-acc-header'))">
+                <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
+            <!-- Line items table -->
+            <div class="cn-line-table-wrap" style="display:block;">
+              <table class="cn-line-table">
+                <thead>
+                  <tr>
+                    <th class="td-sno">S.No</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Total Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% var i=1; estimatesList[job].forEach(function(lineItem){ %>
+                  <tr>
+                    <td class="td-sno">
+                      <div class="d-flex align-items-center gap-2">
+                        <input type="checkbox" class="cn-acc-check line-checkbox"
+                          data-job="<%= job %>"
+                          data-idestimates="<%= lineItem.idestimates %>"
+                          data-item="<%= lineItem.Item %>"
+                          data-qty="<%= lineItem.Quantity %>">
+                        <%= i %>
+                      </div>
+                    </td>
+                    <td><%= lineItem.Item %></td>
+                    <td><%= lineItem.Quantity %></td>
+                    <td class="td-value">$<%= parseFloat(lineItem.UnitPrice * lineItem.Quantity).toFixed(2) %></td>
+                  </tr>
+                  <% i++; }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+  <% } else if(InvoiceNumber) { %>
+  <div class="cn-card">
+    <div class="cn-card-body">
+      <div class="cn-empty">
+        <div class="ce-icon warning"><i class="bi bi-exclamation-triangle"></i></div>
+        <p>This invoice does not have any line items available for a credit note. If you believe this is an error, please verify the invoice details.</p>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Add Credit Note CTA -->
+  <div class="cn-add-btn-wrap">
+    <button type="button" class="cn-add-btn visually-hidden" id="addCreditNoteBtn"
+      data-bs-toggle="modal" data-bs-target="#creditNoteInfoModal">
+      <i class="bi bi-plus-circle-fill"></i> New Credit Note
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════
+       HISTORY — Existing Credit Notes
+  ══════════════════════════════ -->
+  <div class="cn-card">
+    <div class="cn-card-header">
+      <span class="ch-title"><i class="bi bi-clock-history"></i> Existing Credit Notes</span>
+      <% if (Object.keys(CreditedLineItems).length) { %>
+      <form action="/PMO/CreditNote" method="get" style="margin:0;">
+        <div class="cn-search-input-group" style="min-width:220px;max-width:280px;">
+          <span class="search-icon"><i class="bi bi-hash"></i></span>
+          <input type="search" name="CreditNoteNumber" id="creditNoteNumberSearch"
+            placeholder="Credit Note No."
+            title="Format: QGCNKA/2*-**/****"
+            pattern="QGCNKA\/\d{2}-\d{2}\/\d+" required>
+          <button type="submit" class="cn-search-btn">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+      <% } %>
+    </div>
+
+    <div class="cn-card-body">
+      <% if (Object.keys(CreditedLineItems).length) { %>
+      <div class="cn-history-acc">
+        <% Object.keys(CreditedLineItems).forEach(function(credit){ %>
+        <div class="cnh-l1">
+          <!-- Credit Note header -->
+          <div class="cnh-l1-header" onclick="toggleNested(this)">
+            <span class="cnh-badge">CN</span>
+            <span class="cnh-l1-label">Credit Note #: <strong><%= credit %></strong></span>
+            <button type="button" class="cnh-toggle" onclick="event.stopPropagation();toggleNested(this.closest('.cnh-l1-header'))">
+              <i class="bi bi-chevron-down"></i>
+            </button>
+          </div>
+          <div class="cnh-l1-body" style="display:none; padding:4px 0 8px;">
+            <% Object.keys(CreditedLineItems[credit]).forEach(function(invoice){ %>
+            <div class="cnh-l2">
+              <!-- Invoice header -->
+              <div class="cnh-l2-header" onclick="toggleNested(this)">
+                <span class="cnh-inv-badge">INV</span>
+                <span class="cnh-l2-label">Invoice #: <strong><%= invoice %></strong></span>
+                <button type="button" class="cnh-toggle" onclick="event.stopPropagation();toggleNested(this.closest('.cnh-l2-header'))">
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+              </div>
+              <div class="cnh-l2-body" style="display:none; padding:4px 0 6px;">
+                <% Object.keys(CreditedLineItems[credit][invoice]).forEach(function(job){ %>
+                <div class="cnh-l3">
+                  <!-- Job header -->
+                  <div class="cnh-l3-header" onclick="toggleNested(this)">
+                    <span class="cnh-job-badge">JOB</span>
+                    <span class="cnh-l3-label">Job #: <strong><%= job %></strong></span>
+                    <button type="button" class="cnh-toggle" onclick="event.stopPropagation();toggleNested(this.closest('.cnh-l3-header'))">
+                      <i class="bi bi-chevron-down"></i>
+                    </button>
+                  </div>
+                  <div class="cnh-l3-body" style="display:none;">
+                    <div class="cn-line-table-wrap">
+                      <table class="cn-line-table">
+                        <thead>
+                          <tr>
+                            <th class="td-sno">S.No</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Value</th>
+                            <th>Credit Note #</th>
+                            <th>Raised By</th>
+                            <th>Reason</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% var j=1; CreditedLineItems[credit][invoice][job].forEach(function(lineItem){ %>
+                          <tr>
+                            <td class="td-sno"><%= j++ %></td>
+                            <td><%= lineItem.Item %></td>
+                            <td><%= lineItem.Quantity %></td>
+                            <td class="td-value">$<%= parseFloat(lineItem.UnitPrice * lineItem.Quantity).toFixed(2) %></td>
+                            <td><span style="font-size:11px;font-weight:600;color:var(--blue-500);"><%= lineItem.creditNoteNumber %></span></td>
+                            <td><%= lineItem.creditNoteByName %></td>
+                            <td style="max-width:200px;font-size:12px;color:var(--muted);"><%= lineItem.creditNoteReason %></td>
+                          </tr>
+                          <% }); %>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <% }); %>
+              </div>
+            </div>
+            <% }); %>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+      <% } else { %>
+      <div class="cn-empty">
+        <div class="ce-icon info"><i class="bi bi-info-circle"></i></div>
+        <p>No credit notes found in the system.</p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══════════════════════════════
+     CREDIT NOTE MODAL
+══════════════════════════════ -->
+<div class="modal fade" tabindex="-1" aria-hidden="true" id="creditNoteInfoModal" aria-labelledby="creditNoteInfoModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" id="creditNoteForm">
+        <!-- Header -->
+        <div class="modal-header p-0" style="background:linear-gradient(135deg,#0f1e36,#152844);padding:15px 20px !important;">
+          <div style="padding:14px 20px;display:flex;align-items:center;gap:9px;flex:1;">
+            <i class="bi bi-journal-plus" style="color:#00c6ff;font-size:16px;"></i>
+            <p class="fs-6 p-0 m-0" style="color:#fff;font-weight:700;font-size:14px !important;">Credit Note Details</p>
+          </div>
+          <button type="reset" class="btn-close me-2" data-bs-dismiss="modal" aria-label="Close" style="filter:invert(1);opacity:0.6;"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body" style="font-size:12px;padding:18px 20px;background:#fafcff;">
+
+          <p class="visually-hidden p-0 m-0" id="invMessage" style="display:none;">
+            <span class="cn-info-note"><i class="bi bi-info-circle-fill"></i> Date and Credit Note auto-filled from an existing credit note.</span>
+          </p>
+
+          <!-- Row 1: Invoice + Qty -->
+          <div class="d-flex gap-3 mb-3">
+            <div class="flex-1 w-50">
+              <label for="invoiceNumber" class="form-label required" style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);display:block;margin-bottom:5px;">Invoice Number</label>
+              <input type="text" name="invoiceNumber" id="invoiceNumber"
+                class="form-control"
+                style="font-size:12.5px;border:1.5px solid #e2e8f4;border-radius:8px;padding:8px 12px;background:#f4f7fc;color:var(--muted);"
+                placeholder="Invoice Number" readonly required>
+            </div>
+            <div class="flex-1 w-50">
+              <label for="Qty" class="form-label required" style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);display:block;margin-bottom:5px;">Total Quantity</label>
+              <input type="text" name="Qty" id="Qty"
+                class="form-control"
+                style="font-size:12.5px;border:1.5px solid #e2e8f4;border-radius:8px;padding:8px 12px;background:#f4f7fc;color:var(--muted);"
+                placeholder="Quantity" readonly required>
+            </div>
+          </div>
+
+          <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f4,transparent);margin:4px 0 14px;"></div>
+
+          <!-- Row 2: CN Number + Date -->
+          <div class="d-flex gap-3 mb-3">
+            <div class="flex-1 w-50">
+              <label for="creditNoteNumber" class="form-label required" style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);display:block;margin-bottom:5px;">Credit Note Number</label>
+              <input type="text" name="creditNoteNumber" id="creditNoteNumber"
+                class="form-control"
+                style="font-size:12.5px;border:1.5px solid #e2e8f4;border-radius:8px;padding:8px 12px;"
+                placeholder="QGCNKA/**-**/***"
+                pattern="QGCNKA\/\d{2}-\d{2}\/\d{3}"
+                title="Format: QGCNKA/25-26/001" required>
+            </div>
+            <div class="flex-1 w-50">
+              <label for="creditNoteDate" class="form-label required" style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);display:block;margin-bottom:5px;">Credit Note Date</label>
+              <input type="date" class="max-today form-control"
+                style="font-size:12.5px;border:1.5px solid #e2e8f4;border-radius:8px;padding:8px 12px;"
+                name="creditNoteDate" id="creditNoteDate" required>
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div class="mb-3">
+            <label for="Reason" class="form-label required" style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);display:block;margin-bottom:5px;">Reason for Credit Note</label>
+            <textarea class="form-control"
+              style="font-size:12.5px;border:1.5px solid #e2e8f4;border-radius:8px;padding:8px 12px;resize:vertical;min-height:80px;"
+              minlength="30" maxlength="250"
+              placeholder="Please briefly explain why this credit note is being issued (min 30 characters)."
+              name="Reason" id="Reason" required></textarea>
+          </div>
+
+          <!-- File + Existing link -->
+          <div>
+            <a href="#" id="existingCreditNote" target="_blank"
+              class="d-block visually-hidden mb-2"
+              style="font-size:12px;font-weight:600;color:var(--blue-500);display:flex;align-items:center;gap:5px;">
+              <i class="bi bi-file-earmark-pdf text-danger"></i> View existing Credit Note document
+            </a>
+            <label for="creditNoteFile" class="form-label" style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);display:block;margin-bottom:5px;">
+              Attach Credit Note (PDF)
+            </label>
+            <input class="form-control form-control-sm"
+              style="font-size:12px;border:1.5px solid #e2e8f4;border-radius:8px;padding:6px 10px;"
+              id="creditNoteFile" name="creditNoteFile" type="file" accept="application/pdf">
+          </div>
+        </div>
+
+        <!-- OTP Section -->
+        <div class="OTP_Section p-3 border-top border-primary-subtle visually-hidden" style="font-size:12px;background:linear-gradient(135deg,#eef5ff,#e8f2ff);">
+          <div class="w-100 mb-2">
+            <label for="OTP" class="form-label required" style="font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);display:block;margin-bottom:5px;">OTP Verification</label>
+            <input type="text" name="OTP" id="OTP"
+              class="form-control"
+              style="font-size:12.5px;border:1.5px solid #e2e8f4;border-radius:8px;padding:8px 12px;"
+              placeholder="Enter 6-digit OTP" pattern="\d{6}" title="Enter 6 Digit OTP">
+          </div>
+          <div class="alert alert-primary p-2 mb-0" role="alert"
+            style="font-size:11.5px;border-radius:8px;display:flex;align-items:center;gap:8px;">
+            <i class="bi bi-info-circle-fill text-primary"></i>
+            Hurry! Your OTP expires in <strong>5 minutes</strong>.
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:12px 20px 16px;display:flex;justify-content:center;background:#fafcff;border-top:1px solid #e2e8f4;">
+          <button type="submit"
+            style="display:inline-flex;align-items:center;gap:8px;padding:10px 28px;border-radius:9px;background:linear-gradient(135deg,#2d7dd2,#1a60b8);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;box-shadow:0 3px 12px rgba(45,125,210,0.3);transition:all 0.2s;">
+            Next <i class="bi bi-arrow-right-circle-fill"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script>
+/* ── Accordion toggle ── */
+function toggleAcc(header) {
+  var body = header.nextElementSibling;
+  var btn  = header.querySelector('.cn-acc-toggle');
+  if(!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if(btn) btn.classList.toggle('open', !isOpen);
+}
+
+/* ── Nested accordion toggle ── */
+function toggleNested(header) {
+  var next = header.nextElementSibling;
+  var btn  = header.querySelector('.cnh-toggle');
+  if(!next) return;
+  var isOpen = next.style.display !== 'none';
+  next.style.display = isOpen ? 'none' : 'block';
+  if(btn) btn.classList.toggle('open', !isOpen);
+}
+
+/* ── Restore URL params ── */
+const params = getUrlParams();
+const {InvoiceNumber} = params;
+document.querySelectorAll('input[type="search"]').forEach(function(input){
+  for(var k in params){
+    if(params.hasOwnProperty(k) && k === input.name) input.value = params[k];
+  }
+});
+
+/* ── Add CN button visibility ── */
+const addCreditNoteBtn = document.getElementById("addCreditNoteBtn");
+
+document.querySelectorAll('.project-checkbox').forEach(function(projectCb){
+  projectCb.addEventListener('change', function(){
+    var jobId   = this.dataset.job;
+    var checked = this.checked;
+    document.querySelectorAll('.line-checkbox[data-job="'+jobId+'"]').forEach(function(cb){ cb.checked = checked; });
+    var checkedItems = document.querySelectorAll('.line-checkbox:checked');
+    if(addCreditNoteBtn) addCreditNoteBtn.classList.toggle('visually-hidden', checkedItems.length === 0);
+  });
+});
+
+document.querySelectorAll('.line-checkbox').forEach(function(lineCb){
+  lineCb.addEventListener('change', function(){
+    var jobId   = this.dataset.job;
+    var all     = document.querySelectorAll('.line-checkbox[data-job="'+jobId+'"]');
+    var checked = document.querySelectorAll('.line-checkbox[data-job="'+jobId+'"]:checked');
+    var anyChecked = document.querySelectorAll('.line-checkbox:checked');
+    if(addCreditNoteBtn) addCreditNoteBtn.classList.toggle('visually-hidden', anyChecked.length === 0);
+    var projCb = document.querySelector('.project-checkbox[data-job="'+jobId+'"]');
+    if(projCb) projCb.checked = (all.length === checked.length);
+  });
+});
+
+/* ── Modal pre-fill ── */
+var creditNoteModal = document.getElementById("creditNoteInfoModal");
+if(creditNoteModal){
+  creditNoteModal.addEventListener('shown.bs.modal', function(){
+    var data = getSelectedData();
+    var invEl = creditNoteModal.querySelector("#invoiceNumber");
+    var qtyEl = creditNoteModal.querySelector("#Qty");
+    if(invEl) invEl.value = InvoiceNumber || '';
+    if(qtyEl) qtyEl.value = data.totalQuantity;
+  });
+}
+
+function getSelectedData() {
+  var selectedItems = [], totalQuantity = 0;
+  document.querySelectorAll('.line-checkbox:checked').forEach(function(cb){
+    selectedItems.push({ jobId: cb.dataset.job, idestimates: cb.dataset.idestimates, item: cb.dataset.item, quantity: Number(cb.dataset.qty) });
+    totalQuantity += Number(cb.dataset.qty);
+  });
+  return { selectedItems: selectedItems, totalQuantity: totalQuantity };
+}
+
+/* ── OTP flow ── */
+var isOTPVerified = false;
+var isOTPGenerated = false;
+if(creditNoteModal){
+  creditNoteModal.querySelector("#creditNoteForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var form      = creditNoteModal.querySelector("#creditNoteForm");
+    var submitBtn = form.querySelector("button[type='submit']");
+    var data      = getSelectedData();
+    var ids       = [...new Set(data.selectedItems.map(function(item){ return item.idestimates; }))];
+    var creditNoteFile = document.getElementById("creditNoteFile");
+    if(creditNoteFile.files.length === 0 && isCreditNoteExist === false){
+      alert('Please attach a Credit Note before submitting.');
+      return;
+    }
+    var formData = new FormData();
+    formData.append("Estimates_ID", ids);
+    formData.append("creditNoteDate",       form.querySelector("#creditNoteDate").value);
+    formData.append("creditNoteNumber",     form.querySelector("#creditNoteNumber").value);
+    formData.append("creditNoteReason",     form.querySelector("#Reason").value);
+    if(isCreditNoteExist) formData.append("creditNotePath", existingCreditNotePath);
+    formData.append('creditNoteFile', creditNoteFile.files[0]);
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> <span role="status">Submitting…</span>';
+    try {
+      if(!isOTPGenerated){
+        await axios.post("/api/Send-OTP/CreditNote", { InvoiceNumber: InvoiceNumber, creditNoteNumber: ids, creditNoteDate: form.querySelector("#creditNoteDate").value });
+        creditNoteModal.querySelector(".OTP_Section").classList.remove("visually-hidden");
+        creditNoteModal.querySelector("#OTP").setAttribute("required","");
+        submitBtn.innerHTML = '<span>Verify OTP <i class="bi bi-arrow-right-circle"></i></span>';
+        submitBtn.disabled = false;
+        isOTPGenerated = true;
+      } else if(isOTPGenerated && !isOTPVerified){
+        await axios.post("/api/Verify-OTP/CreditNote", { OTP: creditNoteModal.querySelector("#OTP").value });
+        submitBtn.innerHTML = '<span>Verified <i class="bi bi-check-circle"></i></span>';
+        isOTPVerified = true;
+      }
+      if(isOTPVerified){
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> <span role="status">Adding Credit Note…</span>';
+        await axios.post("/api/addCreditNote", formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        submitBtn.innerHTML = '<span>Done <i class="bi bi-check-circle"></i></span>';
+        isOTPGenerated = false;
+        isOTPVerified  = false;
+        form.reset();
+        bootstrap.Modal.getInstance(creditNoteModal).hide();
+      }
+    } catch(er){
+      console.log(er);
+      if(er.response?.data?.message !== "Invalid OTP"){
+        creditNoteModal.querySelector(".OTP_Section").classList.add("visually-hidden");
+        creditNoteModal.querySelector("#OTP").removeAttribute("required");
+      }
+      if(er.response?.status === 406 && er.response?.data === "Credit Note Date cannot be earlier than the Invoice Date."){
+        creditNoteModal.querySelector("#creditNoteDate").focus();
+      }
+      submitBtn.innerHTML = '<span>Try Again <i class="bi bi-arrow-repeat"></i></span>';
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+/* ── Existing CN auto-fill ── */
+var isCreditNoteExist = false;
+var existingCreditNotePath = false;
+if(creditNoteModal){
+  creditNoteModal.querySelector("#creditNoteNumber").addEventListener("change", async function(e){
+    isCreditNoteExist = false;
+    if(e.target.value.length > 15){
+      try{
+        var res = await axios.get("/api/getCreditNote", { params: { creditNoteNo: e.target.value } });
+        if(res.status === 200){
+          isCreditNoteExist        = true;
+          existingCreditNotePath   = res.data.creditNotePath;
+          document.querySelector("#creditNoteDate").value = res.data.creditNoteDate;
+          document.querySelector("#Reason").value         = res.data.creditNoteReason;
+          document.getElementById("creditNoteDate").setAttribute("disabled","");
+          document.getElementById("existingCreditNote").setAttribute("href", res.data.creditNotePath);
+          document.getElementById("existingCreditNote").classList.remove("visually-hidden");
+          document.getElementById("existingCreditNote").style.display = "flex";
+          document.getElementById("invMessage").classList.remove("visually-hidden");
+          document.getElementById("invMessage").style.display = "block";
+          document.getElementById("creditNoteFile").setAttribute("disabled","");
+          document.getElementById("creditNoteFile").classList.add("visually-hidden");
+          document.querySelector("label[for='creditNoteFile']").classList.add("visually-hidden");
+        }
+      } catch(err){
+        isCreditNoteExist        = false;
+        existingCreditNotePath   = null;
+        document.getElementById("invMessage").classList.add("visually-hidden");
+        document.getElementById("creditNoteDate").value = null;
+        document.getElementById("creditNoteDate").removeAttribute("disabled");
+        document.getElementById("Reason").value = null;
+        document.getElementById("existingCreditNote").classList.add("visually-hidden");
+        document.getElementById("existingCreditNote").setAttribute("href","#");
+        document.getElementById("creditNoteFile").removeAttribute("disabled");
+        document.getElementById("creditNoteFile").classList.remove("visually-hidden");
+        document.querySelector("label[for='creditNoteFile']").classList.remove("visually-hidden");
+      }
+    }
+  });
+}
+</script>
+</html>

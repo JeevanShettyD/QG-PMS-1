@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= Customer+'-' %>Project</title>
+  <%- include('../partials/dependencies') %>
+</head>
+<%- include('../partials/PMO-header',{userData:userData}) %>
+
+<style>
+/* ══════════════════════════════════════
+   QGPMS DESIGN SYSTEM — Project List
+   Exact same palette as Milestone List
+══════════════════════════════════════ */
+:root {
+  --ms-navy:   #0f1e36;
+  --ms-navy2:  #152844;
+  --ms-navy3:  #1b3258;
+  --ms-blue:   #2d7dd2;
+  --ms-blue2:  #4a96e8;
+  --ms-cyan:   #00c6ff;
+  --ms-light:  #f0f4fa;
+  --ms-card:   #ffffff;
+  --ms-border: #e2e8f4;
+  --ms-text:   #1e2d45;
+  --ms-muted:  #7a8aaa;
+  --ms-radius: 10px;
+  --ms-shadow: 0 2px 12px rgba(15,30,80,0.08), 0 8px 28px rgba(15,30,80,0.06);
+  --ms-tr:     all 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+
+html, body { background: var(--ms-light); }
+.ms-page { padding: 14px 18px 60px; background: var(--ms-light); }
+
+/* ── Toolbar ── */
+.ms-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 10px;
+}
+.ms-toolbar-left  { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ms-toolbar-right { display: flex; align-items: center; gap: 8px; }
+
+.ms-page-title {
+  font-size: 15px; font-weight: 700; color: var(--ms-text);
+  display: flex; align-items: center; gap: 8px;
+}
+.ms-page-title i { color: var(--ms-blue); font-size: 16px; }
+
+.customer-pill {
+  background: rgba(45,125,210,0.1); color: var(--ms-blue);
+  border: 1px solid rgba(45,125,210,0.2);
+  border-radius: 20px; padding: 3px 12px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+}
+
+/* ── Buttons ── */
+.ms-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: none; transition: var(--ms-tr); text-decoration: none;
+}
+.ms-btn-primary {
+  background: linear-gradient(135deg, var(--ms-blue), #1a60b8);
+  color: #fff; box-shadow: 0 2px 8px rgba(45,125,210,0.3);
+}
+.ms-btn-primary:hover {
+  background: linear-gradient(135deg, #3a8ae0, #2266cc);
+  box-shadow: 0 4px 14px rgba(45,125,210,0.4);
+  transform: translateY(-1px); color: #fff;
+}
+
+/* ── Column selector ── */
+.ms-field-selector { position: relative; }
+.ms-field-trigger {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 13px; border-radius: 8px;
+  background: #fff; border: 1px solid var(--ms-border);
+  font-size: 12px; font-weight: 600; color: var(--ms-text);
+  cursor: pointer; transition: var(--ms-tr);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); user-select: none;
+}
+.ms-field-trigger:hover { border-color: var(--ms-blue); background: #eef5ff; }
+.ms-field-trigger i { color: var(--ms-blue); }
+.ms-field-panel {
+  position: absolute; top: calc(100% + 8px); left: 0;
+  background: #fff; border: 1px solid var(--ms-border);
+  border-radius: var(--ms-radius);
+  box-shadow: 0 8px 32px rgba(15,30,80,0.14);
+  z-index: 999; min-width: 220px; padding: 10px; display: none;
+  animation: dropIn 0.18s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ms-field-panel.open { display: block; }
+@keyframes dropIn {
+  from { opacity:0; transform:translateY(-6px) scale(0.98); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.ms-field-panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 8px; border-bottom: 1px solid var(--ms-border); margin-bottom: 8px;
+}
+.ms-field-panel-header span { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:var(--ms-muted); }
+.ms-field-panel-header button { font-size:10px; color:var(--ms-blue); background:none; border:none; cursor:pointer; font-weight:600; padding:0; }
+.ms-field-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 4px; border-radius: 6px; font-size: 12px; color: var(--ms-text);
+  cursor: pointer; transition: background 0.12s;
+}
+.ms-field-item:hover { background: #f0f6ff; }
+.ms-field-item input[type="checkbox"] { accent-color: var(--ms-blue); width: 14px; height: 14px; }
+
+/* ── Tabs — exact Milestone pill tabs ── */
+.ms-tabs-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
+.ms-tabs {
+  display: inline-flex; align-items: center;
+  background: #fff; border: 1px solid var(--ms-border);
+  border-radius: 12px; padding: 4px; gap: 3px;
+  box-shadow: var(--ms-shadow);
+}
+.ms-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 18px; border-radius: 9px;
+  font-size: 12.5px; font-weight: 600; cursor: pointer;
+  border: none; background: transparent; color: var(--ms-muted);
+  transition: var(--ms-tr); white-space: nowrap;
+}
+.ms-tab i { font-size: 13px; }
+.ms-tab:hover { background: #f0f6ff; color: var(--ms-blue); }
+.ms-tab.active {
+  background: linear-gradient(135deg, var(--ms-blue2), var(--ms-blue));
+  color: #fff; box-shadow: 0 3px 12px rgba(45,125,210,0.3);
+}
+.ms-tab .ms-tab-count {
+  background: rgba(255,255,255,0.25); border-radius: 20px;
+  padding: 1px 7px; font-size: 10px; font-weight: 700;
+}
+.ms-tab:not(.active) .ms-tab-count { background: rgba(45,125,210,0.1); color: var(--ms-blue); }
+
+/* ── Table card ── */
+.ms-table-card {
+  background: #fff; border-radius: 12px;
+  border: 1px solid var(--ms-border);
+  box-shadow: 0 1px 4px rgba(15,30,80,0.06), 0 6px 20px rgba(15,30,80,0.07);
+  overflow: hidden;
+}
+.ms-table-scroll { overflow-x: auto; overflow-y: visible; }
+.ms-table-scroll::-webkit-scrollbar { height: 5px; }
+.ms-table-scroll::-webkit-scrollbar-track { background: #f0f4fc; }
+.ms-table-scroll::-webkit-scrollbar-thumb { background: #c0cce0; border-radius: 3px; }
+.ms-table-scroll::-webkit-scrollbar-thumb:hover { background: var(--ms-blue); }
+
+/* ── Table ── */
+.ms-table { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: auto; }
+
+.ms-table thead tr th {
+  background: linear-gradient(135deg, #1a3060, #1e3a5f);
+  color: rgba(255,255,255,0.9);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+  padding: 9px 12px; white-space: nowrap;
+  border-bottom: 2px solid rgba(45,125,210,0.4);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  position: sticky; top: 0; z-index: 10; cursor: pointer;
+}
+.ms-table thead tr th:last-child { border-right: none; }
+.ms-table thead tr th[data-sort="asc"]::after  { content: ' ↑'; opacity: 0.8; font-size: 10px; }
+.ms-table thead tr th[data-sort="desc"]::after { content: ' ↓'; opacity: 0.8; font-size: 10px; }
+.ms-table thead tr th:hover { background: linear-gradient(135deg, #1e3a6e, #244480); }
+.ms-table thead th { position: relative; }
+.col-resize-handle {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 4px; cursor: col-resize; background: transparent; transition: background 0.15s;
+}
+.col-resize-handle:hover { background: rgba(0,198,255,0.6); }
+
+/* Data rows */
+.ms-table tbody tr.ms-data-row {
+  border-bottom: 1px solid #edf1fa; transition: background 0.12s, box-shadow 0.12s;
+}
+.ms-table tbody tr.ms-data-row:hover {
+  background: #f0f6ff !important; box-shadow: inset 3px 0 0 var(--ms-blue);
+}
+.ms-table tbody tr.ms-data-row:nth-child(4n+1) { background: #fff; }
+.ms-table tbody tr.ms-data-row:nth-child(4n+3) { background: #fafcff; }
+.ms-table tbody td {
+  padding: 9px 12px; color: var(--ms-text); vertical-align: middle;
+  border-right: 1px solid #f0f4fc;
+}
+.ms-table tbody td:last-child { border-right: none; }
+
+/* Detail expand row */
+.ms-table tbody tr.ms-detail-row td {
+  background: #f4f8ff !important;
+  padding: 0 !important;
+  border-top: none !important;
+  border-bottom: 2px solid #d8e4f8 !important;
+}
+
+/* Row toggle */
+.ms-row-toggle {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: #eef4ff; border: 1px solid #d0e0f8;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--ms-tr); flex-shrink: 0;
+  color: var(--ms-blue); font-size: 10px;
+}
+.ms-row-toggle:hover { background: var(--ms-blue); color: #fff; }
+
+/* S.No cell */
+.td-sno {
+  font-weight: 700; color: var(--ms-muted);
+  font-size: 11px; text-align: center;
+  width: 54px; padding-left: 14px !important;
+}
+
+/* Links */
+.ms-table a { color: var(--ms-blue); text-decoration: none; font-weight: 600; }
+.ms-table a:hover { text-decoration: underline; }
+
+/* Delivery status badges */
+.ms-delivery {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 700; white-space: nowrap;
+}
+.ms-delivery i { font-size: 9px; }
+.ms-delivery.on-time    { background: #e8faf2; color: #0d9f6a; }
+.ms-delivery.approaching{ background: #fff8e6; color: #c07a00; }
+.ms-delivery.due-today  { background: #eef4ff; color: #2d6ec0; }
+.ms-delivery.delayed    { background: #fff0f2; color: #c02038; }
+.ms-delivery.escalation { background: #fff0f2; color: #c02038; }
+
+/* Status badge */
+.ms-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 700; white-space: nowrap;
+  background: #f0f4fc; color: var(--ms-muted);
+}
+.ms-status.yta        { background: #fff8e6; color: #c07a00; }
+.ms-status.yts        { background: #eef3ff; color: #3a6ec0; }
+.ms-status.approved   { background: #e8faf2; color: #0d9f6a; }
+.ms-status.rejected   { background: #fff0f2; color: #c02038; }
+.ms-status.cancel     { background: #f4f4f4; color: #666; }
+.ms-status.reassigned { background: #fff4e6; color: #a05000; }
+
+/* Milestone expand detail */
+.ms-milestone-detail { padding: 12px 18px; }
+.ms-milestone-detail-header {
+  display: grid; grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr 1fr;
+  gap: 0; background: linear-gradient(135deg, #1a3060, #1e3a5f);
+  border-radius: 8px 8px 0 0; overflow: hidden;
+}
+.ms-milestone-detail-header span {
+  padding: 7px 12px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.4px; color: rgba(255,255,255,0.85);
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.ms-milestone-detail-header span:last-child { border-right: none; }
+.ms-milestone-row {
+  display: grid; grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr 1fr;
+  border-bottom: 1px solid #edf1fa; transition: background 0.12s;
+}
+.ms-milestone-row:hover { background: #f0f6ff; }
+.ms-milestone-row:last-child { border-bottom: none; }
+.ms-milestone-row span {
+  padding: 8px 12px; font-size: 12px; color: var(--ms-text);
+  border-right: 1px solid #f0f4fc; vertical-align: middle;
+}
+.ms-milestone-row span:last-child { border-right: none; }
+.ms-milestone-list { border: 1px solid var(--ms-border); border-radius: 8px; overflow: hidden; }
+.ms-milestone-loading {
+  padding: 16px; text-align: center; color: var(--ms-muted);
+  font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+/* Empty state */
+.ms-empty { text-align: center; padding: 44px 20px; }
+.ms-empty .ms-empty-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(45,125,210,0.1), rgba(45,125,210,0.05));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 12px; font-size: 20px; color: rgba(45,125,210,0.4);
+}
+.ms-empty p { font-size: 13px; color: var(--ms-muted); font-weight: 500; margin: 0; }
+
+/* ── Filter FAB + Panel ── */
+.ms-filter-fab {
+  position: fixed; bottom: 28px; right: 24px; z-index: 400;
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 30px;
+  background: linear-gradient(135deg, var(--ms-blue), #1a60b8);
+  color: #fff; font-size: 12.5px; font-weight: 700;
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(45,125,210,0.45); transition: var(--ms-tr);
+}
+.ms-filter-fab:hover {
+  background: linear-gradient(135deg, #3a8ae0, #2266cc);
+  box-shadow: 0 6px 24px rgba(45,125,210,0.55); transform: translateY(-2px);
+}
+.ms-filter-panel {
+  position: fixed; bottom: 80px; right: 24px; z-index: 410;
+  background: #fff; border: 1px solid var(--ms-border);
+  border-radius: 14px; padding: 16px;
+  box-shadow: 0 12px 40px rgba(15,30,80,0.18);
+  width: 260px; display: none;
+  animation: dropIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ms-filter-panel.open { display: block; }
+.ms-filter-panel label {
+  font-size: 11px; font-weight: 700; color: var(--ms-muted);
+  display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.ms-filter-panel input, .ms-filter-panel select {
+  width: 100%; font-size: 12px; border: 1px solid var(--ms-border);
+  border-radius: 7px; padding: 6px 10px; color: var(--ms-text);
+  transition: var(--ms-tr); margin-bottom: 10px;
+}
+.ms-filter-panel input:focus, .ms-filter-panel select:focus {
+  border-color: var(--ms-blue); outline: none;
+  box-shadow: 0 0 0 3px rgba(45,125,210,0.12);
+}
+.ms-filter-panel-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+}
+.ms-filter-panel-header span { font-size: 12px; font-weight: 800; color: var(--ms-text); }
+.ms-filter-panel-header button { background: none; border: none; cursor: pointer; color: var(--ms-muted); font-size: 15px; padding: 0; }
+
+/* ── Scroll buttons ── */
+.ms-scroll-btns {
+  position: fixed; left: 24px; bottom: 28px; z-index: 400;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.ms-scroll-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #fff; border: 1px solid var(--ms-border);
+  color: var(--ms-blue); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--ms-tr);
+  box-shadow: 0 2px 8px rgba(15,30,80,0.1);
+}
+.ms-scroll-btn:hover { background: var(--ms-blue); color: #fff; border-color: var(--ms-blue); transform: scale(1.08); }
+
+/* ── Bulk action bar ── */
+.ms-bulk-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  background: #fff; border: 1px solid var(--ms-border);
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 -4px 24px rgba(15,30,80,0.12);
+  padding: 10px 20px; display: flex; align-items: center; gap: 10px;
+  z-index: 400; transition: var(--ms-tr);
+}
+.ms-bulk-bar.hidden { display: none; }
+.ms-bulk-count {
+  background: var(--ms-blue); color: #fff;
+  border-radius: 20px; padding: 2px 9px;
+  font-size: 11px; font-weight: 700;
+}
+
+/* ── Modal overrides ── */
+.modal-content { border-radius: 14px !important; border: 1px solid var(--ms-border) !important; box-shadow: 0 12px 48px rgba(15,30,80,0.2) !important; overflow: hidden; }
+.modal-header { background: linear-gradient(135deg, var(--ms-navy), var(--ms-navy2)) !important; border-bottom: none !important; padding: 14px 20px !important; }
+.modal-title { color: #fff !important; font-size: 14px !important; font-weight: 700 !important; }
+.modal-header .btn-close { filter: invert(1) !important; opacity: 0.6 !important; transition: opacity 0.15s !important; }
+.modal-header .btn-close:hover { opacity: 1 !important; }
+.modal-body { background: var(--ms-light) !important; padding: 18px 20px !important; }
+.modal-footer { background: var(--ms-light) !important; border-top: 1px solid var(--ms-border) !important; padding: 12px 20px !important; }
+.modal-footer .btn-primary { background: linear-gradient(135deg, var(--ms-blue), #1a60b8) !important; border: none !important; border-radius: 8px !important; font-weight: 600 !important; box-shadow: 0 2px 8px rgba(45,125,210,0.3) !important; }
+.modal-footer .btn-secondary { border-radius: 8px !important; font-weight: 600 !important; }
+.modal .form-control, .modal .form-select, .modal .form-floating .form-control { border-radius: 8px !important; border-color: var(--ms-border) !important; font-size: 12.5px !important; }
+.modal .form-control:focus, .modal .form-select:focus { border-color: var(--ms-blue) !important; box-shadow: 0 0 0 3px rgba(45,125,210,0.12) !important; }
+.modal .nav-tabs { border-bottom: 1px solid var(--ms-border) !important; }
+.modal .nav-tabs .nav-link { font-size: 12.5px !important; font-weight: 600 !important; color: var(--ms-muted) !important; border: none !important; padding: 8px 14px !important; border-radius: 8px 8px 0 0 !important; }
+.modal .nav-tabs .nav-link:hover { color: var(--ms-blue) !important; }
+.modal .nav-tabs .nav-link.active { color: var(--ms-blue) !important; border-bottom: 2px solid var(--ms-blue) !important; background: rgba(45,125,210,0.06) !important; }
+.modal .table thead { background: linear-gradient(135deg, rgba(45,125,210,0.12), rgba(45,125,210,0.06)) !important; }
+.modal .table thead th { font-size: 10.5px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; color: var(--ms-muted) !important; background: transparent !important; border-bottom: 1px solid var(--ms-border) !important; padding: 9px 12px !important; }
+.modal .table tbody tr { border-bottom: 1px solid #f0f4fc !important; }
+.modal .table tbody tr:hover { background: #f7f9ff !important; }
+.modal .table tbody td { font-size: 12px !important; padding: 8px 12px !important; }
+
+/* ── Column action buttons ── */
+.col-action-btn { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--ms-border); background: #f8faff; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+.col-action-btn svg { transition: transform 0.2s; }
+.col-select-btn:hover { background: #EAF3DE; border-color: #97C459; box-shadow: 0 0 0 3px rgba(99,153,34,0.15); transform: scale(1.12); }
+.col-select-btn:hover svg { transform: scale(1.1); }
+.col-unselect-btn:hover { background: #FCEBEB; border-color: #F09595; box-shadow: 0 0 0 3px rgba(226,75,74,0.15); transform: scale(1.12); }
+.col-unselect-btn:hover svg { transform: scale(1.1); }
+.col-btn-tip { position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: #1e2d45; color: #fff; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 9999; }
+.col-action-btn:hover .col-btn-tip { opacity: 1; }
+</style>
+
+<body>
+<main class="ms-page">
+
+<%
+const bgMap = {
+  "On Time":              "on-time",
+  "Approaching Due Date": "approaching",
+  "Due Today":            "due-today",
+  "Delayed":              "delayed",
+  "Escalation":           "escalation",
+};
+function dlvBadge(status) {
+  if (!status) return '—';
+  var cls = bgMap[status] || '';
+  return '<span class="ms-delivery ' + cls + '"><i class="bi bi-circle-fill"></i>' + status + '</span>';
+}
+function statusBadge(s) {
+  if (!s) return '<span class="ms-status">' + s + '</span>';
+  var cls = s.toLowerCase().replace(/\s+.*/,'');
+  return '<span class="ms-status ' + cls + '">' + s + '</span>';
+}
+
+let ytaCount = 0, ytsCount = 0, ongoingCount = 0, completedCount = 0;
+const completedStatuses = ["Approved","Rejected","Reassigned","Cancel"];
+const notOngoing = ["YTA","YTS","Approved","Rejected","Reassigned","Cancel"];
+if(Object.values(Data).length > 0){
+  for(let i=0; i<Object.values(Data).length; i++){
+    const s = Data[i].Status;
+    if(s === "YTA") ytaCount++;
+    else if(s === "YTS") ytsCount++;
+    else if(completedStatuses.includes(s)) completedCount++;
+    else if(!notOngoing.includes(s)) ongoingCount++;
+  }
+}
+const MainID = Customer === "AT&T" ? "CFAS_ID" : "JOB_ID";
+%>
+
+<!-- ── TOOLBAR ── -->
+<div class="ms-toolbar">
+  <div class="ms-toolbar-left">
+    <div class="ms-page-title">
+      <i class="bi bi-folder2-open"></i> Project List
+    </div>
+    <span class="customer-pill"><%= Customer %></span>
+
+    <!-- Column toggle -->
+    <div class="ms-field-selector" id="fieldSelector">
+      <div class="ms-field-trigger" id="fieldTrigger">
+        <i class="bi bi-layout-three-columns"></i> Columns
+        <i class="bi bi-chevron-down" style="font-size:9px;"></i>
+      </div>
+      <div class="ms-field-panel" id="fieldPanel">
+        <div class="ms-field-panel-header">
+          <span>Show / Hide Columns</span>
+          <div style="display:flex;gap:5px;">
+            <button onclick="selectAllColumns()" class="col-action-btn col-select-btn" title="">
+              <svg viewBox="0 0 16 16" fill="none" stroke="#639922" stroke-width="1.8" width="14" height="14">
+                <rect x="1.5" y="1.5" width="5" height="5" rx="1.2"/>
+                <rect x="9.5" y="1.5" width="5" height="5" rx="1.2"/>
+                <rect x="1.5" y="9.5" width="5" height="5" rx="1.2"/>
+                <rect x="9.5" y="9.5" width="5" height="5" rx="1.2"/>
+                <polyline points="2.5,12 4,13.5 6.5,10.5" stroke-width="1.6"/>
+                <polyline points="10.5,12 12,13.5 14.5,10.5" stroke-width="1.6"/>
+              </svg>
+              <span class="col-btn-tip">Select All</span>
+            </button>
+            <button onclick="unselectAllColumns()" class="col-action-btn col-unselect-btn" title="">
+              <svg viewBox="0 0 16 16" fill="none" stroke="#E24B4A" stroke-width="1.8" width="14" height="14">
+                <rect x="1.5" y="1.5" width="5" height="5" rx="1.2"/>
+                <rect x="9.5" y="1.5" width="5" height="5" rx="1.2"/>
+                <rect x="1.5" y="9.5" width="5" height="5" rx="1.2"/>
+                <rect x="9.5" y="9.5" width="5" height="5" rx="1.2"/>
+                <line x1="10.5" y1="10.5" x2="13.5" y2="13.5" stroke-width="1.8"/>
+                <line x1="13.5" y1="10.5" x2="10.5" y2="13.5" stroke-width="1.8"/>
+              </svg>
+              <span class="col-btn-tip">Unselect All</span>
+            </button>
+          </div>
+        </div>
+
+        <%# Checkboxes use toggle-class names, NOT numeric data-col indexes %>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-sno-toggle"       checked> S.No</label>
+        <% if(Customer !== "AT&T"){ %>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-jobid-toggle"     checked> Job ID</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-jobname-toggle"   checked> Job Name</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-sow-toggle"       checked> SOW</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-recvd-toggle"     checked> Received Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-due-toggle"       checked> Due Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-submitted-toggle" checked> Submitted Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-owner-toggle"     checked> Owner</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-status-toggle"    checked> Status</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-delivery-toggle"  checked> Delivery Status</label>
+        <% } else { %>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-jobid-toggle"     checked> CFAS ID</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-jobname-toggle"   checked> Job Name</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-pasnumber-toggle" checked> PAS Number</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-sow-toggle"       checked> SOW</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-recvd-toggle"     checked> Received Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-due-toggle"       checked> Due Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-submitted-toggle" checked> Submitted Date</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-owner-toggle"     checked> Owner</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-status-toggle"    checked> Status</label>
+        <label class="ms-field-item"><input type="checkbox" class="col-toggle col-delivery-toggle"  checked> Delivery Status</label>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TABS ── -->
+<div class="ms-tabs-wrap">
+  <div class="ms-tabs">
+    <button class="ms-tab active" onclick="switchTab('yta',this)">
+      <i class="bi bi-hourglass-split"></i> YTA
+      <span class="ms-tab-count"><%= ytaCount %></span>
+    </button>
+    <button class="ms-tab" onclick="switchTab('yts',this)">
+      <i class="bi bi-clock-history"></i> YTS
+      <span class="ms-tab-count"><%= ytsCount %></span>
+    </button>
+    <button class="ms-tab" onclick="switchTab('ongoing',this)">
+      <i class="bi bi-play-circle"></i> Ongoing
+      <span class="ms-tab-count"><%= ongoingCount %></span>
+    </button>
+    <button class="ms-tab" onclick="switchTab('completed',this)">
+      <i class="bi bi-check-circle"></i> Completed
+      <span class="ms-tab-count"><%= completedCount %></span>
+    </button>
+  </div>
+</div>
+
+<%
+function colCount() { return Customer === "AT&T" ? 10 : 9; }
+%>
+
+<!-- ══════════ YTA TAB (no Submitted Date) ══════════ -->
+<div class="ms-tab-pane" id="pane-yta">
+  <div class="ms-table-card"><div class="ms-table-scroll">
+    <table class="ms-table" id="table-yta">
+      <thead><tr>
+        <th class="col-sno" style="width:64px;">
+          <input type="checkbox" class="form-check-input selectAll-yta" style="accent-color:var(--ms-blue);"> S.No
+          <div class="col-resize-handle"></div>
+        </th>
+        <% if(Customer !== "AT&T"){ %>
+        <th class="col-jobid">Job ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } else { %>
+        <th class="col-jobid">CFAS ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-pasnumber">PAS Number <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } %>
+      </tr></thead>
+      <tbody>
+        <% let slNo=1, hasYTA=false;
+        for(let i=0; i<Object.values(Data).length; i++){
+          if(Data[i].Status === "YTA"){ hasYTA=true;
+            let temp = compareDates(Data[i].f_DueDate,"",Data[i].Status);
+            let dlvCls = temp ? bgMap[temp] : ''; %>
+        <tr class="ms-data-row">
+          <td class="td-sno col-sno">
+            <div class="d-flex align-items-center gap-1">
+              <div class="ms-row-toggle" onclick="toggleDetail(this)"><i class="bi bi-plus-lg"></i></div>
+              <input type="checkbox" class="form-check-input record-checkbox" value="<%= Customer!=='AT&T'?Data[i].JOB_ID:Data[i].CFAS_ID %>" data-id="<%= Data[i].idProjects %>">
+              <%= slNo %>
+            </div>
+          </td>
+          <% if(Customer !== "AT&T"){ %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].JOB_ID %>/<%= Data[i].idProjects %>"><%= Data[i].JOB_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } else { %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].CFAS_ID %>/<%= Data[i].idProjects %>"><%= Data[i].CFAS_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-pasnumber"><%= Data[i].PSANumber %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } %>
+        </tr>
+        <tr class="ms-detail-row" style="display:none;">
+          <td colspan="<%= Customer!=='AT&T'?9:10 %>">
+            <div class="ms-milestone-detail">
+              <div class="ms-milestone-loading" id="ml-yta-<%= i %>"><span class="spinner-border spinner-border-sm text-primary"></span> Loading milestones…</div>
+              <div class="ms-milestone-list" id="mb-yta-<%= i %>" style="display:none;"></div>
+            </div>
+          </td>
+        </tr>
+        <% slNo++; } } %>
+        <% if(!hasYTA){ %>
+        <tr><td colspan="<%= Customer!=='AT&T'?9:10 %>">
+          <div class="ms-empty"><div class="ms-empty-icon"><i class="bi bi-inbox"></i></div><p>No YTA projects found</p></div>
+        </td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ══════════ YTS TAB (no Submitted Date) ══════════ -->
+<div class="ms-tab-pane" id="pane-yts" style="display:none;">
+  <div class="ms-table-card"><div class="ms-table-scroll">
+    <table class="ms-table" id="table-yts">
+      <thead><tr>
+        <th class="col-sno" style="width:64px;">
+          <input type="checkbox" class="form-check-input selectAll-yts" style="accent-color:var(--ms-blue);"> S.No
+          <div class="col-resize-handle"></div>
+        </th>
+        <% if(Customer !== "AT&T"){ %>
+        <th class="col-jobid">Job ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } else { %>
+        <th class="col-jobid">CFAS ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-pasnumber">PAS Number <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } %>
+      </tr></thead>
+      <tbody>
+        <% slNo=1; let hasYTS=false;
+        for(let i=0; i<Object.values(Data).length; i++){
+          if(Data[i].Status === "YTS"){ hasYTS=true;
+            let temp = compareDates(Data[i].f_DueDate,"",Data[i].Status);
+            let dlvCls = temp ? bgMap[temp] : ''; %>
+        <tr class="ms-data-row">
+          <td class="td-sno col-sno">
+            <div class="d-flex align-items-center gap-1">
+              <div class="ms-row-toggle" onclick="toggleDetail(this)"><i class="bi bi-plus-lg"></i></div>
+              <input type="checkbox" class="form-check-input record-checkbox" value="<%= Customer!=='AT&T'?Data[i].JOB_ID:Data[i].CFAS_ID %>" data-id="<%= Data[i].idProjects %>">
+              <%= slNo %>
+            </div>
+          </td>
+          <% if(Customer !== "AT&T"){ %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].JOB_ID %>/<%= Data[i].idProjects %>"><%= Data[i].JOB_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } else { %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].CFAS_ID %>/<%= Data[i].idProjects %>"><%= Data[i].CFAS_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-pasnumber"><%= Data[i].PSANumber %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } %>
+        </tr>
+        <tr class="ms-detail-row" style="display:none;">
+          <td colspan="<%= Customer!=='AT&T'?9:10 %>">
+            <div class="ms-milestone-detail">
+              <div class="ms-milestone-loading" id="ml-yts-<%= i %>"><span class="spinner-border spinner-border-sm text-primary"></span> Loading milestones…</div>
+              <div class="ms-milestone-list" id="mb-yts-<%= i %>" style="display:none;"></div>
+            </div>
+          </td>
+        </tr>
+        <% slNo++; } } %>
+        <% if(!hasYTS){ %>
+        <tr><td colspan="<%= Customer!=='AT&T'?9:10 %>">
+          <div class="ms-empty"><div class="ms-empty-icon"><i class="bi bi-inbox"></i></div><p>No YTS projects found</p></div>
+        </td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ══════════ ONGOING TAB (no Submitted Date) ══════════ -->
+<div class="ms-tab-pane" id="pane-ongoing" style="display:none;">
+  <div class="ms-table-card"><div class="ms-table-scroll">
+    <table class="ms-table" id="table-ongoing">
+      <thead><tr>
+        <th class="col-sno" style="width:64px;">
+          <input type="checkbox" class="form-check-input selectAll-ongoing" style="accent-color:var(--ms-blue);"> S.No
+          <div class="col-resize-handle"></div>
+        </th>
+        <% if(Customer !== "AT&T"){ %>
+        <th class="col-jobid">Job ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } else { %>
+        <th class="col-jobid">CFAS ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-pasnumber">PAS Number <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } %>
+      </tr></thead>
+      <tbody>
+        <% slNo=1; let hasOngoing=false;
+        for(let i=0; i<Object.values(Data).length; i++){
+          if(!["YTA","YTS","Approved","Rejected","Reassigned","Cancel"].includes(Data[i].Status)){ hasOngoing=true;
+            let temp = compareDates(Data[i].f_DueDate,"",Data[i].Status);
+            let dlvCls = temp ? bgMap[temp] : ''; %>
+        <tr class="ms-data-row">
+          <td class="td-sno col-sno">
+            <div class="d-flex align-items-center gap-1">
+              <div class="ms-row-toggle" onclick="toggleDetail(this)"><i class="bi bi-plus-lg"></i></div>
+              <input type="checkbox" class="form-check-input record-checkbox" value="<%= Customer!=='AT&T'?Data[i].JOB_ID:Data[i].CFAS_ID %>" data-id="<%= Data[i].idProjects %>">
+              <%= slNo %>
+            </div>
+          </td>
+          <% if(Customer !== "AT&T"){ %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].JOB_ID %>/<%= Data[i].idProjects %>"><%= Data[i].JOB_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } else { %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].CFAS_ID %>/<%= Data[i].idProjects %>"><%= Data[i].CFAS_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-pasnumber"><%= Data[i].PSANumber %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } %>
+        </tr>
+        <tr class="ms-detail-row" style="display:none;">
+          <td colspan="<%= Customer!=='AT&T'?9:10 %>">
+            <div class="ms-milestone-detail">
+              <div class="ms-milestone-loading" id="ml-ongoing-<%= i %>"><span class="spinner-border spinner-border-sm text-primary"></span> Loading milestones…</div>
+              <div class="ms-milestone-list" id="mb-ongoing-<%= i %>" style="display:none;"></div>
+            </div>
+          </td>
+        </tr>
+        <% slNo++; } } %>
+        <% if(!hasOngoing){ %>
+        <tr><td colspan="<%= Customer!=='AT&T'?9:10 %>">
+          <div class="ms-empty"><div class="ms-empty-icon"><i class="bi bi-inbox"></i></div><p>No ongoing projects found</p></div>
+        </td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ══════════ COMPLETED TAB (HAS Submitted Date = col-submitted) ══════════ -->
+<div class="ms-tab-pane" id="pane-completed" style="display:none;">
+  <div class="ms-table-card"><div class="ms-table-scroll">
+    <table class="ms-table" id="table-completed">
+      <thead><tr>
+        <th class="col-sno" style="width:64px;">
+          <input type="checkbox" class="form-check-input selectAll-completed" style="accent-color:var(--ms-blue);"> S.No
+          <div class="col-resize-handle"></div>
+        </th>
+        <% if(Customer !== "AT&T"){ %>
+        <th class="col-jobid">Job ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-submitted">Submitted Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } else { %>
+        <th class="col-jobid">CFAS ID <div class="col-resize-handle"></div></th>
+        <th class="col-jobname">Job Name <div class="col-resize-handle"></div></th>
+        <th class="col-pasnumber">PAS Number <div class="col-resize-handle"></div></th>
+        <th class="col-sow">SOW <div class="col-resize-handle"></div></th>
+        <th class="col-recvd">Received Date <div class="col-resize-handle"></div></th>
+        <th class="col-due">Due Date <div class="col-resize-handle"></div></th>
+        <th class="col-submitted">Submitted Date <div class="col-resize-handle"></div></th>
+        <th class="col-owner">Owner <div class="col-resize-handle"></div></th>
+        <th class="col-status">Status <div class="col-resize-handle"></div></th>
+        <th class="col-delivery">Delivery Status</th>
+        <% } %>
+      </tr></thead>
+      <tbody>
+        <% slNo=1; let hasCompleted=false;
+        for(let i=0; i<Object.values(Data).length; i++){
+          if(["Approved","Rejected","Reassigned","Cancel"].includes(Data[i].Status)){ hasCompleted=true;
+            let temp = compareDates(Data[i].f_DueDate, Data[i].f_SubmittedDate, Data[i].Status);
+            let dlvCls = temp ? bgMap[temp] : ''; %>
+        <tr class="ms-data-row">
+          <td class="td-sno col-sno">
+            <div class="d-flex align-items-center gap-1">
+              <div class="ms-row-toggle" onclick="toggleDetail(this)"><i class="bi bi-plus-lg"></i></div>
+              <input type="checkbox" class="form-check-input record-checkbox" value="<%= Customer!=='AT&T'?Data[i].JOB_ID:Data[i].CFAS_ID %>" data-id="<%= Data[i].idProjects %>">
+              <%= slNo %>
+            </div>
+          </td>
+          <% if(Customer !== "AT&T"){ %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].JOB_ID %>/<%= Data[i].idProjects %>"><%= Data[i].JOB_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-submitted"><%= Data[i].n_SubmittedDate || '-' %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } else { %>
+          <td class="col-jobid"><a href="/Project/<%= Customer %>/<%= Data[i].CFAS_ID %>/<%= Data[i].idProjects %>"><%= Data[i].CFAS_ID %></a></td>
+          <td class="col-jobname"><%= Data[i].Job_Name || '-' %></td>
+          <td class="col-pasnumber"><%= Data[i].PSANumber %></td>
+          <td class="col-sow"><%= Data[i].SOW %></td>
+          <td class="col-recvd"><%= Data[i].n_ReceivedDate %></td>
+          <td class="col-due"><%= Data[i].n_DueDate %></td>
+          <td class="col-submitted"><%= Data[i].n_SubmittedDate || '-' %></td>
+          <td class="col-owner"><%= Data[i].Full_Name %></td>
+          <td class="col-status"><%- statusBadge(Data[i].Status) %></td>
+          <td class="col-delivery"><%- temp ? '<span class="ms-delivery '+dlvCls+'"><i class="bi bi-circle-fill"></i>'+temp+'</span>' : '—' %></td>
+          <% } %>
+        </tr>
+        <tr class="ms-detail-row" style="display:none;">
+          <td colspan="<%= Customer!=='AT&T'?10:11 %>">
+            <div class="ms-milestone-detail">
+              <div class="ms-milestone-loading" id="ml-completed-<%= i %>"><span class="spinner-border spinner-border-sm text-primary"></span> Loading milestones…</div>
+              <div class="ms-milestone-list" id="mb-completed-<%= i %>" style="display:none;"></div>
+            </div>
+          </td>
+        </tr>
+        <% slNo++; } } %>
+        <% if(!hasCompleted){ %>
+        <tr><td colspan="<%= Customer!=='AT&T'?10:11 %>">
+          <div class="ms-empty"><div class="ms-empty-icon"><i class="bi bi-inbox"></i></div><p>No completed projects found</p></div>
+        </td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ── Bulk bar ── -->
+<div class="ms-bulk-bar hidden" id="bulkBar">
+  <span class="ms-bulk-count" id="bulkCount">0</span>
+  <span style="font-size:12px;font-weight:600;color:#1e2d45;">selected</span>
+  <button type="button" class="ms-btn ms-btn-primary visually-hidden" id="createMilestoneBarBtn"
+    data-bs-toggle="modal" data-bs-target="#createMilestoneModal">
+    <i class="bi bi-plus-lg"></i> Create Milestone <span id="ActiveCount"></span>
+  </button>
+  <button type="button" class="ms-btn ms-btn-primary"
+    data-bs-toggle="modal" data-bs-target="#UpdateStatusModal">
+    <i class="bi bi-arrow-repeat"></i> Update Status
+  </button>
+</div>
+
+<!-- ── Scroll buttons ── -->
+<div class="ms-scroll-btns">
+  <button class="ms-scroll-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="bi bi-arrow-up"></i></button>
+  <button class="ms-scroll-btn" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"><i class="bi bi-arrow-down"></i></button>
+</div>
+
+<!-- ── Filter FAB + Panel ── -->
+<button class="ms-filter-fab" id="filterFab"><i class="bi bi-funnel-fill"></i> Filter</button>
+<form action="/<%= userData.Role %>/Projects/<%= Customer %>/<%= Program %>" method="get" id="filterForm">
+  <div class="ms-filter-panel" id="filterPanel">
+    <div class="ms-filter-panel-header">
+      <span><i class="bi bi-funnel me-1"></i> Filters</span>
+      <button type="button" id="filterClose"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <% const MainIDf = Customer==="AT&T" ? "CFAS_ID" : "JOB_ID"; %>
+    <label><%= MainIDf %></label>
+    <input type="search" name="<%= MainIDf %>" id="filterJobId" placeholder="Enter <%= MainIDf %>">
+    <label>SOW</label>
+    <select name="SOW" id="filterSOW">
+      <option value="">All</option>
+      <% const SOW=FilterData.SOW; for(let i=0;i<SOW.length;i++){ %><option value="<%= SOW[i] %>"><%= SOW[i] %></option><% } %>
+    </select>
+    <label>Division</label>
+    <select name="Division" id="filterDivision">
+      <option value="">All</option>
+      <% const Division=FilterData.Division; for(let i=0;i<Division.length;i++){ %><option value="<%= Division[i] %>"><%= Division[i] %></option><% } %>
+    </select>
+    <label>Status</label>
+    <select name="Status" id="filterStatus">
+      <option value="">All</option>
+      <% const Status=FilterData.Status; for(let i=0;i<Status.length;i++){ %><option value="<%= Status[i] %>"><%= Status[i] %></option><% } %>
+    </select>
+    <button type="submit" class="ms-btn ms-btn-primary w-100 justify-content-center mt-1"><i class="bi bi-check2"></i> Apply Filters</button>
+  </div>
+</form>
+
+</main>
+</body>
+
+<!-- ══════════ ALL MODALS — FUNCTIONALITY UNCHANGED ══════════ -->
+
+<!-- Project Modal -->
+<div class="modal fade" id="projectModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Project Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <p class="p-0 m-0" style="font-size:13px;">JOB ID: <strong><span id="JOB_ID"></span></strong></p>
+          <p class="m-0 p-0" style="font-size:13px;">Status: <span id="Status"></span></p>
+        </div>
+        <ul class="nav nav-tabs" id="projectModalTab" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#projectInfo-tab-pane" type="button">Project Info</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#milestone-tab-pane" type="button">Milestone</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#qc-tab-pane" type="button">QC</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#task-tab-pane" type="button">Task</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#subtask-tab-pane" type="button">Sub Task</button></li>
+        </ul>
+        <div class="tab-content mt-2">
+          <div class="tab-pane fade show active" id="projectInfo-tab-pane">
+            <a href="/editProject/" class="btn text-decoration-none position-absolute top-0 end-0 z-3" id="editButton"><i class="bi bi-pencil-square"></i></a>
+            <div class="row rounded-3 p-1 shadow">
+              <div class="col">
+                <div class="row"><p class="col"><b>JOB ID:</b> <span id="JOB_ID"></span></p></div>
+                <div class="row"><p class="col"><b>SOW:</b> <span id="SOW"></span></p></div>
+                <div class="row"><p class="col"><b>Region:</b> <span id="Region"></span></p></div>
+                <div class="row"><p class="col"><b>Division:</b> <span id="Division"></span></p></div>
+                <div class="row"><p class="col"><b>Total Footage:</b> <span id="Total_Footage"></span></p></div>
+                <div class="row"><p class="col"><b>No of Nodes:</b> <span id="No_Nodes"></span></p></div>
+              </div>
+              <div class="col">
+                <div class="row"><p class="col"><b>Work Type:</b> <span id="Worktype"></span></p></div>
+                <div class="row"><p class="col"><b>Total No of Actives:</b> <span id="Total_Actives"></span></p></div>
+                <div class="row"><p class="col"><b>Total Home Passing:</b> <span id="Total_Home_Passing"></span></p></div>
+                <div class="row"><p class="col"><b>Received Date:</b> <span id="n_ReceivedDate"></span></p></div>
+                <div class="row"><p class="col"><b>Due Date:</b> <span id="n_DueDate"></span></p></div>
+                <div class="row"><p class="col"><b>Approved Date:</b> <span id="n_ApprovedDate"></span></p></div>
+              </div>
+              <hr>
+              <div class="row ms-0 rounded-3" id="Note"></div>
+            </div>
+          </div>
+          <div class="tab-pane fade show" id="milestone-tab-pane">
+            <div class="rounded-3 p-1 shadow">
+              <div class="d-flex justify-content-end mb-1">
+                <button class="btn"><i class="bi bi-arrow-clockwise"></i></button>
+                <button class="btn" data-bs-toggle="modal" data-bs-target="#createMilestoneModal"><i class="bi bi-plus"></i></button>
+              </div>
+              <table class="table table-hover overflow-hidden rounded-3">
+                <thead class="bg-primary bg-opacity-50">
+                  <th class="text-light">S.No</th><th class="text-light">Milestone Name</th>
+                  <th class="text-light">Prod TGT Start</th><th class="text-light">Prod ACT Start</th>
+                  <th class="text-light">Prod TGT End</th><th class="text-light">Prod ACT End</th>
+                  <th class="text-light">QC TGT Start</th><th class="text-light">QC ACT Start</th>
+                  <th class="text-light">QC TGT End</th><th class="text-light">QC ACT End</th>
+                </thead>
+                <tbody id="milestoneBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tab-pane fade show" id="qc-tab-pane"><div class="p-2"><p>QC</p></div></div>
+          <div class="tab-pane fade show" id="task-tab-pane"><div class="p-2"><p>Task</p></div></div>
+          <div class="tab-pane fade show" id="subtask-tab-pane"><div class="p-2"><p>Sub Task</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Milestone Modal -->
+<div class="modal fade" id="createMilestoneModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Create Milestone</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/<%= userData.Role %>/CreateMilestone/<%= Customer %>" method="post" id="createMilestoneForm" onsubmit="this.querySelector('button[type=submit]').disabled=true;">
+        <div class="modal-body">
+          <div class="row m-0">
+            <div class="col">
+              <label for="Project_ID">Selected Job Count: <span id="ActiveCount"></span></label>
+              <div class="form-floating job-id-container overflow-y-auto" style="height:fit-content;max-height:25dvh;"></div>
+            </div>
+            <div class="col">
+              <div class="row m-0">
+                <div class="col"><div class="form-floating"><select name="Milestone_Name" id="Milestone_Name" class="form-select" required><option value="">Choose Milestone Name</option><% if(MilestoneNameList){ for(let i=0;i<Object.values(MilestoneNameList).length;i++){ %><option value="<%= MilestoneNameList[i] %>"><%= MilestoneNameList[i] %></option><% } } %></select><label>Milestone Name</label></div></div>
+                <div class="col"><div class="form-floating"><select name="Owner" id="milestone_owner" class="form-select" required><option value="">Choose Owner</option><% for(let i=0;i<Object.values(Owners).length;i++){ %><option value="<%= Owners[i].Employee_ID %>"><%= Owners[i].Full_Name %></option><% } %></select><label>Owner</label></div></div>
+              </div>
+              <div class="row m-0">
+                <div class="col form-floating m-1"><input type="date" class="form-control border" id="Prod_TGT_Start_Date" name="Prod_TGT_Start_Date" required><label>Prod TGT Start Date</label></div>
+                <div class="col form-floating m-1"><input type="date" class="form-control border" id="Prod_TGT_End_Date" name="Prod_TGT_End_Date" required><label>Prod TGT End Date</label></div>
+              </div>
+              <div class="row m-0">
+                <div class="col form-floating m-1"><input type="date" class="form-control border" id="QC_TGT_Start_Date" name="QC_TGT_Start_Date" required><label>QC TGT Start Date</label></div>
+                <div class="col form-floating m-1"><input type="date" class="form-control border" id="QC_TGT_End_Date" name="QC_TGT_End_Date" required><label>QC TGT End Date</label></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="UpdateStatusModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Update Project Status (Total: <span id="ActiveCount"></span>)</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/PMO/UpdateProjectStatus/<%= Customer %>" method="post" id="UpdateProjectStatus">
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md visually-hidden"><div class="form-floating job-id-container visually-hidden overflow-y-auto" style="height:fit-content;max-height:25dvh;"></div></div>
+            <div class="col-md">
+              <label>Status</label>
+              <select name="Status" id="ststus" class="form-select" required>
+                <option value="">Choose Status</option>
+                <option value="Submitted - Awaiting Approval">Submitted - Awaiting Approval</option>
+                <option value="Approved">Approved</option>
+                <option value="Reassigned">Reassigned</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Cancel">Cancel</option>
+              </select>
+            </div>
+            <div class="col-md visually-hidden StatusDateContainer">
+              <label>Choose Date</label>
+              <input type="date" class="form-control border rounded-3 max-today" name="StatusDate" id="StatusDate">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script>
+/* ══════════════════════════════════════
+   PREVENT HEADER CARDS FROM CLOSING
+   when clicking inside main page
+══════════════════════════════════════ */
+(function(){
+  var mainEl = document.querySelector('main.ms-page');
+  if(mainEl){
+    mainEl.addEventListener('mousedown', function(e){
+      var tag = e.target.tagName.toLowerCase();
+      if(['a','button','input','select','label'].indexOf(tag) === -1){ e.stopPropagation(); }
+    });
+  }
+})();
+
+/* ══════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.ms-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.ms-tab-pane').forEach(function(p){ p.style.display = 'none'; });
+  btn.classList.add('active');
+  document.getElementById('pane-' + name).style.display = '';
+}
+
+/* ══════════════════════════════════════
+   ROW EXPAND — fetch milestones on open
+══════════════════════════════════════ */
+function toggleDetail(toggleEl) {
+  var dataRow   = toggleEl.closest('tr');
+  var detailRow = dataRow.nextElementSibling;
+  var icon      = toggleEl.querySelector('i');
+  if(!detailRow || !detailRow.classList.contains('ms-detail-row')) return;
+
+  var isHidden = (detailRow.style.display === 'none' || detailRow.style.display === '');
+  detailRow.style.display = isHidden ? 'table-row' : 'none';
+  icon.className = isHidden ? 'bi bi-dash-lg' : 'bi bi-plus-lg';
+  toggleEl.style.background = isHidden ? 'var(--ms-blue)' : '';
+  toggleEl.style.color      = isHidden ? '#fff' : '';
+
+  if(isHidden){
+    var loadingEl = detailRow.querySelector('[id^="ml-"]');
+    var bodyEl    = detailRow.querySelector('[id^="mb-"]');
+    if(!loadingEl || bodyEl.dataset.loaded) return;
+
+    var jobLink = dataRow.querySelector('td:nth-child(2) a');
+    if(!jobLink) return;
+    var parts     = jobLink.getAttribute('href').split('/');
+    var jobID     = parts[3];
+    var idProject = parts[4];
+
+    axios.get('/api/getMilestoneList', {
+      params: { JOB_ID: jobID, idProjects: idProject, Customer: '<%- Customer %>' }
+    }).then(function(res){
+      loadingEl.style.display = 'none';
+      var milestones = res.data.data;
+      if(!milestones || milestones.length === 0){
+        bodyEl.innerHTML = '<div class="ms-milestone-loading" style="color:var(--ms-muted)"><i class="bi bi-inbox me-2"></i>No milestones found</div>';
+        bodyEl.style.display = 'block'; bodyEl.dataset.loaded = '1'; return;
+      }
+      var headerHtml = '<div class="ms-milestone-detail-header"><span>Milestone Name</span><span>Due Date</span><span>Owner</span><span>Submitted</span><span>Approved</span><span>Status</span></div>';
+      var rowsHtml = milestones.map(function(m){
+        return '<div class="ms-milestone-row">' +
+          '<span><a href="/ViewMilestone/' + res.data.Customer + '/' + idProject + '/' + m.Milestone_Name + '">' + m.Milestone_Name + '</a></span>' +
+          '<span>' + (m.Due_Date ? formatDate(m.Due_Date) : '—') + '</span>' +
+          '<span>' + (m.Full_Name || '—') + '</span>' +
+          '<span>' + (m.Submitted_Date ? formatDate(m.Submitted_Date) : '—') + '</span>' +
+          '<span>' + (m.Approved_Date ? formatDate(m.Approved_Date) : '—') + '</span>' +
+          '<span>' + (m.Milestone_Status || '—') + '</span>' +
+        '</div>';
+      }).join('');
+      bodyEl.innerHTML = headerHtml + rowsHtml;
+      bodyEl.style.display = 'block'; bodyEl.dataset.loaded = '1';
+    }).catch(function(err){
+      loadingEl.innerHTML = '<span style="color:#c02038;"><i class="bi bi-exclamation-circle me-1"></i>Error loading milestones</span>';
+      console.error(err);
+    });
+  }
+}
+
+function formatDate(d){
+  var dt = new Date(d);
+  return (dt.getMonth()+1)+'/'+dt.getDate()+'/'+String(dt.getFullYear()).slice(-2);
+}
+
+/* ══════════════════════════════════════
+   COLUMN SHOW / HIDE
+   Uses CSS class names — immune to
+   column-count differences across tabs.
+   Completed has col-submitted; other
+   tabs don't. The toggle just does
+   nothing for that class on those tabs.
+══════════════════════════════════════ */
+(function(){
+  // Each toggle class maps to the CSS column class it controls
+  var colMap = {
+    'col-sno-toggle':       'col-sno',
+    'col-jobid-toggle':     'col-jobid',
+    'col-jobname-toggle':   'col-jobname',
+    'col-pasnumber-toggle': 'col-pasnumber',
+    'col-sow-toggle':       'col-sow',
+    'col-recvd-toggle':     'col-recvd',
+    'col-due-toggle':       'col-due',
+    'col-submitted-toggle': 'col-submitted',
+    'col-owner-toggle':     'col-owner',
+    'col-status-toggle':    'col-status',
+    'col-delivery-toggle':  'col-delivery'
+  };
+
+  function applyCol() {
+    Object.keys(colMap).forEach(function(toggleClass) {
+      var cb = document.querySelector('.' + toggleClass);
+      if (!cb) return;
+      var show = cb.checked;
+      document.querySelectorAll('.' + colMap[toggleClass]).forEach(function(cell) {
+        cell.style.display = show ? '' : 'none';
+      });
+    });
+  }
+
+  document.querySelectorAll('.col-toggle').forEach(function(cb){
+    cb.addEventListener('change', applyCol);
+  });
+
+  window.selectAllColumns = function(){
+    document.querySelectorAll('.col-toggle').forEach(function(cb){ cb.checked = true; });
+    applyCol();
+  };
+  window.unselectAllColumns = function(){
+    document.querySelectorAll('.col-toggle').forEach(function(cb){ cb.checked = false; });
+    applyCol();
+  };
+})();
+
+/* Field panel toggle */
+document.getElementById('fieldTrigger').addEventListener('click', function(e){
+  e.stopPropagation();
+  document.getElementById('fieldPanel').classList.toggle('open');
+});
+document.addEventListener('click', function(e){
+  var fs = document.getElementById('fieldSelector');
+  if(fs && !fs.contains(e.target)) document.getElementById('fieldPanel').classList.remove('open');
+  var fp = document.getElementById('filterPanel');
+  var ff = document.getElementById('filterFab');
+  if(fp && ff && !fp.contains(e.target) && !ff.contains(e.target)) fp.classList.remove('open');
+});
+
+/* ══════════════════════════════════════
+   COLUMN RESIZE
+══════════════════════════════════════ */
+(function(){
+  var resizing = null, startX = 0, startW = 0;
+  document.querySelectorAll('.col-resize-handle').forEach(function(h){
+    h.addEventListener('mousedown', function(e){
+      e.preventDefault(); resizing = h.parentElement; startX = e.pageX; startW = resizing.offsetWidth;
+      document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+    });
+  });
+  document.addEventListener('mousemove', function(e){
+    if(!resizing) return;
+    var nw = Math.max(60, startW + (e.pageX - startX));
+    resizing.style.minWidth = nw + 'px'; resizing.style.width = nw + 'px';
+  });
+  document.addEventListener('mouseup', function(){
+    if(resizing){ resizing = null; document.body.style.cursor = ''; document.body.style.userSelect = ''; }
+  });
+})();
+
+/* ══════════════════════════════════════
+   PURE JS COLUMN SORT
+══════════════════════════════════════ */
+(function(){
+  document.querySelectorAll('.ms-table thead tr th').forEach(function(th){
+    if(th.querySelector('.col-resize-handle') || th.querySelector('input')) return;
+    th.addEventListener('click', function(){
+      var tbl = th.closest('table'), idx = Array.from(th.parentElement.children).indexOf(th);
+      var asc = th.dataset.sort !== 'asc';
+      tbl.querySelectorAll('thead tr th').forEach(function(t){ t.dataset.sort = ''; });
+      th.dataset.sort = asc ? 'asc' : 'desc';
+      var rows = Array.from(tbl.querySelectorAll('tbody tr.ms-data-row'));
+      rows.sort(function(a,b){
+        var av = (a.cells[idx]||{}).textContent.trim();
+        var bv = (b.cells[idx]||{}).textContent.trim();
+        return asc ? av.localeCompare(bv,undefined,{numeric:true}) : bv.localeCompare(av,undefined,{numeric:true});
+      });
+      var tbody = tbl.querySelector('tbody');
+      rows.forEach(function(row){
+        var detail = row.nextElementSibling;
+        tbody.appendChild(row);
+        if(detail && detail.classList.contains('ms-detail-row')) tbody.appendChild(detail);
+      });
+    });
+  });
+})();
+
+/* ══════════════════════════════════════
+   FILTER PANEL
+══════════════════════════════════════ */
+document.getElementById('filterFab').addEventListener('click', function(){
+  document.getElementById('filterPanel').classList.toggle('open');
+});
+document.getElementById('filterClose').addEventListener('click', function(){
+  document.getElementById('filterPanel').classList.remove('open');
+});
+
+/* ══════════════════════════════════════
+   BULK SELECTION + ORIGINAL FUNCTIONALITY
+══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function(){
+  var bulkBar = document.getElementById('bulkBar');
+  var bulkCount = document.getElementById('bulkCount');
+  var selectedRecords = [];
+
+  function updateBulk(){
+    selectedRecords.length = 0;
+    document.querySelectorAll('.record-checkbox:checked').forEach(function(cb){
+      selectedRecords.push(JSON.stringify({ Job: cb.value, ID: cb.getAttribute('data-id') }));
+    });
+    var count = selectedRecords.length;
+    bulkCount.textContent = count;
+    document.querySelectorAll('#ActiveCount').forEach(function(el){ el.innerText = count || ''; });
+    bulkBar.classList.toggle('hidden', count === 0);
+    document.getElementById('createMilestoneBarBtn').classList.toggle('visually-hidden', count === 0);
+    if(count > 0){
+      document.querySelectorAll('.job-id-container').forEach(function(container){
+        container.innerHTML = '';
+        selectedRecords.forEach(function(job, index){
+          var t = JSON.parse(job);
+          container.innerHTML += '<div class="d-flex align-items-center text-nowrap"><span>'+(index+1)+'-</span>' +
+            '<input type="text" class="border-bottom bg-body-tertiary m-1" id="Project_ID" name="Project_ID" value="'+t.Job+'" readonly required>' +
+            '<input type="hidden" name="ID" value="'+t.ID+'" readonly required></div>';
+        });
+      });
+    }
+  }
+
+  ['yta','yts','ongoing','completed'].forEach(function(tab){
+    var saEl = document.querySelector('.selectAll-' + tab);
+    if(!saEl) return;
+    saEl.addEventListener('change', function(){
+      var pane = document.getElementById('pane-'+tab);
+      if(pane) pane.querySelectorAll('.record-checkbox').forEach(function(cb){ cb.checked = saEl.checked; });
+      updateBulk();
+    });
+  });
+
+  document.querySelectorAll('.record-checkbox').forEach(function(cb){
+    cb.addEventListener('change', updateBulk);
+  });
+
+  var params = getUrlParams();
+  document.querySelectorAll('#filterPanel select').forEach(function(sel){
+    for(var k in params){
+      if(k === sel.name){ var opt = sel.querySelector('option[value="'+params[k]+'"]'); if(opt) opt.selected = true; }
+    }
+  });
+  document.querySelectorAll('#filterPanel input[type="search"]').forEach(function(inp){
+    for(var k in params){ if(k === inp.name) inp.value = params[k]; }
+  });
+});
+
+/* ══════════════════════════════════════
+   VIEW PROJECT (original function)
+══════════════════════════════════════ */
+function viewProject(id){
+  axios.get('/api/projectInfo/<%= Customer %>', { params: { ID: id } }).then(function(res){
+    var object = res.data.project[0];
+    for(var key in object){
+      if(!Object.prototype.hasOwnProperty.call(object, key)) continue;
+      var element = object[key];
+      try{
+        if(key === 'Note'){
+          var area = document.getElementById('Note');
+          area.innerHTML = '<p><b>Comments</b></p>';
+          element = JSON.parse(element);
+          if(Object.keys(element).length){
+            for(var group in element){
+              var note = element[group], values = Object.values(note), attachmentName = values[4];
+              area.innerHTML += '<div class="row m-1"><div class="col-sm-12"><p><small><span><i class="bi bi-person-fill"></i>&nbsp;'+values[3]+'</span> <b>|</b> <span><i class="bi bi-calendar3"></i>&nbsp;'+values[0]+'</span>'+(attachmentName?'<b> | </b><span><a href="../public/uploads/ReferenceDoc/'+attachmentName+'" class="text-decoration-none btn btn-outline-secondary border-0 btn-sm" download><i class="bi bi-paperclip"></i></a></span>':'')+'</small></p><p class="border comment-section p-2 m-0">'+values[1]+'</p></div></div>';
+            }
+          } else { area.innerHTML += '<div class="row m-1"><p class="mx-auto">No Comments</p></div>'; }
+        } else if(key === 'idProjects'){
+          document.getElementById('editButton').setAttribute('href', '/PMO/editProject/<%= Customer %>/'+object[key]);
+        } else if(['ReceivedDate','DueDate','ApprovedDate','Owner'].includes(key)){
+          /* skip */
+        } else {
+          if(key === 'JOB_ID'){ document.querySelectorAll('#JOB_ID').forEach(function(el){ el.innerText = element; }); }
+          if(document.getElementById(key)) document.getElementById(key).innerText = element;
+        }
+      } catch(err){ console.log(err); }
+    }
+    var milestones = res.data.milestone, body = document.getElementById('milestoneBody');
+    body.innerHTML = '';
+    milestones.forEach(function(m, index){
+      var row = body.insertRow(-1);
+      row.insertCell(0).textContent = index+1;
+      row.insertCell(1).innerHTML = '<a href="/ViewMilestone/<%= Customer %>/'+m.Milestone_Name+'">'+m.Milestone_Name+'</a>';
+      row.insertCell(2).textContent = m.Prod_TGT_Start_Date;
+      row.insertCell(3).textContent = m.Prod_ACT_Start_Date;
+      row.insertCell(4).textContent = m.Prod_TGT_End_Date;
+      row.insertCell(5).textContent = m.Prod_ACT_End_Date;
+      row.insertCell(6).textContent = m.QC_TGT_Start_Date;
+      row.insertCell(7).textContent = m.QC_ACT_Start_Date;
+      row.insertCell(8).textContent = m.QC_TGT_End_Date;
+      row.insertCell(9).textContent = m.QC_ACT_End_Date;
+    });
+  }).catch(function(err){ console.log(err); });
+  $('#projectModal').modal('show');
+}
+
+/* Date validation — ORIGINAL UNCHANGED */
+var Prod_TGT_Start_Date = document.getElementById('Prod_TGT_Start_Date');
+var Prod_TGT_End_Date   = document.getElementById('Prod_TGT_End_Date');
+var QC_TGT_Start_Date   = document.getElementById('QC_TGT_Start_Date');
+var QC_TGT_End_Date     = document.getElementById('QC_TGT_End_Date');
+[Prod_TGT_Start_Date, Prod_TGT_End_Date, QC_TGT_Start_Date, QC_TGT_End_Date].forEach(function(input){
+  if(!input) return;
+  input.addEventListener('change', function(){
+    validateDate(Prod_TGT_Start_Date.value, Prod_TGT_End_Date.value, QC_TGT_Start_Date.value, QC_TGT_End_Date.value);
+  });
+});
+function validateDate(PSDate, PEDate, QSDate, QEDate){
+  if(PSDate && PEDate && QSDate && QEDate){
+    if(!((new Date(PEDate)>=new Date(PSDate))&&(new Date(QEDate)>=new Date(QSDate))&&(new Date(QSDate)>=new Date(PEDate)))){
+      Prod_TGT_Start_Date.value=''; Prod_TGT_End_Date.value='';
+      QC_TGT_Start_Date.value=''; QC_TGT_End_Date.value='';
+      toasts.push({title:'Error',content:'Please provide valid dates.',style:'error',dismissAfter:'10s'});
+    }
+  }
+}
+
+/* Status date toggle — ORIGINAL UNCHANGED */
+var stEl = document.getElementById('ststus');
+if(stEl){
+  stEl.addEventListener('change', function(e){
+    if(e.target.value==='Approved'||e.target.value==='Submitted - Awaiting Approval'){
+      document.querySelector('.StatusDateContainer').classList.remove('visually-hidden');
+      document.querySelector('#StatusDate').setAttribute('required','');
+    } else {
+      document.querySelector('.StatusDateContainer').classList.add('visually-hidden');
+      document.querySelector('#StatusDate').removeAttribute('required');
+    }
+  });
+}
+</script>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project List</title>
+  <%- include('../partials/dependencies') %>
+  <style>
+    :root {
+      --primary: #4a89dc;
+      --primary-dark: #3a70c0;
+      --bg: #fffefc;
+      --card-bg: #ffffff;
+      --border: #e2e5f0;
+      --text-main: #1a1a2e;
+      --text-muted: #8a8fa8;
+    }
+
+    #CustomerModal .modal-content {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 24px 64px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    #CustomerModal .modal-header {
+      background: linear-gradient(135deg, #1e3a5f, #162440);
+      border-bottom: none;
+      padding: 20px 28px;
+    }
+    #CustomerModal .modal-title {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #CustomerModal .modal-title i { font-size: 18px; color: rgba(255, 255, 255, 0.7); }
+    #CustomerModal .modal-body {
+      padding: 28px 28px 32px;
+      background: var(--bg);
+    }
+    .customer-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-weight: 400;
+    }
+    .customer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .customer-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .customer-card:hover {
+      border-color: var(--primary);
+      background: rgba(74, 137, 220, 0.04);
+      box-shadow: 0 4px 16px rgba(74, 137, 220, 0.12);
+      transform: translateY(-2px);
+      color: var(--text-main);
+      text-decoration: none;
+    }
+    .customer-card:active { transform: translateY(0); }
+    .customer-card .cc-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(74, 137, 220, 0.08);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.22s;
+    }
+    .customer-card .cc-icon i { font-size: 18px; color: var(--primary); }
+    .customer-card:hover .cc-icon { background: linear-gradient(135deg, #5a96e8, #3a70c0); }
+    .customer-card:hover .cc-icon i { color: #ffffff; }
+    .customer-card .cc-info { flex: 1; min-width: 0; }
+    .customer-card .cc-name { font-size: 13.5px; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+    .customer-card .cc-type { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+    .customer-card .cc-arrow { font-size: 14px; color: #d0d5e8; transition: all 0.22s; flex-shrink: 0; }
+    .customer-card:hover .cc-arrow { color: var(--primary); transform: translateX(3px); }
+
+    @media (max-width: 768px) { .customer-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .customer-grid { grid-template-columns: 1fr; } }
+
+    /* =========================================
+   Enhanced Project Table (QGPMS Theme)
+========================================= */
+
+.project-table{
+width:100%;
+border-collapse:separate;
+border-spacing:0;
+background:var(--card-bg);
+border:1px solid var(--border);
+border-radius:14px;
+overflow:hidden;
+font-size:13px;
+}
+
+/* HEADER */
+
+.project-table thead th{
+background:#f6f8fc;
+color:var(--text-muted);
+font-size:12.5px;
+font-weight:600;
+letter-spacing:.3px;
+padding:14px 18px;
+border-bottom:1px solid var(--border);
+vertical-align:middle;
+white-space:nowrap;
+}
+
+/* BODY */
+
+.project-table tbody td{
+padding:14px 18px;
+color:var(--text-main);
+border-bottom:1px solid #f0f2f7;
+vertical-align:middle;
+white-space:nowrap;
+}
+
+/* Row hover */
+
+.project-table tbody tr:hover{
+background:rgba(74,137,220,0.05);
+transition:background .15s ease;
+}
+
+/* Remove last border */
+
+.project-table tbody tr:last-child td{
+border-bottom:none;
+}
+
+/* Column alignment */
+
+.project-table th:nth-child(1),
+.project-table td:nth-child(1){
+text-align:center;
+width:60px;
+}
+
+.project-table th:nth-child(2),
+.project-table td:nth-child(2){
+text-align:center;
+width:120px;
+}
+
+.project-table th:nth-child(7),
+.project-table td:nth-child(7){
+text-align:left;
+font-weight:500;
+}
+
+/* Checkbox alignment */
+
+.project-table input[type="checkbox"]{
+transform:scale(1.05);
+}
+
+/* Status badges */
+
+.status-pill{
+display:inline-flex;
+align-items:center;
+gap:6px;
+padding:4px 12px;
+border-radius:20px;
+font-size:11px;
+font-weight:600;
+}
+
+.status-pill.red{
+background:#fdeaea;
+color:#d33;
+}
+
+.status-pill.green{
+background:#e9f7ef;
+color:#2e9e57;
+}
+
+.status-pill.orange{
+background:#fff4e5;
+color:#d9822b;
+}
+  </style>
+</head>
+
+<% if (userData.Role=="Employee" ) { %>
+  <%- include('../partials/Employee-header',{userData:userData}) %>
+<% }else if(userData.Role=="Admin" ){ %>
+  <%- include('../partials/Admin-header',{userData:userData}) %>
+<% }else if(userData.Role=="PMO" ){ %>
+  <%- include('../partials/PMO-header',{userData:userData}) %>
+<%}if(userData.Role=="Manager"){ %>
+  <%- include('../partials/Manager-header',{userData:userData}) %>
+<%}%>
+
+<body>
+  <button type="button" class="btn btn-primary visually-hidden" data-bs-toggle="modal" id="ChooseCustomerBtn" data-bs-target="#CustomerModal">
+    Choose Customer
+  </button>
+</body>
+
+<!-- Modal -->
+<div class="modal fade" id="CustomerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-center w-100" id="staticBackdropLabel">
+          <i class="bi bi-folder2-open"></i> Select Customer
+        </h5>
+        <a href="/PMO" class="btn-close btn-close-white" style="opacity:0.6;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"></a>
+      </div>
+      <div class="modal-body">
+        <p class="customer-subtitle text-center">Choose a customer program to view projects</p>
+        <div class="customer-grid">
+
+          <a href="/PMO/Projects/SkyTec/SkyTec-Comcast" class="customer-card">
+            <div class="cc-icon"><i class="bi bi-broadcast-pin"></i></div>
+            <div class="cc-info">
+              <div class="cc-name">SkyTec-Comcast</div>
+              <div class="cc-type">SkyTec</div>
+            </div>
+            <i class="bi bi-chevron-right cc-arrow"></i>
+          </a>
+
+          <a href="/PMO/Projects/ATX/ATX-Comcast" class="customer-card">
+            <div class="cc-icon"><i class="bi bi-diagram-3"></i></div>
+            <div class="cc-info">
+              <div class="cc-name">ATX-Comcast</div>
+              <div class="cc-type">ATX</div>
+            </div>
+            <i class="bi bi-chevron-right cc-arrow"></i>
+          </a>
+
+          <a href="/PMO/Projects/AT&T/MasTec-AT&T" class="customer-card">
+            <div class="cc-icon"><i class="bi bi-phone"></i></div>
+            <div class="cc-info">
+              <div class="cc-name">MasTec-AT&T</div>
+              <div class="cc-type">AT&T</div>
+            </div>
+            <i class="bi bi-chevron-right cc-arrow"></i>
+          </a>
+
+          <a href="/PMO/Projects/Mastec/MasTec-Tillman" class="customer-card">
+            <div class="cc-icon"><i class="bi bi-reception-4"></i></div>
+            <div class="cc-info">
+              <div class="cc-name">MasTec-Tillman</div>
+              <div class="cc-type">MasTec</div>
+            </div>
+            <i class="bi bi-chevron-right cc-arrow"></i>
+          </a>
+
+          <a href="/PMO/Projects/Mastec/MasTec-Windstream" class="customer-card">
+            <div class="cc-icon"><i class="bi bi-wind"></i></div>
+            <div class="cc-info">
+              <div class="cc-name">MasTec-Windstream</div>
+              <div class="cc-type">MasTec</div>
+            </div>
+            <i class="bi bi-chevron-right cc-arrow"></i>
+          </a>
+
+          <a href="/PMO/Projects/Mastec/MasTec-Comcast" class="customer-card">
+            <div class="cc-icon"><i class="bi bi-router"></i></div>
+            <div class="cc-info">
+              <div class="cc-name">MasTec-Comcast</div>
+              <div class="cc-type">MasTec</div>
+            </div>
+            <i class="bi bi-chevron-right cc-arrow"></i>
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/dependencies-js',{Notifications:Notifications}) %>
+<script>
+  window.addEventListener('load', () => {
+    $("#ChooseCustomerBtn").click()
+  })
+</script>
+
+</html>
